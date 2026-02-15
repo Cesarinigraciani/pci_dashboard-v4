@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Recursos</title>
+  <link rel="stylesheet" href="styles/style-v2.css">
+
+  <style>
+    .card-recurso {
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .form-card {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .form-card label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+    .form-card input, .form-card select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="header-principal">
+  <img src="assets/img/logo-empresa.png" alt="Logo">
+  <div class="titulo-principal">
+    <h1 id="titulo-proyecto">Gestión de Recursos</h1>
+    <h2>Aguero Instalaciones</h2>
+  </div>
+</header>
+
+<h3 id="mensajeBienvenida" style="text-align:center; margin-top:10px; color:#444;"></h3>
+
+<div class="panel-admin" id="contenedor-recursos"></div>
+
+<div class="panel-admin">
+  <div class="card">
+    <button class="boton-seccion" onclick="window.location.href='dashboard.html'">
+      ⬅️ Volver al Dashboard
+    </button>
+  </div>
+</div>
+
+<!-- RUTAS CORREGIDAS -->
+<script src="scripts/usuarios.js"></script>
+<script src="scripts/obras.js"></script>
+
+<script>
+// =====================================
+// VARIABLES
+// =====================================
+let obraActual = null;
+let recursoEditando = null;
+
+
+// =====================================
+// INICIALIZACIÓN
+// =====================================
+document.addEventListener("DOMContentLoaded", async () => {
+
+    // 🔥 NECESARIO: cargar usuarios ANTES de usarlos
+    await cargarUsuarios();
+
+    const usuario = getUsuarioActual();
+    if (!usuario) {
+        alert("No hay usuario logueado.");
+        window.location.href = "index.html";
+        return;
+    }
+
+    if (!usuario.obrasAsignadas || usuario.obrasAsignadas.length === 0) {
+        alert("No tienes obras asignadas.");
+        return;
+    }
+
+    // Tomamos la primera obra asignada
+    const obraId = usuario.obrasAsignadas[0];
+    obraActual = getObraById(obraId);
+
+    if (!obraActual) {
+        alert("La obra asignada no existe.");
+        return;
+    }
+
+    document.getElementById("titulo-proyecto").textContent = obraActual.nombre;
+
+    document.getElementById("mensajeBienvenida").textContent =
+    `Bienvenido, ${usuario.nombre} — Obra asignada: ${obraActual.nombre}`;
+
+    if (!obraActual.recursos) obraActual.recursos = [];
+
+    mostrarRecursos();
+});
+
+
+
+// =====================================
+// MOSTRAR RECURSOS
+// =====================================
+function mostrarRecursos() {
+    const cont = document.getElementById("contenedor-recursos");
+    cont.innerHTML = "";
+
+    const lista = obraActual.recursos;
+
+    const htmlLista = lista.map(r => `
+        <div class="card-recurso">
+            <div>
+                <strong>${r.nombre}</strong><br>
+                Cantidad: ${r.cantidad} ${r.unidad}<br>
+                Responsable: ${obtenerNombreUsuario(r.responsable)}
+            </div>
+            <div>
+                <button class="btn-primario" onclick="editarRecurso('${r.id}')">✏️</button>
+                <button class="btn-secundario" onclick="eliminarRecurso('${r.id}')">🗑️</button>
+            </div>
+        </div>
+    `).join("");
+
+    cont.innerHTML = `
+        <div class="card">
+            <h2>Recursos de la obra</h2>
+            ${htmlLista || "<p>No hay recursos registrados.</p>"}
+            <button class="boton-seccion" onclick="mostrarFormulario()">➕ Añadir Recurso</button>
+        </div>
+    `;
+}
+
+
+// =====================================
+// FORMULARIO DE RECURSO
+// =====================================
+function mostrarFormulario() {
+    const cont = document.getElementById("contenedor-recursos");
+
+    cont.innerHTML = `
+        <div class="form-card">
+            <h2>${recursoEditando ? "Editar Recurso" : "Nuevo Recurso"}</h2>
+
+            <label>Nombre del recurso</label>
+            <input id="nombreRecurso">
+
+            <label>Cantidad</label>
+            <input type="number" id="cantidadRecurso" min="0">
+
+            <label>Unidad</label>
+            <input id="unidadRecurso" placeholder="Ej. kg, m, piezas">
+
+            <label>Responsable</label>
+            <select id="responsableRecurso"></select>
+
+            <button class="btn-guardar" onclick="guardarRecurso()">Guardar</button>
+            <button class="btn-volver" onclick="cancelarFormulario()">Cancelar</button>
+        </div>
+    `;
+
+    cargarUsuariosResponsables();
+
+    if (recursoEditando) {
+        const r = obraActual.recursos.find(x => x.id === recursoEditando);
+        document.getElementById("nombreRecurso").value = r.nombre;
+        document.getElementById("cantidadRecurso").value = r.cantidad;
+        document.getElementById("unidadRecurso").value = r.unidad;
+        document.getElementById("responsableRecurso").value = r.responsable;
+    }
+}
+
+function cancelarFormulario() {
+    recursoEditando = null;
+    mostrarRecursos();
+}
+
+
+// =====================================
+// CARGAR USUARIOS COMO RESPONSABLES
+// =====================================
+function cargarUsuariosResponsables() {
+    const select = document.getElementById("responsableRecurso");
+    select.innerHTML = "";
+
+    usuariosData.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = u.nombre;
+        select.appendChild(opt);
+    });
+}
+
+function obtenerNombreUsuario(id) {
+    const u = usuariosData.find(x => x.id === id);
+    return u ? u.nombre : "Sin asignar";
+}
+
+
+// =====================================
+// GUARDAR RECURSO
+// =====================================
+function guardarRecurso() {
+    const nombre = document.getElementById("nombreRecurso").value.trim();
+    const cantidad = Number(document.getElementById("cantidadRecurso").value);
+    const unidad = document.getElementById("unidadRecurso").value.trim();
+    const responsable = document.getElementById("responsableRecurso").value;
+
+    if (!nombre || !unidad) {
+        alert("Nombre y unidad son obligatorios.");
+        return;
+    }
+
+    if (recursoEditando) {
+        const r = obraActual.recursos.find(x => x.id === recursoEditando);
+        r.nombre = nombre;
+        r.cantidad = cantidad;
+        r.unidad = unidad;
+        r.responsable = responsable;
+    } else {
+        obraActual.recursos.push({
+            id: "rec_" + Date.now(),
+            nombre,
+            cantidad,
+            unidad,
+            responsable
+        });
+    }
+
+    guardarObraPCI(obraActual); // ← CORREGIDO
+    recursoEditando = null;
+    mostrarRecursos();
+}
+
+
+// =====================================
+// EDITAR RECURSO
+// =====================================
+function editarRecurso(id) {
+    recursoEditando = id;
+    mostrarFormulario();
+}
+
+
+// =====================================
+// ELIMINAR RECURSO
+// =====================================
+function eliminarRecurso(id) {
+    if (!confirm("¿Eliminar este recurso?")) return;
+
+    obraActual.recursos = obraActual.recursos.filter(r => r.id !== id);
+    guardarObraPCI(obraActual); // ← CORREGIDO
+    mostrarRecursos();
+}
+
+
+// =====================================
+// GUARDAR OBRA (NUEVO SISTEMA)
+// =====================================
+function guardarObraPCI(obraActualizada) {
+    let obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+
+    obras = obras.map(o => 
+        o.id === obraActualizada.id ? obraActualizada : o
+    );
+
+    localStorage.setItem("obrasPCI", JSON.stringify(obras));
+}
+
+</script>
+
+</body>
+</html>

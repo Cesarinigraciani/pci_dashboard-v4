@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Seleccionar Obra - KPI</title>
+  <link rel="stylesheet" href="styles/style-v2.css">
+
+  <style>
+    .obra-card {
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .btn {
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .btn-azul { background: #0078d4; color: white; }
+  </style>
+</head>
+
+<body>
+
+<header class="header-principal">
+  <img src="assets/img/logo-empresa.png">
+  <div class="titulo-principal">
+    <h1>Seleccionar Obra</h1>
+    <h2>Indicadores de Avance (KPI)</h2>
+  </div>
+</header>
+
+<div class="panel-admin" id="contenedorObras"></div>
+
+<div class="panel-admin">
+  <button class="boton-seccion" onclick="window.location.href='index.html'">⬅️ Volver</button>
+</div>
+
+<script src="scripts/obras.js"></script>
+<script src="scripts/usuarios.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const obras = listarObras();
+    const cont = document.getElementById("contenedorObras");
+
+    if (obras.length === 0) {
+        cont.innerHTML = "<p>No hay obras creadas.</p>";
+        return;
+    }
+
+    obras.forEach(obra => {
+        const encargado = usuariosData.find(u => u.id === obra.encargado)?.nombre || "Sin asignar";
+
+        const div = document.createElement("div");
+        div.className = "obra-card";
+
+        div.innerHTML = `
+            <h2>${obra.nombre}</h2>
+            <p><strong>Ciudad:</strong> ${obra.ciudad}</p>
+            <p><strong>Encargado:</strong> ${encargado}</p>
+
+            <button class="btn btn-azul" onclick="window.location.href='kpi_obra.html?id=${obra.id}'">
+              📈 Ver KPI
+            </button>
+        `;
+
+        cont.appendChild(div);
+    });
+});
+</script>
+
+</body>
+</html>

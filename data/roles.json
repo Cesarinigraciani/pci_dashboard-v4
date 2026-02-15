@@ -1,0 +1,52 @@
+{
+  "Administrador": [
+    "crearProyecto",
+    "borrarProyecto",
+    "modificarProyecto",
+    "verProyectos",
+    "crearTareas",
+    "verTareas",
+    "completarTareas",
+    "usuarios"
+  ],
+
+  "Director de Producción": [
+    "crearProyecto",
+    "modificarProyecto",
+    "verProyectos",
+    "crearTareas",
+    "verTareas"
+  ],
+
+  "Ingeniero Técnico": [
+    "modificarProyecto",
+    "verProyectos",
+    "crearTareas",
+    "verTareas"
+  ],
+
+  "Encargado de Obra": [
+    "modificarProyecto",
+    "verProyectos",
+    "verTareas",
+    "completarTareas"
+  ],
+
+  "Oficial de Primera": [
+    "verTareas",
+    "completarTareas"
+  ],
+
+  "Oficial de Segunda": [
+    "verTareas",
+    "completarTareas"
+  ],
+
+  "Subcontrata": [
+    "verTareas",
+    "completarTareas"
+  ]
+}
+
+
+

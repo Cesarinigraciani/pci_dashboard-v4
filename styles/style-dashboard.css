@@ -1,0 +1,176 @@
+/* ============================================================
+   🎨 ESTILO MODERNO PARA DASHBOARD DINÁMICO PCI
+   ------------------------------------------------------------
+   - Tarjetas modernas con sombra
+   - Bordes verticales dinámicos
+   - Barras gruesas y profesionales
+   - Layout responsive
+   - Compatible con tu HTML actual
+============================================================ */
+
+/* ====== CONTENEDOR GENERAL ====== */
+#contenedor-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 22px;
+  padding: 20px;
+}
+
+/* ====== TARJETAS DE PLANTA ====== */
+.tarjeta-planta {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  border-left: 10px solid #ccc; /* color dinámico */
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.tarjeta-planta:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+}
+
+.tarjeta-planta h4 {
+  font-size: 20px;
+  margin-bottom: 12px;
+  color: #333;
+  font-weight: 700;
+}
+
+/* ====== COLORES DINÁMICOS DEL BORDE ====== */
+.estado-rojo {
+  border-left-color: #e74c3c;
+}
+
+.estado-naranja {
+  border-left-color: #f39c12;
+}
+
+.estado-amarillo {
+  border-left-color: #f1c40f;
+}
+
+.estado-verde {
+  border-left-color: #2ecc71;
+}
+
+.estado-azul {
+  border-left-color: #40E0D0;
+}
+
+/* ====== GRUPO DE TIPOS ====== */
+.grupo-tipos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 10px;
+}
+
+/* ====== BARRAS DE PROGRESO ====== */
+.barra-resumen label {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.barra-resumen progress {
+  width: 100%;
+  height: 22px;
+  border-radius: 12px;
+  overflow: hidden;
+  appearance: none;
+}
+
+/* ====== COLORES DE BARRAS ====== */
+progress::-webkit-progress-bar {
+  background-color: #e0e0e0;
+}
+
+progress.barra-roja::-webkit-progress-value {
+  background-color: #e74c3c;
+}
+
+progress.barra-naranja::-webkit-progress-value {
+  background-color: #f39c12;
+}
+
+progress.barra-verde::-webkit-progress-value {
+  background-color: #2ecc71;
+}
+
+progress.barra-azul::-webkit-progress-value {
+  background-color: #40E0D0;
+}
+
+/* Firefox */
+progress.barra-roja::-moz-progress-bar { background-color: #e74c3c; }
+progress.barra-naranja::-moz-progress-bar { background-color: #f39c12; }
+progress.barra-verde::-moz-progress-bar { background-color: #2ecc71; }
+progress.barra-azul::-moz-progress-bar { background-color: #40E0D0; }
+
+/* ====== PORCENTAJE ====== */
+.porcentaje {
+  font-weight: bold;
+  margin-left: 8px;
+  font-size: 14px;
+}
+
+.porcentaje.no-aplica {
+  color: #888;
+  font-style: italic;
+}
+
+/* ====== AVANCE GLOBAL ====== */
+.avance-global {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.avance-global span {
+  color: #0078d4;
+}
+
+/* ====== BOTONES SUPERIORES ====== */
+.botonera-dashboard {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.boton-dashboard {
+  padding: 12px 20px;
+  background-color: #0078d4;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.boton-dashboard:hover {
+  background-color: #005ea2;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 600px) {
+  #contenedor-tarjetas {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+
+  .tarjeta-planta {
+    padding: 16px;
+  }
+
+  .grupo-tipos {
+    grid-template-columns: 1fr;
+  }
+}

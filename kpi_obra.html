@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>KPI de Obra</title>
+  <link rel="stylesheet" href="styles/style-v2.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    .kpi-card {
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
+    .kpi-box {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="header-principal">
+  <img src="assets/img/logo-empresa.png">
+  <div class="titulo-principal">
+    <h1 id="tituloObra">KPI de Obra</h1>
+    <h2>Aguero Instalaciones</h2>
+  </div>
+</header>
+
+<div class="panel-admin">
+
+  <div class="kpi-card">
+    <h2>Resumen General</h2>
+    <div class="kpi-grid">
+      <div class="kpi-box" id="kpiFisico"></div>
+      <div class="kpi-box" id="kpiLogico"></div>
+      <div class="kpi-box" id="kpiCombinado"></div>
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <h2>Avance Global</h2>
+    <canvas id="graficoGlobal"></canvas>
+  </div>
+
+  <div class="kpi-card">
+    <h2>Avance por Planta</h2>
+    <canvas id="graficoPlantas"></canvas>
+  </div>
+
+  <div class="kpi-card">
+    <h2>Estado de Tareas</h2>
+    <canvas id="graficoTareas"></canvas>
+  </div>
+
+  <button class="boton-seccion" onclick="window.location.href='kpi_selector.html'">⬅️ Volver</button>
+
+</div>
+
+<script src="scripts/obras.js"></script>
+<script src="scripts/tareas.js"></script>
+<script src="scripts/usuarios.js"></script>
+
+<script>
+function obtenerParametro(nombre) {
+    return new URLSearchParams(window.location.search).get(nombre);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const obraId = obtenerParametro("id");
+    const obra = getObraById(obraId);
+
+    document.getElementById("tituloObra").textContent = obra.nombre;
+
+    // ============================
+    // CALCULAR AVANCE FÍSICO
+    // ============================
+    let totalEquipos = 0;
+    let totalInstalados = 0;
+
+    obra.plantas.forEach(pl => {
+        pl.equipos.forEach(eq => {
+            totalEquipos += eq.cantidad;
+            totalInstalados += eq.instalados || 0;
+        });
+    });
+
+    const avanceFisico = Math.round((totalInstalados / totalEquipos) * 100);
+
+    // ============================
+// CALCULAR AVANCE LÓGICO
+// ============================
+
+// Leer tareas reales del localStorage
+const tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+
+// Si las tareas NO tienen obraId, usamos todas
+const tareasObra = tareas;
+
+// Contar estados
+const totalTareas = tareasObra.length;
+const tareasCompletadas = tareasObra.filter(t => t.estado === "completada").length;
+
+const avanceLogico = totalTareas > 0 
+    ? Math.round((tareasCompletadas / totalTareas) * 100) 
+    : 0;
+
+
+    // ============================
+    // AVANCE COMBINADO
+    // ============================
+    const avanceCombinado = Math.round((avanceFisico * 0.7) + (avanceLogico * 0.3));
+
+    // Mostrar KPIs
+    document.getElementById("kpiFisico").textContent = `Avance Físico: ${avanceFisico}%`;
+    document.getElementById("kpiLogico").textContent = `Avance Lógico: ${avanceLogico}%`;
+    document.getElementById("kpiCombinado").textContent = `Avance Combinado: ${avanceCombinado}%`;
+
+    // ============================
+    // GRAFICO GLOBAL
+    // ============================
+    new Chart(document.getElementById("graficoGlobal"), {
+        type: "doughnut",
+        data: {
+            labels: ["Completado", "Pendiente"],
+            datasets: [{
+                data: [avanceCombinado, 100 - avanceCombinado],
+                backgroundColor: ["#28a745", "#cccccc"]
+            }]
+        }
+    });
+
+    // ============================
+    // GRAFICO POR PLANTAS
+    // ============================
+    const plantas = obra.plantas.map(p => p.nombre);
+    const porcentajes = obra.plantas.map(p => {
+        let tot = 0, inst = 0;
+        p.equipos.forEach(eq => {
+            tot += eq.cantidad;
+            inst += eq.instalados || 0;
+        });
+        return Math.round((inst / tot) * 100);
+    });
+
+    new Chart(document.getElementById("graficoPlantas"), {
+        type: "bar",
+        data: {
+            labels: plantas,
+            datasets: [{
+                label: "Avance (%)",
+                data: porcentajes,
+                backgroundColor: "#0078d4"
+            }]
+        }
+    });
+
+    // ============================
+    // GRAFICO DE TAREAS
+    // ============================
+    const pendientes = tareas.filter(t => t.estado === "pendiente").length;
+    const proceso = tareas.filter(t => t.estado === "proceso").length;
+
+    new Chart(document.getElementById("graficoTareas"), {
+        type: "bar",
+        data: {
+            labels: ["Pendientes", "En proceso", "Completadas"],
+            datasets: [{
+                data: [pendientes, proceso, tareasCompletadas],
+                backgroundColor: ["#b30000", "#ffbb00", "#28a745"]
+            }]
+        }
+    });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Dinámico</title>
+  <link rel="stylesheet" href="styles/style-v2.css">
+  <script src="scripts/main_dinamico.js" defer></script>
+
+  <style>
+    .boton-seccion {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #0078d4;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .boton-seccion:hover {
+      background: #005fa3;
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="header-principal">
+  <img src="assets/img/logo-empresa.png" alt="Logo">
+  <div class="titulo-principal">
+    <h1 id="titulo-proyecto">Dashboard Dinámico</h1>
+    <h2>Aguero Instalaciones</h2>
+  </div>
+</header>
+
+<div class="panel-admin">
+
+  <!-- TARJETA DE TOTALES -->
+  <div class="card tarjeta-dashboard">
+    <h2>Resumen General</h2>
+
+    <p><strong>Total de equipos:</strong> <span id="total-equipos">0</span></p>
+    <p><strong>Instalados:</strong> <span id="total-instalados">0</span></p>
+    <p><strong>Pendientes:</strong> <span id="total-pendientes">0</span></p>
+
+    <h3>Avance Global</h3>
+    <div id="barra-global"></div>
+  </div>
+
+  <!-- TARJETA AVANCE POR PLANTA -->
+  <div class="card tarjeta-dashboard">
+    <h2>Avance por Planta</h2>
+    <div id="dashboard-plantas"></div>
+  </div>
+
+  <!-- TARJETA AVANCE POR TIPO -->
+  <div class="card tarjeta-dashboard">
+    <h2>Avance por Tipo de Equipo</h2>
+    <div id="dashboard-tipos"></div>
+  </div>
+
+  <!-- TABLA RESUMEN -->
+  <div class="card tarjeta-dashboard">
+    <h2>Resumen por Tipo</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Total</th>
+          <th>Instalados</th>
+          <th>Pendientes</th>
+          <th>Avance</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-resumen-body"></tbody>
+    </table>
+  </div>
+
+  <!-- BOTONES DE NAVEGACIÓN -->
+  <div class="card">
+
+    <button class="boton-seccion" onclick="editarPlantas()">
+      🏗️ Editar Plantas y Equipos
+    </button>
+
+    <button class="boton-seccion" onclick="window.location.href='lista_obras.html'">
+      📁 Volver a Lista de Obras
+    </button>
+
+    <button class="boton-seccion" onclick="window.location.href='index.html'">
+      🏠 Volver al Inicio
+    </button>
+
+  </div>
+
+</div>
+
+<script>
+// Obtener ID de la obra desde la URL
+const params = new URLSearchParams(window.location.search);
+const obraID = params.get("id");
+
+// Botón "Editar Plantas"
+function editarPlantas() {
+  window.location.href = "configurar_plantas.html?id=" + obraID;
+}
+</script>
+
+</body>
+</html>

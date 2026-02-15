@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Modificar Equipos Instalados</title>
+
+<!-- Forzamos recarga del CSS global -->
+<link rel="stylesheet" href="styles/style-v2.css?v=9999">
+
+<style>
+
+/* ============================
+   ESTILOS QUE GANAN SIEMPRE
+   ============================ */
+
+/* ANULA EL COLOR GLOBAL DEL BODY */
+body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: "Segoe UI", sans-serif;
+}
+
+/* TARJETAS */
+.card {
+    background: #ffffff !important;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important;
+    color: #000 !important;
+}
+
+/* FILAS DE EQUIPOS */
+.equipo-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background: #f5f5f5 !important;
+    margin: 6px 0;
+    border-radius: 6px;
+    color: #000 !important;
+}
+
+/* TEXTO DE LOS EQUIPOS */
+.equipo-item span {
+    font-size: 16px;
+    font-weight: 600;
+    color: #000 !important;
+}
+
+/* INPUTS */
+input[type="number"] {
+    width: 80px;
+    padding: 6px;
+    font-size: 16px;
+    border: 1px solid #666 !important;
+    border-radius: 6px;
+    background: #ffffff !important;
+    color: #000 !important;
+}
+
+/* TITULOS */
+h1, h2 {
+    color: #000 !important;
+}
+
+/* ============================
+   MODO OSCURO
+   ============================ */
+@media (prefers-color-scheme: dark) {
+
+    body {
+        background: #1e1e1e !important;
+        color: #ffffff !important;
+    }
+
+    .card {
+        background: #2b2b2b !important;
+        color: #ffffff !important;
+    }
+
+    .equipo-item {
+        background: #444 !important;
+        color: #ffffff !important;
+    }
+
+    .equipo-item span {
+        color: #ffffff !important;
+    }
+
+    input[type="number"] {
+        background: #333 !important;
+        color: #ffffff !important;
+        border: 1px solid #888 !important;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<h1 style="text-align:center;">Modificar Equipos Instalados</h1>
+
+<div id="contenedor"></div>
+
+<button class="boton-seccion" onclick="guardarCambios()">💾 Guardar Cambios</button>
+<button class="boton-seccion" onclick="history.back()">⬅️ Volver</button>
+
+<script src="scripts/obras.js"></script>
+
+<script>
+const obraId = new URLSearchParams(window.location.search).get("id");
+let obra = getObraById(obraId);
+
+const cont = document.getElementById("contenedor");
+
+if (!obra) {
+    cont.innerHTML = "<p>No se encontró la obra.</p>";
+} else {
+    cont.innerHTML = obra.plantas.map(pl => `
+        <div class="card">
+            <h2>${pl.nombre}</h2>
+
+            ${pl.equipos.map(eq => `
+                <div class="equipo-item">
+                    <span>${eq.nombre} (${eq.cantidad})</span>
+                    <input type="number" min="0" max="${eq.cantidad}" 
+                           value="${eq.instalados ?? 0}" 
+                           data-planta="${pl.nombre}" 
+                           data-equipo="${eq.nombre}">
+                </div>
+            `).join("")}
+        </div>
+    `).join("");
+}
+
+function guardarCambios() {
+    const inputs = document.querySelectorAll("input[data-planta]");
+
+    inputs.forEach(inp => {
+        const plantaNombre = inp.dataset.planta;
+        const equipoNombre = inp.dataset.equipo;
+        const valor = parseInt(inp.value) || 0;
+
+        const planta = obra.plantas.find(p => p.nombre === plantaNombre);
+        const equipo = planta.equipos.find(e => e.nombre === equipoNombre);
+
+        equipo.instalados = valor;
+    });
+
+    guardarObra(obra);
+    alert("Cambios guardados correctamente.");
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Principal</title>
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="styles/style-v2.css">
+
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    .card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      margin-bottom: 20px;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    }
+
+    .barra-premium {
+      width: 100%;
+      height: 22px;
+      background: #ddd;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .barra-premium-fill {
+      height: 100%;
+      transition: width .6s ease;
+    }
+
+    .proyecto-reciente {
+      padding: 12px;
+      background: #f0f0f0;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background .2s;
+    }
+    .proyecto-reciente:hover {
+      background: #e0e0e0;
+    }
+
+    .icono-proyecto {
+      font-size: 26px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #1e1e1e;
+        color: #f0f0f0;
+      }
+      .card {
+        background: #2b2b2b;
+        box-shadow: 0 4px 12px rgba(255,255,255,0.1);
+      }
+      .proyecto-reciente {
+        background: #333;
+      }
+      .proyecto-reciente:hover {
+        background: #444;
+      }
+      .barra-premium {
+        background: #555;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="header-principal">
+  <img src="assets/img/logo-empresa.png" alt="Logo">
+  <div class="titulo-principal">
+    <h1>PANEL PRINCIPAL</h1>
+    <h2>Aguero Instalaciones</h2>
+
+    <!-- Firma y versión -->
+  <p style="
+  margin:6px 0 0 0;
+  display:inline-block;
+  padding:4px 10px;
+  background:#007bff;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+  border-radius:6px;">
+  v4.0.0 — César Augusto
+</p>
+
+
+  </div>
+</header>
+
+
+<!-- Mensaje de bienvenida dinámico -->
+<h2 id="mensajeBienvenida" style="text-align:center; margin-top:10px; color:#444;"></h2>
+<!-- Botón para instalar la app -->
+<div style="text-align:center; margin-top:10px;">
+  <button id="btnInstalarApp" class="boton-seccion" style="background:#007bff;">
+    📲 Instalar App
+  </button>
+</div>
+
+<div class="panel-admin" id="panel-principal"></div>
+
+<!-- Scripts base -->
+<script src="scripts/usuarios.js"></script>
+<script src="scripts/obras.js"></script>
+<script src="scripts/tareas.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  await cargarUsuarios();
+  const usuario = getUsuarioActual();
+  // Si es administrador, no debe tener obra asignada
+if (usuario.rol === "admin") {
+  usuario.obrasAsignadas = [];
+}
+
+  const obraIdAsignada = usuario?.obrasAsignadas?.[0];
+  const obraAsignada = obraIdAsignada ? getObraById(obraIdAsignada) : null;
+
+  const mensaje = obraAsignada
+    ? `Bienvenido, ${usuario.nombre} — Obra asignada: ${obraAsignada.nombre}`
+    : `Bienvenido, ${usuario?.nombre || "Usuario"} — No tienes obra asignada`;
+
+  document.getElementById("mensajeBienvenida").textContent = mensaje;
+
+  const panel = document.getElementById("panel-principal");
+
+  const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+  const obraID = new URLSearchParams(window.location.search).get("id");
+  const obra = obras.find(o => o.id === obraID) || null;
+
+  if (obra) {
+    obra.ultimoAcceso = new Date().toLocaleString();
+    localStorage.setItem("obrasPCI", JSON.stringify(obras));
+  }
+
+  if (!obra) {
+    panel.innerHTML = `
+      <div class="card">
+        <h2>Bienvenido</h2>
+        <p>Selecciona una obra o crea una nueva.</p>
+
+        <button class="boton-seccion" onclick="window.location.href='crear_obra.html'">🏗️ Crear Obra</button>
+        <button class="boton-seccion" onclick="window.location.href='lista_obras.html'">📁 Lista de Obras</button>
+        <button class="boton-seccion" onclick="window.location.href='tarjetas_proyectos.html'">📄 Tarjetas de Obras</button>
+        <button class="boton-seccion" onclick="window.location.href='crear_usuario.html'">👤 Crear Usuario</button>
+        <button class="boton-seccion" onclick="window.location.href='panelUsuarios.html'">👥 Panel de Usuarios</button>
+        <button class="boton-seccion" onclick="window.location.href='crear_tarea.html'">📝 Crear Tarea</button>
+        <button class="boton-seccion" onclick="window.location.href='lista_tareas.html'">📋 Lista de Tareas</button>
+        <button class="boton-seccion" onclick="window.location.href='recursos.html'">📦 Recursos</button>
+        <button class="boton-seccion" onclick="window.location.href='kpi_selector.html'">📈 Indicadores de Avance (KPI)</button>
+        <button class="boton-seccion" onclick="window.location.href='admin.html'">⚙️ Administración</button>
+      </div>
+
+      <button class="boton-seccion" onclick="window.location.href='usuarios_existentes.html'">
+        👥 Usuarios Existentes
+      </button>
+
+      <div class="card">
+        <h3>Obras recientes</h3>
+        ${obras.slice(-5).map(o => `
+          <div class="proyecto-reciente" onclick="activarObra('${o.id}')">
+            <span class="icono-proyecto">📌</span>
+            <div>
+              <strong>${o.nombre}</strong><br>
+              <small>Último acceso: ${o.ultimoAcceso || "—"}</small>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+    return;
+  }
+
+  let total = 0;
+  let instalados = 0;
+
+  (obra.plantas || []).forEach(pl => {
+    (pl.equipos || []).forEach(eq => {
+      total += eq.cantidad || 0;
+      instalados += eq.instalados || 0;
+    });
+  });
+
+  const porcentaje = total === 0 ? 0 : Math.round((instalados / total) * 100);
+  const color = porcentaje < 50 ? "red" : porcentaje < 80 ? "orange" : "green";
+
+  panel.innerHTML = `
+    <div class="card">
+      <h2>Obra activa</h2>
+      <h3>${obra.nombre}</h3>
+
+      <p><strong>Fecha de creación:</strong> ${obra.fechaCreacion || "—"}</p>
+      <p><strong>Último acceso:</strong> ${obra.ultimoAcceso || "—"}</p>
+
+      <p><strong>Avance global:</strong> ${porcentaje}%</p>
+      <div class="barra-premium">
+        <div class="barra-premium-fill" style="width:${porcentaje}%; background:${color};"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <button class="boton-seccion" onclick="window.location.href='dashboard_dinamico.html?id=${obra.id}'">📊 Dashboard PCI Local</button>
+      <button class="boton-seccion" onclick="window.location.href='tarjetas_proyectos.html'">📄 Tarjetas de Obras</button>
+      <button class="boton-seccion" onclick="window.location.href='recursos.html'">📦 Recursos</button>
+      <button class="boton-seccion" onclick="window.location.href='kpi_selector.html'">📈 Indicadores de Avance (KPI)</button>
+      <button class="boton-seccion" onclick="window.location.href='crear_tarea.html'">📝 Crear Tarea</button>
+      <button class="boton-seccion" onclick="window.location.href='panelUsuarios.html'">👥 Panel de Usuarios</button>
+      <button class="boton-seccion" onclick="window.location.href='admin.html'">⚙️ Administración</button>
+      <button class="boton-seccion" onclick="window.location.href='editar_instalados.html?id=${obra.id}'">🔧 Modificar Equipos Instalados</button>
+      <button class="boton-seccion" style="background:#8e0000;" onclick="cambiarObra()">🔄 Cambiar de Obra</button>
+      <button class="boton-seccion" onclick="window.location.href='usuarios_existentes.html'">👥 Usuarios Existentes</button>
+    </div>
+
+    <div class="card">
+      <h3>Obras recientes</h3>
+      ${obras.slice(-5).map(o => `
+        <div class="proyecto-reciente" onclick="activarObra('${o.id}')">
+          <span class="icono-proyecto">📌</span>
+          <div>
+            <strong>${o.nombre}</strong><br>
+            <small>Último acceso: ${o.ultimoAcceso || "—"}</small>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+});
+
+function activarObra(id) {
+  window.location.href = "index.html?id=" + id;
+}
+
+function cambiarObra() {
+  window.location.href = "lista_obras.html";
+}
+</script>
+
+<!-- Registro del Service Worker -->
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js")
+    .then(() => console.log("Service Worker registrado"))
+    .catch(err => console.error("Error al registrar el Service Worker", err));
+}
+
+
+</script>
+<script>
+let deferredPrompt;
+const btnInstalar = document.getElementById("btnInstalarApp");
+
+// Ocultar botón al inicio
+btnInstalar.style.display = "none";
+
+// Detectar si la app está instalada
+if (window.matchMedia('(display-mode: standalone)').matches) {
+  btnInstalar.textContent = "✔ App instalada";
+  btnInstalar.style.background = "green";
+  btnInstalar.style.display = "inline-block";
+}
+
+// Evento que indica que la app puede instalarse
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  btnInstalar.style.display = "inline-block";
+
+  btnInstalar.addEventListener("click", async () => {
+    btnInstalar.style.display = "none";
+    deferredPrompt.prompt();
+
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === "accepted") {
+      btnInstalar.textContent = "✔ App instalada";
+      btnInstalar.style.background = "green";
+      btnInstalar.style.display = "inline-block";
+    }
+
+    deferredPrompt = null;
+  });
+});
+</script>
+
+</body>
+</html>

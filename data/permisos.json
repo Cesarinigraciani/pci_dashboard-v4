@@ -1,0 +1,11 @@
+[
+  "crearProyecto",
+  "borrarProyecto",
+  "modificarProyecto",
+  "verProyectos",
+  "crearTareas",
+  "verTareas",
+  "completarTareas",
+  "usuarios"
+]
+

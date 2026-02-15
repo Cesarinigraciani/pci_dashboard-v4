@@ -1,0 +1,1587 @@
+// ---------------------------------------------------------
+// 🔐 VERIFICAR SESIÓN ACTIVA
+// ---------------------------------------------------------
+const usuarioActivo = JSON.parse(localStorage.getItem("usuarioActivo"));
+
+if (!usuarioActivo) {
+  window.location.href = "login.html";
+}
+
+// ---------------------------------------------------------
+// 👤 MOSTRAR NOMBRE DEL USUARIO EN EL PANEL
+// ---------------------------------------------------------
+const spanNombreUsuario = document.getElementById("nombreUsuario");
+if (spanNombreUsuario) {
+  spanNombreUsuario.textContent = usuarioActivo.nombre;
+}
+
+// ---------------------------------------------------------
+// 🛑 APLICAR PERMISOS DEL USUARIO
+// ---------------------------------------------------------
+function aplicarPermisosDashboard() {
+  const permisos = usuarioActivo.permisos || [];
+
+  if (!permisos.includes("usuarios")) {
+    const btn = document.getElementById("btnPanelUsuarios");
+    if (btn) btn.classList.add("oculto");
+  }
+
+  if (!permisos.includes("crearTareas")) {
+    const btn = document.getElementById("btnCrearTarea");
+    if (btn) btn.classList.add("oculto");
+  }
+
+  if (!permisos.includes("asignarTareas")) {
+    const btn = document.getElementById("btnAsignacionTareas");
+    if (btn) btn.classList.add("oculto");
+  }
+
+  if (!permisos.includes("informes")) {
+    const btn = document.getElementById("btnInformesTareas");
+    if (btn) btn.classList.add("oculto");
+  }
+
+  if (!permisos.includes("proyectos")) {
+    const panel = document.getElementById("panelObrasAdmin");
+    if (panel) panel.classList.add("oculto");
+  }
+}
+
+// ---------------------------------------------------------
+// 🏗️ OBRAS PERMITIDAS SEGÚN EL USUARIO
+// ---------------------------------------------------------
+function obtenerObrasPermitidas() {
+  if (usuarioActivo.obras && usuarioActivo.obras.length > 0) {
+    return usuarioActivo.obras;
+  }
+  return window._obras || [];
+}
+
+// ---------------------------------------------------------
+// 📌 CARGAR TAREAS DEL USUARIO
+// ---------------------------------------------------------
+function cargarTareasDashboard() {
+  const permisos = usuarioActivo.permisos || [];
+  let tareas = [];
+
+  if (permisos.includes("verTodasLasTareas")) {
+    tareas = tareasData;
+  } else {
+    tareas = obtenerTareasPorUsuario(usuarioActivo.id);
+  }
+
+  renderizarTareas("listaTareas", tareas);
+}
+
+// ---------------------------------------------------------
+// 🚀 INICIALIZAR PANEL ADMINISTRATIVO
+// ---------------------------------------------------------
+document.addEventListener("DOMContentLoaded", async () => {
+  aplicarPermisosDashboard();
+  await cargarTareas();
+  cargarObrasDesdeProyectos();
+  cargarTareasDashboard();
+});
+
+// ==========================================================
+// 🔄 NAVEGACIÓN ENTRE PANELES ADMINISTRATIVOS
+// ==========================================================
+document.addEventListener("DOMContentLoaded", () => {
+
+  const btnUsuarios = document.getElementById("btnPanelUsuarios");
+  if (btnUsuarios) {
+    btnUsuarios.addEventListener("click", () => {
+      mostrarSolo("panel-usuarios");
+    });
+  }
+
+  const btnCrearTarea = document.getElementById("btnCrearTarea");
+  if (btnCrearTarea) {
+    btnCrearTarea.addEventListener("click", () => {
+      mostrarSolo("formularioTarea");
+    });
+  }
+
+  const btnAsignacion = document.getElementById("btnAsignacionTareas");
+  if (btnAsignacion) {
+    btnAsignacion.addEventListener("click", () => {
+      mostrarListaTareas();
+      mostrarSolo("panelListaTareas");
+    });
+  }
+
+  const btnInformes = document.getElementById("btnInformesTareas");
+  if (btnInformes) {
+    btnInformes.addEventListener("click", () => {
+      mostrarPanelInformes();
+      mostrarSolo("panelInformes");
+    });
+  }
+
+  const btnObras = document.getElementById("btnPanelObras");
+  if (btnObras) {
+    btnObras.addEventListener("click", () => {
+      mostrarPanelObras();
+      mostrarSolo("panelObrasAdmin");
+    });
+  }
+
+  const botonesVolver = document.querySelectorAll(".volver");
+  botonesVolver.forEach(btn => {
+    btn.addEventListener("click", () => {
+      ocultarTodos();
+    });
+  });
+});
+
+// ==========================================================
+// 🧩 FUNCIONES DE CONTROL DE PANELES
+// ==========================================================
+function ocultarTodos() {
+  const paneles = [
+    "panel-usuarios",
+    "panelListaTareas",
+    "panelInformes",
+    "panelObrasAdmin",
+    "formularioTarea"
+  ];
+
+  paneles.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("oculto");
+  });
+}
+
+function mostrarSolo(id) {
+  ocultarTodos();
+  const el = document.getElementById(id);
+  if (el) el.classList.remove("oculto");
+}
+
+  // 🔘 Activar vistas
+  var btnFisica = document.getElementById('btn-fisica');
+  var btnLogica = document.getElementById('btn-logica');
+
+  if (btnFisica) {
+    btnFisica.addEventListener('click', function () {
+      document.getElementById('inicio-dashboard').style.display = 'none';
+      document.getElementById('dashboard-fisica').style.display = 'block';
+      document.getElementById('dashboard-logica').style.display = 'none';
+      ocultarMenuInforme();
+    });
+  }
+
+  if (btnLogica) {
+    btnLogica.addEventListener('click', function () {
+      document.getElementById('inicio-dashboard').style.display = 'none';
+      document.getElementById('dashboard-logica').style.display = 'block';
+      document.getElementById('dashboard-fisica').style.display = 'none';
+      ocultarMenuInforme();
+    });
+  }
+  // 📄 Botón Crear informe
+  var btnInforme = document.getElementById('btn-informe');
+  var menuInforme = document.getElementById('menu-informe');
+  if (btnInforme && menuInforme) {
+    btnInforme.addEventListener('click', function () {
+      var visible = menuInforme.style.display === 'block';
+      menuInforme.style.display = visible ? 'none' : 'block';
+    });
+  }
+
+  // 📄 Generar PDF
+  var btnGenerar = document.getElementById('btn-generar-pdf');
+  if (btnGenerar) {
+    btnGenerar.addEventListener('click', function () {
+      var seleccionados = Array.from(document.querySelectorAll('#menu-informe input[type="checkbox"]:checked'))
+        .map(function (cb) { return cb.value; });
+
+      if (seleccionados.length === 0) {
+        alert('Seleccione al menos un informe');
+        return;
+      }
+
+      // Compatibilidad con jsPDF UMD (CDN) y global
+      var ns = window.jspdf;
+      var JsPDFClass = ns && ns.jsPDF ? ns.jsPDF : window.jsPDF;
+      if (!JsPDFClass) {
+        alert('jsPDF no está cargado. Incluye el script antes de main-v2.js.');
+        return;
+      }
+      var doc = new JsPDFClass();
+      var y = 20;
+      seleccionados.forEach(function (tipo) {
+        doc.text('Informe: ' + tipo, 20, y);
+        y += 10;
+      });
+      doc.save('informe-seleccionado.pdf');
+      document.querySelectorAll('#menu-informe input[type="checkbox"]').forEach(function (cb) { cb.checked = false; });
+      ocultarMenuInforme();
+      mostrarCampoCorreo();
+    });
+  }
+
+  // 📄 Utilidades
+  function ocultarMenuInforme() {
+    var menu = document.getElementById('menu-informe');
+    if (menu) menu.style.display = 'none';
+  }
+
+  function mostrarCampoCorreo() {
+    var envio = document.getElementById('envio-informe');
+    if (!envio) {
+      envio = document.createElement('div');
+      envio.id = 'envio-informe';
+      envio.innerHTML =
+        '<label>Escriba el correo para enviar informe:</label>' +
+        '<input type="email" id="correo-destino" placeholder="ejemplo@dominio.com">' +
+        '<button id="btn-enviar">Enviar</button>';
+      document.body.appendChild(envio);
+    }
+    envio.style.display = 'block';
+  }
+; // cierre correcto
+
+
+  // ✅ Detectar si la app ya está instalada
+if (window.matchMedia("(display-mode: standalone)").matches) {
+  const installBtn = document.getElementById("btn-instalar");
+  if (installBtn) {
+    installBtn.innerHTML = "✅ Ya instalada";
+    installBtn.disabled = true;
+    installBtn.style.backgroundColor = "#4CAF50";
+    installBtn.style.cursor = "default";
+    installBtn.classList.add("instalada");
+  }
+}
+
+// ✅ Instalación de la PWA
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  const installBtn = document.getElementById("btn-instalar");
+  if (installBtn) {
+    installBtn.style.display = "inline-block";
+
+    installBtn.addEventListener("click", () => {
+      deferredPrompt.prompt();
+
+      deferredPrompt.userChoice.then(choice => {
+        if (choice.outcome === "accepted") {
+          console.log("✅ Dashboard Aguero-PCI instalado");
+          installBtn.innerHTML = "✅ Ya instalada";
+          installBtn.disabled = true;
+          installBtn.style.backgroundColor = "#4CAF50";
+          installBtn.style.cursor = "default";
+        }
+        deferredPrompt = null;
+      });
+    });
+  }
+});
+
+// ✅ Ocultar el botón si la app se instala desde otro método
+window.addEventListener("appinstalled", () => {
+  const installBtn = document.getElementById("btn-instalar");
+  if (installBtn) {
+    installBtn.innerHTML = "✅ Ya instalada";
+    installBtn.disabled = true;
+    installBtn.style.backgroundColor = "#4CAF50";
+    installBtn.style.cursor = "default";
+  }
+  console.log("✅ Dashboard Aguero-PCI ya estaba instalado");
+});
+
+
+// 🔗 Endpoints
+const urlResumen = window.ENDPOINT_WELCOME;
+const urlLogico  = window.ENDPOINT_WELCOME;
+
+// 🔧 Normalizar texto
+const normalizar = (str) =>
+  String(str || "")
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Z0-9]/g, "")
+    .replace(/\s+/g, "")
+    .trim();
+
+// ✅ Cálculo físico global
+function calcularAvanceFisicoGlobal() {
+  const resumen = window._resumen || [];
+
+  // Filtramos solo plantas con equipos válidos y porcentajes numéricos
+  const porcentajesValidos = resumen
+    .filter(r => Number(r.total) > 0 && !isNaN(Number(r.porcentaje)))
+    .map(r => Number(r.porcentaje));
+
+  // Calculamos el promedio
+  let promedio = 0;
+  if (porcentajesValidos.length > 0) {
+    const suma = porcentajesValidos.reduce((a, b) => a + b, 0);
+    promedio = Math.round(suma / porcentajesValidos.length);
+  }
+
+  // Pintamos en el dashboard
+  const el = document.getElementById("avance-fisico-global");
+  if (el) el.textContent = `${promedio}%`;
+
+  const ld = document.getElementById("loading-fisico");
+  if (ld) ld.style.display = "none";
+
+  // Devolvemos el valor para el cálculo global
+  return promedio;
+}
+
+/// ✅ Cálculo lógico global
+function calcularAvanceLogicoGlobal(avanceLogico = window._avanceLogico || []) {
+  // Validamos que sea un array y que tenga objetos con promedio numérico
+  const porcentajesValidos = Array.isArray(avanceLogico)
+    ? avanceLogico
+        .map(p => Number(p.promedio))
+        .filter(v => !isNaN(v) && v >= 0)
+    : [];
+
+  let promedio = 0;
+  if (porcentajesValidos.length > 0) {
+    const suma = porcentajesValidos.reduce((a, b) => a + b, 0);
+    promedio = Math.round(suma / porcentajesValidos.length);
+  }
+
+  // Pintamos en el DOM
+  const el = document.getElementById("avance-logico-global");
+  if (el) el.textContent = `${promedio}%`;
+  const ld = document.getElementById("loading-logico");
+  if (ld) ld.style.display = "none";
+  return promedio;
+}
+
+function mostrarAvanceGlobal() {
+  const promedioFisico = calcularAvanceFisicoGlobal();
+  const promedioLogico = calcularAvanceLogicoGlobal();
+  const promedioGlobal = Math.round((Number(promedioFisico) + Number(promedioLogico)) / 2);
+
+  const valorGlobal = document.getElementById("avance-global-valor");
+  const simboloGlobal = document.getElementById("simbolo-global");
+
+  let color = "#e74c3c";
+  let simbolo = "🔴 Menor al 50%";
+
+  if (promedioGlobal === 0) {
+    color = "#40E0D0";
+    simbolo = "🔷 No aplica (sin equipos en esta planta)";
+  } else if (promedioGlobal === 100) {
+    color = "#2ecc71";
+    simbolo = "🟢 100% completado";
+  } else if (promedioGlobal >= 50) {
+    color = "#f39c12";
+    simbolo = "🟠 Avance medio (50–99%)";
+  }
+
+  if (valorGlobal) {
+    valorGlobal.textContent = `${promedioGlobal}%`;
+    valorGlobal.style.color = color;
+  }
+
+  if (simboloGlobal) {
+    simboloGlobal.textContent = simbolo;
+    simboloGlobal.style.color = color;
+  }
+
+  const lg = document.getElementById("loading-global");
+  if (lg) lg.style.display = "none";
+}
+
+
+// 🔥 Barras resumen (por tipo y planta en tarjetas existentes)
+function pintarBarrasResumen() {
+  const tarjetas = document.querySelectorAll(".barra-resumen");
+  if (!tarjetas || tarjetas.length === 0) return;
+  tarjetas.forEach(b => {
+    const tipoHTML = normalizar(b.dataset?.tipo);
+    const plantaHTML = normalizar(b.dataset?.planta);
+    console.log(`🧩 Pintando tarjeta: tipo=${tipoHTML}, planta=${plantaHTML}`);
+    const barra = b.querySelector("progress");
+    const texto = b.querySelector(".porcentaje");
+    if (!barra || !texto) return;
+    const filaResumen = Array.isArray(window._resumen)
+      ? window._resumen.find(r =>
+          normalizar(r.tipo) === tipoHTML &&
+          normalizar(r.planta) === plantaHTML
+        )
+      : null;
+    console.log("✅ Coincidencia encontrada:", filaResumen);
+    console.log("🧩 Debug TOTAL:", filaResumen ? filaResumen.total : "sin filaResumen");
+
+    // 🔒 Si no hay datos, mostrar "No aplica" sin barra
+    if (!filaResumen) {
+      texto.textContent = "No aplica";
+      texto.classList.add("no-aplica");
+      barra.style.display = "none";
+      return;
+    }
+
+    // ✅ Si el equipo no existe en esta planta (columna B = 0)
+if (Number(filaResumen.total) === 0) {
+  texto.textContent = "";
+  texto.classList.remove("no-aplica");
+  barra.style.display = "inline-block";
+  barra.max = 100;
+  barra.value = 100;
+  // Limpieza de clases
+  barra.classList.remove("completado", "gris", "barra-verde", "barra-naranja", "barra-roja");
+  barra.classList.add("barra-turquesa"); // ✅ clase reforzada
+  filaResumen.excluirDeMedia = true;
+  return;
+}
+
+    // ✅ Si el equipo existe pero no instalado
+    if (filaResumen.total > 0 && filaResumen.instalados === 0) {
+      texto.textContent = "0%";
+      texto.classList.remove("no-aplica");
+      barra.style.display = "inline-block";
+      barra.max = 100;
+      barra.value = 0;
+      barra.classList.remove("completado");
+      barra.style.backgroundColor = "#d3d3d3"; // gris
+      return;
+    }
+
+    // ✅ Caso normal: porcentaje válido
+    const porcentajeNum = Number(filaResumen.porcentaje);
+    const porcentaje = Math.max(0, Math.min(100, porcentajeNum));
+    barra.style.display = "inline-block";
+    barra.max = 100;
+    barra.value = porcentaje;
+    barra.classList.toggle("completado", porcentaje === 100);
+    barra.style.backgroundColor =
+      porcentaje === 0 ? "#d3d3d3" :
+      porcentaje === 100 ? "#008000" :
+      "#1e90ff";
+    texto.textContent = `${porcentaje}%`;
+    texto.classList.remove("no-aplica");
+  });
+}
+// 🧹 Eliminar tarjetas duplicadas por planta
+function limpiarTarjetasDuplicadas() {
+  const contenedor = document.getElementById("contenedor-tarjetas");
+  if (!contenedor) return;
+
+  const plantas = ["SOTANO","BAJA","PRIMERA","SEGUNDA","TERCERA","CUARTA A","CUARTA B","CUBIERTA"];
+  plantas.forEach(planta => {
+    const tarjetas = contenedor.querySelectorAll(`.tarjeta-planta[data-planta="${planta}"]`);
+    if (tarjetas.length > 1) {
+      // ✅ Mantener solo la última (más reciente)
+      for (let i = 0; i < tarjetas.length - 1; i++) {
+        tarjetas[i].remove();
+      }
+    }
+  });
+}
+// 🧱 Avance por planta (solo tarjetas físicas)
+function pintarAvancePorPlanta() {
+  const plantasFijas = ["SOTANO","BAJA","PRIMERA","SEGUNDA","TERCERA","CUARTA A","CUARTA B","CUBIERTA"];
+  const contenedorTarjetas = document.getElementById("contenedor-tarjetas");
+  if (!contenedorTarjetas) return;
+  plantasFijas.forEach(planta => {
+    const plantaNorm = normalizar(planta);
+
+    // ✅ Aquí va la línea que preguntas
+    const tarjeta = document.querySelector(`#contenedor-tarjetas .tarjeta-planta[data-planta="${planta}"]`);
+    if (!tarjeta) return;
+  const filas = (window._resumen || []).filter(r => {
+  const txt = String(r.porcentaje || "").trim().toLowerCase();
+  return normalizar(r.planta) === plantaNorm &&
+         txt !== "n/a" && txt !== "no aplica" &&
+         Number(r.total) > 0 &&
+         Number(r.instalados) <= Number(r.total) &&
+         !(Number(r.total) === 1 && Number(r.instalados) === 0); // ← turquesa
+});
+     const sumaInstalados = filas.reduce((acc, r) => acc + Number(r.instalados || 0), 0);
+    const sumaTotal      = filas.reduce((acc, r) => acc + Number(r.total || 0), 0);
+    const promedio = sumaTotal > 0
+      ? Math.round((sumaInstalados / sumaTotal) * 100)
+      : 0;
+    let indicador = tarjeta.querySelector(".indicador-planta");
+    if (!indicador) {
+      indicador = document.createElement("div");
+      indicador.className = "indicador-planta";
+      tarjeta.insertBefore(indicador, tarjeta.firstChild);
+    }
+    indicador.textContent = `Avance planta: ${promedio}%`;
+    const color = promedio === 100 ? "green" : promedio >= 50 ? "orange" : "red";
+    tarjeta.style.borderLeft = `6px solid ${color}`;
+  });
+}
+
+// 📥 Cargar datos físicos
+fetch(urlResumen)
+  .then(res => res.json())
+  .then(data => {
+    // Validamos que existan las claves
+    const equipos = data.equipos || [];
+    const resumen = data.resumen || [];
+    const promedios = data.promedios || [];
+
+    // Asignamos a window
+    window._equipos = equipos;
+    window._resumen = resumen;
+   window._avanceLogico = data.promedios || data.avanceLogico || [];
+
+
+    // Logs de validación
+    console.log("Equipos cargados:", window._equipos);
+    console.log("Resumen completo:", window._resumen);
+    console.log("Promedios (avance lógico):", window._avanceLogico);
+
+    // Calculamos y pintamos globales
+    const fisico = calcularAvanceFisicoGlobal();   // → 68
+    const logico = calcularAvanceLogicoGlobal();   // → 57
+    mostrarAvanceGlobal();                         // → 63
+
+    // ✅ Limpieza de duplicados antes de pintar
+    limpiarTarjetasDuplicadas();
+    // UI dependiente de datos
+    pintarBarrasResumen();
+    pintarAvancePorPlanta();
+    calcularAvanceFisicoGlobal(); // ✅ usa window._resumen internamente
+
+    // Parte física (barras por fase)
+    document.querySelectorAll(".fase").forEach(fase => {
+      const tipo = normalizar(fase.dataset.tipo);
+      const planta = normalizar(fase.dataset.planta);
+      const barra = fase.querySelector("progress");
+      const texto = fase.querySelector(".porcentaje");
+
+      // Forzar 100% para LAZO
+      if (tipo === "LAZO") {
+        if (barra) {
+          barra.max = 6;
+          barra.value = 6;
+          barra.classList.add("completado");
+          barra.style.display = "inline-block";
+        }
+        if (texto) {
+          texto.textContent = "100%";
+          texto.classList.remove("no-aplica");
+        }
+        return;
+      }
+
+      // Buscar fila en resumen
+      const filaResumen = window._resumen.find(r =>
+        normalizar(r.tipo) === tipo &&
+        normalizar(r.planta) === planta
+      );
+
+      // Si no hay fila resumen, intentar calcular por equipos
+      if (!filaResumen) {
+        const filtrados = window._equipos.filter(e =>
+          normalizar(e.points_type) === tipo &&
+          normalizar(e.planta) === planta
+        );
+        const instalados = filtrados.filter(e =>
+          ["INSTALADO", "VERIFICADO", "PROBADO"].includes(normalizar(e.comment))
+        );
+        const total = filtrados.length;
+        const hechos = instalados.length;
+        if (total === 0) {
+          if (texto) {
+            texto.textContent = "No aplica";
+            texto.classList.add("no-aplica");
+          }
+          if (barra) {
+            barra.style.display = "none";
+            barra.classList.remove("completado", "barra-verde", "barra-naranja", "barra-roja", "barra-gris");
+          }
+          return;
+        }
+        const porcentaje = Math.round((hechos / total) * 100);
+        if (barra) {
+          barra.max = total;
+          barra.value = hechos;
+          barra.style.display = "inline-block";
+          barra.classList.toggle("completado", porcentaje === 100);
+        }
+        if (texto) {
+          texto.textContent = `${porcentaje}%`;
+          texto.classList.remove("no-aplica");
+        }
+        return;
+      }
+
+      // Sí hay fila resumen: tratar No aplica y pintar normal
+      const porcentajeTxt = String(filaResumen.porcentaje || "").trim().toLowerCase();
+      const esNoAplica = porcentajeTxt === "n/a" || porcentajeTxt === "no aplica" || Number(filaResumen.total) === 0;
+      if (esNoAplica) {
+        if (texto) {
+          texto.textContent = "No aplica";
+          texto.classList.add("no-aplica");
+        }
+        if (barra) {
+          barra.value = 0;
+          barra.style.display = "none";
+          barra.classList.remove("completado", "barra-verde", "barra-naranja", "barra-roja", "barra-gris");
+        }
+        return;
+      }
+      const total = Number(filaResumen.total || 0);
+      const porcentaje = Number(filaResumen.porcentaje || 0);
+      const hechos = Math.round((porcentaje / 100) * total);
+      if (barra) {
+        barra.max = total;
+        barra.value = hechos;
+        barra.style.display = "inline-block";
+        barra.classList.remove("completado", "barra-verde", "barra-naranja", "barra-roja", "barra-gris");
+        if (porcentaje === 100) barra.classList.add("completado", "barra-verde");
+        else if (porcentaje >= 50) barra.classList.add("barra-naranja");
+        else barra.classList.add("barra-roja");
+      }
+      if (texto) {
+        texto.textContent = `${porcentaje}%`;
+        texto.classList.remove("no-aplica");
+      }
+    });
+
+    // ✅ Mostrar global después de cargar físico
+    mostrarAvanceGlobal();
+  })
+  .catch(err => {
+    console.error("❌ Error al cargar datos físicos:", err);
+  });
+
+
+// 📥 Cargar avance lógico por planta
+fetch(urlLogico)
+  .then(res => res.json())
+  .then(data => {
+    window._avanceLogico = data.avanceLogico || [];
+    const avanceLogico = window._avanceLogico;
+    const seccionLogica = document.getElementById("avance-logico");
+    if (seccionLogica) seccionLogica.innerHTML = "";
+
+    // Calcular global lógico
+    calcularAvanceLogicoGlobal(avanceLogico);
+
+    // Pintar tarjetas de avance lógico
+    avanceLogico.forEach(planta => {
+      const tarjeta = document.createElement("div");
+      tarjeta.className = "tarjeta-planta";
+      tarjeta.setAttribute("data-planta", planta.planta);
+
+      // ✅ Indicador de avance lógico por planta (encabezado)
+      const indicador = document.createElement("div");
+      indicador.className = "indicador-planta";
+      indicador.textContent = `Avance lógico: ${planta.promedio}%`;
+      tarjeta.appendChild(indicador);
+
+      const titulo = document.createElement("h3");
+      titulo.textContent = `Planta: ${planta.planta}`;
+      tarjeta.appendChild(titulo);
+
+      Object.entries(planta.fases).forEach(([fase, valor]) => {
+        const grupo = document.createElement("div");
+        grupo.className = "grupo-fase";
+
+        const etiqueta = document.createElement("span");
+        etiqueta.textContent = fase;
+
+        const barra = document.createElement("progress");
+        barra.max = 100;
+
+        const valorTxt = String(valor || "").trim().toLowerCase();
+        const valorNumerico = Number(valor);
+
+        const texto = document.createElement("span");
+        texto.className = "porcentaje";
+
+        if (valorTxt === "n/a" || valorTxt === "no aplica" || Number.isNaN(valorNumerico)) {
+          texto.textContent = "No aplica";
+          barra.style.display = "none";
+        } else {
+          barra.value = valorNumerico;
+          texto.textContent = `${valorNumerico}%`;
+
+          // ✅ Colores corregidos para barras lógicas
+          if (valorNumerico === 100) {
+            barra.classList.add("barra-verde");
+          } else if (valorNumerico >= 50) {
+            barra.classList.add("barra-naranja");
+          } else if (valorNumerico > 0) {
+            barra.classList.add("barra-roja");
+          } else {
+            barra.classList.add("barra-gris");
+          }
+        }
+
+        grupo.appendChild(etiqueta);
+        grupo.appendChild(barra);
+        grupo.appendChild(texto);
+        tarjeta.appendChild(grupo);
+      });
+
+      // ✅ Borde lateral según avance lógico global
+      if (planta.promedio === 100) {
+        tarjeta.style.borderLeft = "6px solid #2ecc71"; // verde
+      } else if (planta.promedio >= 50) {
+        tarjeta.style.borderLeft = "6px solid #ff9800"; // naranja
+      } else {
+        tarjeta.style.borderLeft = "6px solid #f44336"; // rojo
+      }
+
+      if (seccionLogica) seccionLogica.appendChild(tarjeta);
+    });
+    
+    // ✅ Mostrar global después de cargar lógico
+    mostrarAvanceGlobal();
+  })
+  .catch(err => {
+    console.error("❌ Error al cargar avance lógico por planta:", err);
+  });
+
+
+// ---------------------------------------------------------
+// 🔥 BLOQUE DE NAVEGACIÓN DE USUARIOS
+// ---------------------------------------------------------
+
+function ocultarTodo() {
+  document.getElementById("formularioUsuario")?.classList.add("oculto");
+  document.getElementById("panel-tareas")?.classList.add("oculto");
+  document.getElementById("formularioTarea")?.classList.add("oculto");
+  document.getElementById("panel-proyecto")?.classList.add("oculto");
+}
+
+function ocultarPanelUsuarios() {
+  document.getElementById("panel-usuarios")?.classList.add("oculto");
+}
+
+function mostrarPanelUsuarios() {
+  ocultarTodo();
+  document.getElementById("panel-usuarios")?.classList.remove("oculto");
+  document.getElementById("btnGuardarUsuario").onclick = guardarUsuario;
+
+  document.getElementById("btnCrearUsuario")?.classList.remove("oculto");
+  document.getElementById("btnCrearTarea")?.classList.remove("oculto");
+
+  pintarListaUsuarios();
+}
+
+// ---------------------------------------------------------
+// 🔥 DATOS INICIALES
+// ---------------------------------------------------------
+
+window._usuarios = [
+  { nombre: "César", rol: "Admin", obras: ["Hotel Welcome II"], permisos: [] },
+  { nombre: "Laura", rol: "Técnico", obras: ["Tarancón", "Meliá Atocha"], permisos: [] },
+  { nombre: "David", rol: "Supervisor", obras: ["Hotel Welcome II"], permisos: [] }
+];
+
+window._tareas = [
+  { descripcion: "Revisar central PCI", responsable: "César" },
+  { descripcion: "Actualizar planos", responsable: "Laura" },
+  { descripcion: "Validar sensores", responsable: "David" }
+];
+
+window._obras = ["Hotel Welcome II", "Tarancón", "Meliá Atocha"];
+
+// ---------------------------------------------------------
+// 🔥 FUNCIÓN PARA PINTAR USUARIOS (CORREGIDA)
+// ---------------------------------------------------------
+
+function pintarListaUsuarios() {
+  const contenedor = document.getElementById("listaUsuarios");
+  if (!contenedor) return;
+
+  const usuarios = window._usuarios || [];
+  const tareas = window._tareas || [];
+
+  contenedor.innerHTML = "";
+
+  usuarios.forEach(usuario => {
+    const div = document.createElement("div");
+    div.className = "tarjeta-usuario";
+
+    const nombre = usuario.nombre || "Sin nombre";
+    const rol = usuario.rol || "Sin rol";
+    const obras = Array.isArray(usuario.obras) ? usuario.obras.join(", ") : "Sin obras";
+
+    const tareasAsignadas = tareas.filter(t => t.responsable === nombre);
+    const tareasTexto = tareasAsignadas.length > 0
+      ? tareasAsignadas.map(t => `• ${t.descripcion}`).join("<br>")
+      : "Sin tareas asignadas";
+
+    div.innerHTML = `
+      <h3>${nombre}</h3>
+      <p><strong>Rol:</strong> ${rol}</p>
+      <p><strong>Obras asignadas:</strong> ${obras}</p>
+      <p><strong>Tareas asignadas:</strong><br>${tareasTexto}</p>
+
+      <button class="btn-tarea btn-editar" onclick="editarUsuario('${nombre}')">✏️ Editar</button>
+      <button class="btn-tarea btn-eliminar" onclick="eliminarUsuario('${nombre}')">🗑️ Eliminar</button>
+    `;
+
+    contenedor.appendChild(div);
+  });
+}
+// ---------------------------------------------------------
+// 📌 MOSTRAR MIS TAREAS ASIGNADAS (CON DURACIÓN)
+// ---------------------------------------------------------
+function mostrarMisTareas(nombreUsuario) {
+  const contenedor = document.getElementById("listaTareas");
+  if (!contenedor) return;
+
+  const tareas = JSON.parse(localStorage.getItem("tareas")) || [];
+
+  const misTareas = tareas.filter(t => t.responsable === nombreUsuario);
+
+  const pendientes = misTareas.filter(t => t.estado !== "completada");
+  const completadas = misTareas.filter(t => t.estado === "completada");
+
+  let html = "";
+
+  // -------------------------
+  // 🟡 TAREAS PENDIENTES
+  // -------------------------
+  html += `<h3>Pendientes</h3>`;
+
+  if (pendientes.length === 0) {
+    html += `<p><em>No tienes tareas pendientes</em></p>`;
+  } else {
+    pendientes.forEach(t => {
+      html += `
+        <div class="item-tarea">
+          <p><strong>${t.descripcion}</strong></p>
+          <p>📍 Obra: ${t.obra}</p>
+          <p>📅 Inicio: ${t.fechaInicio ? new Date(t.fechaInicio).toLocaleString() : "—"}</p>
+          <p>⏳ Límite: ${t.fechaLimite}</p>
+
+          <div class="acciones-tarea">
+            <button class="btn-tarea btn-completar" onclick="completarTarea('${t.id}')">✔ Completar</button>
+            <button class="btn-tarea btn-eliminar" onclick="eliminarTarea('${t.id}')">🗑 Eliminar</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // -------------------------
+  // 🟢 TAREAS COMPLETADAS
+  // -------------------------
+  html += `<h3>Completadas</h3>`;
+
+  if (completadas.length === 0) {
+    html += `<p><em>No tienes tareas completadas</em></p>`;
+  } else {
+    completadas.forEach(t => {
+      let duracionTexto = "";
+
+      if (t.fechaInicio && t.fechaFin) {
+        const inicio = new Date(t.fechaInicio);
+        const fin = new Date(t.fechaFin);
+        const diffMs = fin - inicio;
+
+        const horas = Math.round(diffMs / (1000 * 60 * 60));
+        const dias = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+        duracionTexto = `<p class="duracion">⏱ Duración: ${dias} días (${horas} horas)</p>`;
+      }
+
+      html += `
+        <div class="item-tarea completada">
+          <p><strong>${t.descripcion}</strong></p>
+          <p>📍 Obra: ${t.obra}</p>
+          <p>📅 Inicio: ${t.fechaInicio ? new Date(t.fechaInicio).toLocaleString() : "—"}</p>
+          <p>🏁 Fin: ${t.fechaFin ? new Date(t.fechaFin).toLocaleString() : "—"}</p>
+          ${duracionTexto}
+
+          <div class="acciones-tarea">
+            <button class="btn-tarea btn-eliminar" onclick="eliminarTarea('${t.id}')">🗑 Eliminar</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  contenedor.innerHTML = html;
+}
+
+// ---------------------------------------------------------
+// ✏️ FUNCIÓN PARA EDITAR USUARIO (VERSIÓN FINAL)
+// ---------------------------------------------------------
+
+function editarUsuario(nombre) {
+  const usuario = window._usuarios.find(u => u.nombre === nombre);
+  if (!usuario) {
+    alert("Usuario no encontrado: " + nombre);
+    return;
+  }
+
+  // Guardamos referencia para saber que estamos editando
+  window._usuarioEditando = usuario;
+
+  // Cargar roles en el <select>
+  cargarRolesEnFormulario();
+
+  // Cargar permisos dinámicamente y marcar los del usuario
+  generarCheckboxPermisos("checkboxPermisos", usuario.permisos);
+
+  // Cargar obras dinámicamente (solo una función, la oficial)
+  cargarObrasEnFormulario();
+
+  // Marcar obras asignadas al usuario
+  document.querySelectorAll("#checkboxObras input[type='checkbox']").forEach(chk => {
+    chk.checked = usuario.obras?.includes(chk.value) || false;
+  });
+
+  // Rellenar campos del formulario
+  document.getElementById("tituloFormulario").textContent = "Editar Usuario";
+  document.getElementById("inputNombreUsuario").value = usuario.nombre || "";
+  document.getElementById("selectRolUsuario").value = usuario.rol || "";
+  document.getElementById("inputClaveUsuario").value = usuario.clave || "";
+  document.getElementById("inputCorreoUsuario").value = usuario.correo || "";
+
+  // Mostrar formulario
+  document.getElementById("formularioUsuario").classList.remove("oculto");
+  document.getElementById("formularioUsuario").scrollIntoView({ behavior: "smooth" });
+
+  // Asegurar que el botón guardar llama a guardarUsuario()
+  document.getElementById("btnGuardarUsuario").onclick = guardarUsuario;
+}
+// ---------------------------------------------------------
+// ➕ FUNCIÓN PARA MOSTRAR FORMULARIO DE CREAR USUARIO
+// ---------------------------------------------------------
+
+function mostrarFormularioCrearUsuario() {
+
+  // Indicamos que NO estamos editando, sino creando
+  window._usuarioEditando = null;
+
+  // Cargar roles en el select
+  cargarRolesEnFormulario();
+
+  // Cargar permisos (vacíos)
+  generarCheckboxPermisos("checkboxPermisos", []);
+
+  // Cargar obras
+  cargarObrasEnFormulario();
+
+  // Limpiar campos del formulario
+  document.getElementById("tituloFormulario").textContent = "Crear Usuario";
+  document.getElementById("inputNombreUsuario").value = "";
+  document.getElementById("selectRolUsuario").value = "";
+  document.getElementById("inputClaveUsuario").value = "";
+  document.getElementById("inputCorreoUsuario").value = "";
+
+  // Desmarcar permisos y obras
+  document.querySelectorAll("#checkboxPermisos input[type='checkbox']").forEach(chk => chk.checked = false);
+  document.querySelectorAll("#checkboxObras input[type='checkbox']").forEach(chk => chk.checked = false);
+
+  // Mostrar formulario
+  document.getElementById("formularioUsuario").classList.remove("oculto");
+  document.getElementById("formularioUsuario").scrollIntoView({ behavior: "smooth" });
+
+  // Asegurar que el botón guardar llama a guardarUsuario()
+  document.getElementById("btnGuardarUsuario").onclick = guardarUsuario;
+}
+
+
+// ---------------------------------------------------------
+// 💾 FUNCIÓN PARA GUARDAR USUARIO (ACTUALIZADA COMPLETA)
+// ---------------------------------------------------------
+function guardarUsuario() {
+  const nombre = document.getElementById("inputNombreUsuario").value.trim();
+  const rol = document.getElementById("selectRolUsuario").value;
+  const clave = document.getElementById("inputClaveUsuario").value.trim();
+  const correo = document.getElementById("inputCorreoUsuario").value.trim();
+
+  if (!nombre || !rol) {
+    alert("El nombre y el rol son obligatorios");
+    return;
+  }
+
+  if (!clave) {
+    alert("La clave es obligatoria");
+    return;
+  }
+
+  // Obtener permisos
+  const permisos = [];
+  document.querySelectorAll("#checkboxPermisos input[type='checkbox']").forEach(chk => {
+    if (chk.checked) permisos.push(chk.value);
+  });
+
+  // Obtener obras
+  const obras = [];
+  document.querySelectorAll("#checkboxObras input[type='checkbox']").forEach(chk => {
+    if (chk.checked) obras.push(chk.value);
+  });
+
+  // Si estamos editando un usuario existente
+  if (window._usuarioEditando) {
+    window._usuarioEditando.nombre = nombre;
+    window._usuarioEditando.rol = rol;
+    window._usuarioEditando.permisos = permisos;
+    window._usuarioEditando.obras = obras;
+    window._usuarioEditando.clave = clave;
+    window._usuarioEditando.correo = correo;
+
+    window._usuarioEditando = null; // limpiar referencia
+  } 
+  else {
+    // Crear usuario nuevo
+    window._usuarios.push({
+      nombre,
+      rol,
+      permisos,
+      obras,
+      clave,
+      correo
+    });
+  }
+
+  // Guardar en localStorage
+  localStorage.setItem("usuariosPCI", JSON.stringify(window._usuarios));
+
+
+  // Actualizar lista
+  pintarListaUsuarios();
+
+  // Ocultar formulario
+  document.getElementById("formularioUsuario").classList.add("oculto");
+
+  // Limpiar formulario
+  document.getElementById("inputNombreUsuario").value = "";
+  document.getElementById("selectRolUsuario").value = "";
+  document.getElementById("inputClaveUsuario").value = "";
+  document.getElementById("inputCorreoUsuario").value = "";
+  document.querySelectorAll("#checkboxPermisos input[type='checkbox']").forEach(chk => chk.checked = false);
+  document.querySelectorAll("#checkboxObras input[type='checkbox']").forEach(chk => chk.checked = false);
+}
+
+
+// ---------------------------------------------------------
+// 🗑️ FUNCIÓN PARA ELIMINAR USUARIO
+// ---------------------------------------------------------
+
+function eliminarUsuario(nombre) {
+  if (!confirm(`¿Seguro que deseas eliminar a ${nombre}?`)) return;
+
+  window._usuarios = window._usuarios.filter(u => u.nombre !== nombre);
+  localStorage.setItem("usuarios", JSON.stringify(window._usuarios));
+
+  pintarListaUsuarios();
+}
+
+// ---------------------------------------------------------
+// 📋 FUNCIÓN PARA MOSTRAR ASIGNACIÓN DE TAREAS (CON DURACIÓN)
+// ---------------------------------------------------------
+function mostrarAsignacionDeTareas() {
+  const contenedor = document.getElementById("listaAsignacionTareas");
+  if (!contenedor) return;
+
+  contenedor.innerHTML = "";
+
+  const usuarios = window._usuarios || [];
+  const tareas = JSON.parse(localStorage.getItem("tareas")) || [];
+
+  usuarios.forEach(usuario => {
+    const tareasUsuario = tareas.filter(t => t.responsable === usuario.nombre);
+
+    const pendientes = tareasUsuario.filter(t => t.estado !== "completada");
+    const completadas = tareasUsuario.filter(t => t.estado === "completada");
+
+    const div = document.createElement("div");
+    div.className = "tarjeta-asignacion";
+
+    const obras = Array.isArray(usuario.obras)
+      ? usuario.obras.join(", ")
+      : "Sin obras";
+
+    div.innerHTML = `
+      <h3>${usuario.nombre}</h3>
+      <p><strong>Obras asignadas:</strong> ${obras}</p>
+
+      <p><strong>Pendientes:</strong></p>
+      <div class="lista-pendientes">
+        ${
+          pendientes.length > 0
+            ? pendientes
+                .map(t => `
+          <div class="item-tarea">
+            <span>• ${t.descripcion} (${t.obra})</span>
+            <p class="fecha-info">📅 Inicio: ${t.fechaInicio ? new Date(t.fechaInicio).toLocaleString() : "—"}</p>
+            <p class="fecha-info">⏳ Límite: ${t.fechaLimite}</p>
+
+            <div class="acciones-tarea">
+              <button class="btn-tarea btn-completar" onclick="completarTarea('${t.id}')">✓</button>
+              <button class="btn-tarea btn-editar" onclick="editarTarea('${t.id}')">✏️</button>
+              <button class="btn-tarea btn-eliminar" onclick="eliminarTarea('${t.id}')">🗑</button>
+            </div>
+          </div>
+        `)
+                .join("")
+            : "<em>Sin tareas pendientes</em>"
+        }
+      </div>
+
+      <p><strong>Completadas:</strong></p>
+      <div class="lista-completadas">
+        ${
+          completadas.length > 0
+            ? completadas
+                .map(t => {
+                  let duracionTexto = "";
+
+                  if (t.fechaInicio && t.fechaFin) {
+                    const inicio = new Date(t.fechaInicio);
+                    const fin = new Date(t.fechaFin);
+                    const diffMs = fin - inicio;
+
+                    const horas = Math.round(diffMs / (1000 * 60 * 60));
+                    const dias = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+                    duracionTexto = `<p class="duracion">⏱ Duración: ${dias} días (${horas} horas)</p>`;
+                  }
+
+                  return `
+          <div class="item-tarea completada">
+            <span>✔️ ${t.descripcion} (${t.obra})</span>
+            <p class="fecha-info">📅 Inicio: ${t.fechaInicio ? new Date(t.fechaInicio).toLocaleString() : "—"}</p>
+            <p class="fecha-info">🏁 Fin: ${t.fechaFin ? new Date(t.fechaFin).toLocaleString() : "—"}</p>
+            ${duracionTexto}
+
+            <div class="acciones-tarea">
+              <button class="btn-tarea btn-editar" onclick="editarTarea('${t.id}')">✏️</button>
+              <button class="btn-tarea btn-eliminar" onclick="eliminarTarea('${t.id}')">🗑</button>
+            </div>
+          </div>
+        `;
+                })
+                .join("")
+            : "<em>Sin tareas completadas</em>"
+        }
+      </div>
+    `;
+
+    contenedor.appendChild(div);
+  });
+}
+
+
+// ---------------------------------------------------------
+// ✔ COMPLETAR TAREA (CON FECHA FIN Y DURACIÓN)
+// ---------------------------------------------------------
+function completarTarea(id) {
+  let tareas = JSON.parse(localStorage.getItem("tareas")) || [];
+
+  const tarea = tareas.find(t => t.id === id);
+  if (!tarea) return;
+
+  tarea.estado = "completada";
+  tarea.fechaFin = new Date().toISOString();   // ⭐ NUEVO: fecha de finalización
+
+  // ⭐ Cálculo de duración (en horas y días)
+  if (tarea.fechaInicio) {
+    const inicio = new Date(tarea.fechaInicio);
+    const fin = new Date(tarea.fechaFin);
+
+    const diffMs = fin - inicio;
+    tarea.duracionHoras = Math.round(diffMs / (1000 * 60 * 60));
+    tarea.duracionDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
+  }
+
+  localStorage.setItem("tareas", JSON.stringify(tareas));
+
+  // Actualizar paneles
+  mostrarAsignacionDeTareas();
+  pintarListaUsuarios();
+}
+
+
+// ---------------------------------------------------------
+// 🗑 ELIMINAR TAREA (CORREGIDO)
+// ---------------------------------------------------------
+function eliminarTarea(id) {
+  let tareas = JSON.parse(localStorage.getItem("tareas")) || [];
+
+  tareas = tareas.filter(t => t.id !== id);
+
+  localStorage.setItem("tareas", JSON.stringify(tareas));
+
+  // Actualizar panel
+  mostrarAsignacionDeTareas();
+  pintarListaUsuarios(); // 🔥 Para que desaparezca también en Gestión de Usuarios
+}
+
+// ---------------------------------------------------------
+// ✏️ EDITAR TAREA (VERSIÓN FINAL ROBUSTA)
+// ---------------------------------------------------------
+function editarTarea(id) {
+  const tareas = JSON.parse(localStorage.getItem("tareas")) || [];
+  const tarea = tareas.find(t => t.id === id);
+  if (!tarea) return;
+
+  // Guardamos referencia para el guardado posterior
+  window._tareaEditando = tarea;
+
+  // 1. Recargar obras y usuarios
+  cargarObrasDesdeProyectosPCI();
+  cargarUsuarios();
+
+  // 2. Rellenar selects actualizados
+  cargarObrasEnFormularioTarea();
+  cargarResponsablesEnFormularioTarea();
+
+  // 2.1 Asegurar que la obra existe en el select
+  const selectObra = document.getElementById("selectObraTarea");
+  if (![...selectObra.options].some(opt => opt.value === tarea.obra)) {
+    const opt = document.createElement("option");
+    opt.value = tarea.obra;
+    opt.textContent = tarea.obra + " (no registrada)";
+    selectObra.appendChild(opt);
+  }
+
+  // 2.2 Asegurar que el responsable existe en el select
+  const selectResp = document.getElementById("selectResponsableTarea");
+  if (![...selectResp.options].some(opt => opt.value === tarea.responsable)) {
+    const opt = document.createElement("option");
+    opt.value = tarea.responsable;
+    opt.textContent = tarea.responsable + " (no registrado)";
+    selectResp.appendChild(opt);
+  }
+
+  // 3. Rellenar formulario
+  document.getElementById("inputDescripcionTarea").value = tarea.descripcion;
+  selectObra.value = tarea.obra;
+  selectResp.value = tarea.responsable;
+  document.getElementById("inputFechaLimiteTarea").value = tarea.fechaLimite || "";
+
+  // 4. Mostrar formulario
+  document.getElementById("formularioTarea").classList.remove("oculto");
+  document.getElementById("formularioTarea").scrollIntoView({ behavior: "smooth" });
+}
+
+
+// ---------------------------------------------------------
+// 💾 GUARDAR TAREA (crear o editar) — CORREGIDO
+// ---------------------------------------------------------
+document.getElementById("btnGuardarTarea")?.addEventListener("click", () => {
+  let tareas = JSON.parse(localStorage.getItem("tareas")) || [];
+
+  const descripcion = document.getElementById("inputDescripcionTarea").value.trim();
+  const obra = document.getElementById("selectObraTarea").value;
+  const responsable = document.getElementById("selectResponsableTarea").value;
+  const fechaLimite = document.getElementById("inputFechaLimiteTarea").value;
+
+  if (!descripcion || !obra || !responsable) {
+    alert("Todos los campos son obligatorios");
+    return;
+  }
+
+ // ---------------------------------------------------------
+// ✏️ EDITAR TAREA EXISTENTE (VERSIÓN ROBUSTA)
+// ---------------------------------------------------------
+if (window._tareaEditando) {
+
+  const idEditar = window._tareaEditando.id;
+  const index = tareas.findIndex(t => t.id === idEditar);
+
+  if (index !== -1) {
+    tareas[index] = {
+      ...tareas[index],          // Mantener datos previos (incluye fechaInicio)
+      descripcion,
+      obra,
+      responsable,
+      fechaLimite,
+      fechaModificacion: new Date().toISOString()
+    };
+  } else {
+    console.warn("⚠ La tarea a editar ya no existe en localStorage.");
+  }
+
+  window._tareaEditando = null;
+}
+
+
+// ---------------------------------------------------------
+// ➕ CREAR NUEVA TAREA (CON FECHA DE INICIO)
+// ---------------------------------------------------------
+else {
+  const ahora = new Date().toISOString();
+
+  const nuevaTarea = {
+    id: "t_" + Date.now(),
+    descripcion,
+    obra,
+    responsable,
+    fechaLimite,
+    estado: "pendiente",
+    fechaInicio: ahora,          // ⭐ NUEVO: fecha en que empieza la tarea
+    fechaCreacion: ahora         // (puedes mantenerlo si lo usas en otro sitio)
+  };
+
+  tareas.push(nuevaTarea);
+}
+
+
+  // ---------------------------------------------------------
+  // 💾 GUARDAR EN LOCALSTORAGE
+  // ---------------------------------------------------------
+  localStorage.setItem("tareas", JSON.stringify(tareas));
+
+  // ---------------------------------------------------------
+  // 🔒 CERRAR FORMULARIO
+  // ---------------------------------------------------------
+  document.getElementById("formularioTarea").classList.add("oculto");
+
+  // ---------------------------------------------------------
+  // 🔄 ACTUALIZAR PANELES
+  // ---------------------------------------------------------
+  mostrarAsignacionDeTareas();  // Panel de asignación
+  pintarListaUsuarios();        // Gestión de usuarios
+});
+
+    
+// ---------------------------------------------------------
+// ❌ FUNCIÓN PARA OCULTAR Y LIMPIAR PANEL DE ASIGNACIÓN
+// ---------------------------------------------------------
+function cerrarPanelAsignacionTareas() {
+  const panel = document.getElementById("panelAsignacionTareas");
+  const lista = document.getElementById("listaAsignacionTareas");
+
+  if (panel) panel.classList.add("oculto");
+  if (lista) lista.innerHTML = ""; // Limpia contenido
+}
+
+// ---------------------------------------------------------
+// 🔥 FUNCIONES PARA CARGAR SELECTS (OBRAS Y RESPONSABLES)
+// ---------------------------------------------------------
+
+function cargarObrasEnFormularioTarea() {
+  const select = document.getElementById("selectObraTarea");
+  if (!select) return;
+
+  select.innerHTML = "";
+
+  const obras = window._obras || [];
+
+  obras.forEach(obra => {
+    const option = document.createElement("option");
+    option.value = obra;
+    option.textContent = obra;
+    select.appendChild(option);
+  });
+}
+
+function cargarResponsablesEnFormularioTarea() {
+  const select = document.getElementById("selectResponsableTarea");
+  if (!select) return;
+
+  select.innerHTML = "";
+
+  const usuarios = window._usuarios || [];
+
+  usuarios.forEach(usuario => {
+    const option = document.createElement("option");
+    option.value = usuario.nombre;
+    option.textContent = usuario.nombre;
+    select.appendChild(option);
+  });
+}
+
+// ---------------------------------------------------------
+// 🔥 Cargar obras reales desde proyectosPCI (CORREGIDO)
+// ---------------------------------------------------------
+function cargarObrasDesdeProyectosPCI() {
+  const proyectos = JSON.parse(localStorage.getItem("proyectosPCI")) || [];
+  const obras = [];
+
+  proyectos.forEach(p => {
+    // Si el nombre es un string plano
+    if (typeof p.nombre === "string" && !obras.includes(p.nombre)) {
+      obras.push(p.nombre);
+    }
+
+    // Si el nombre es un objeto con claves dinámicas
+    if (typeof p.nombre === "object" && p.nombre !== null) {
+      Object.values(p.nombre).forEach(nombreObra => {
+        if (typeof nombreObra === "string" && !obras.includes(nombreObra)) {
+          obras.push(nombreObra);
+        }
+      });
+    }
+  });
+
+  window._obras = obras;
+}
+
+// ---------------------------------------------------------
+// 🔒 OCULTAR TODOS LOS PANELES ACTIVOS
+// ---------------------------------------------------------
+function ocultarTodo() {
+  const ids = [
+    "formularioUsuario",
+    "formularioTarea",
+    "panelAsignacionTareas",
+    "panelUsuarios",
+    "panelPrincipal",
+    "panelObras",
+    "panelDashboard",
+    "listaUsuarios",
+    "listaAsignacionTareas",
+    "listaTareas",
+    "panelResumen",
+    "panelFiltros",
+    "panelProyectos",
+    "panelConfiguracion"
+  ];
+
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("oculto");
+  });
+}
+
+// ---------------------------------------------------------
+// 🔥 LISTENERS DE BOTONES (VERSIÓN FINAL)
+// ---------------------------------------------------------
+
+// 👉 CREAR USUARIO
+document.getElementById("btnCrearUsuario")?.addEventListener("click", () => {
+  ocultarTodo();
+  window._usuarioEditando = null;
+
+  if (typeof cargarRolesEnFormulario === "function") cargarRolesEnFormulario();
+  if (typeof cargarPermisosEnFormulario === "function") cargarPermisosEnFormulario();
+  if (typeof cargarObrasEnFormulario === "function") cargarObrasEnFormulario();
+
+  document.getElementById("inputNombreUsuario").value = "";
+  document.getElementById("selectRolUsuario").value = "";
+
+  document.getElementById("formularioUsuario").classList.remove("oculto");
+  document.getElementById("formularioUsuario").scrollIntoView({ behavior: "smooth" });
+});
+
+// 👉 CANCELAR USUARIO
+document.getElementById("btnCancelarUsuario")?.addEventListener("click", () => {
+  document.getElementById("formularioUsuario")?.classList.add("oculto");
+});
+
+// 👉 CREAR TAREA
+document.getElementById("btnCrearTarea")?.addEventListener("click", () => {
+  ocultarTodo();
+  cargarObrasDesdeProyectosPCI();
+  cargarUsuarios();
+
+  cargarObrasEnFormularioTarea();
+  cargarResponsablesEnFormularioTarea();
+
+  document.getElementById("formularioTarea").classList.remove("oculto");
+  document.getElementById("formularioTarea").scrollIntoView({ behavior: "smooth" });
+});
+
+// 👉 CANCELAR TAREA
+document.getElementById("btnCancelarTarea")?.addEventListener("click", () => {
+  document.getElementById("formularioTarea")?.classList.add("oculto");
+});
+
+// 👉 ASIGNACIÓN DE TAREAS
+document.getElementById("btnAsignacionTareas")?.addEventListener("click", () => {
+  ocultarTodo();
+  cargarUsuarios();
+  mostrarAsignacionDeTareas();
+
+  document.getElementById("panelAsignacionTareas")?.classList.remove("oculto");
+  document.getElementById("listaAsignacionTareas")?.classList.remove("oculto"); // ✅ Mostrar contenido
+});
+// 👉 PANEL DE USUARIOS
+document.getElementById("btnPanelUsuarios")?.addEventListener("click", () => {
+  ocultarTodo();
+  cargarUsuarios();
+  pintarListaUsuarios();
+
+  document.getElementById("panel-usuarios")?.classList.remove("oculto");
+  document.getElementById("listaUsuarios")?.classList.remove("oculto");
+});
+
+// 👉 BOTÓN VOLVER
+document.getElementById("btnVolver")?.addEventListener("click", () => {
+  ocultarTodo();
+  document.getElementById("panel-tareas")?.classList.remove("oculto");
+});
+
+
+// ---------------------------------------------------------
+// 🚀 INICIALIZACIÓN FINAL DEL SISTEMA
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+// 👑 CREAR ADMIN AUTOMÁTICAMENTE (SOLO SI NO EXISTE)
+// ---------------------------------------------------------
+function inicializarAdmin() {
+  let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+  const existeAdmin = usuarios.some(u => u.nombre === "Admin");
+
+  if (!existeAdmin) {
+    usuarios.push({
+      nombre: "Admin",
+      rol: "Administrador",
+      permisos: [
+        "crearProyecto",
+        "borrarProyecto",
+        "modificarProyecto",
+        "verProyectos",
+        "crearTareas",
+        "verTareas",
+        "completarTareas",
+        "usuarios"
+      ],
+      obras: ["Hotel Welcome II", "Tarancón", "Meliá Atocha"],
+      clave: "1234",
+      correo: "admin@empresa.com"
+    });
+
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+    console.log("Administrador creado automáticamente.");
+  }
+}
+
+
+// ---------------------------------------------------------
+// 🚀 INICIALIZACIÓN FINAL DEL SISTEMA
+// ---------------------------------------------------------
+document.addEventListener("DOMContentLoaded", async () => {
+
+  // 🔥 Crear admin si no existe (ESTO ES LO IMPORTANTE)
+  inicializarAdmin();
+
+  if (typeof cargarRoles === "function") {
+    await cargarRoles();
+  }
+
+  // Usuarios
+  window._usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+  // Obras
+  cargarObrasDesdeProyectosPCI();
+
+  // Mostrar botones
+  ["btnPanelUsuarios", "btnCrearUsuario", "btnCrearTarea", "btnAsignacionTareas", "btnInformesTareas"].forEach(id => {
+    document.getElementById(id)?.classList.remove("oculto");
+  });
+
+  // Pintar usuarios
+  if (typeof pintarListaUsuarios === "function") {
+    pintarListaUsuarios();
+  }
+});
+document.getElementById("btnCrearUsuario").onclick = mostrarFormularioCrearUsuario;
+
+document.getElementById("btnCancelarUsuario").onclick = () => {
+  document.getElementById("formularioUsuario").classList.add("oculto");
+};
+

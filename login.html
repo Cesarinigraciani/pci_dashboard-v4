@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Iniciar Sesión</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #loginPanel {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      width: 320px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #0078ff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #005fcc;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-top: 5px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="loginPanel">
+    <h2>Iniciar sesión</h2>
+
+    <input id="loginUsuario" placeholder="Email o nombre">
+    <input id="loginClave" type="password" placeholder="Clave de acceso">
+
+    <button id="btnLogin">Entrar</button>
+
+    <p id="errorMsg" class="error"></p>
+  </div>
+
+<!-- RUTA CORREGIDA -->
+<script src="scripts/usuarios.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+    await cargarUsuarios();
+    console.log("usuariosData en login:", usuariosData);
+
+    const btn = document.getElementById("btnLogin");
+    const errorMsg = document.getElementById("errorMsg");
+
+    btn.onclick = () => {
+        const usuarioInput = document.getElementById("loginUsuario").value.trim().toLowerCase();
+        const claveInput = document.getElementById("loginClave").value.trim();
+
+        const usuario = usuariosData.find(u =>
+            u.email.toLowerCase() === usuarioInput ||
+            u.nombre.toLowerCase() === usuarioInput
+        );
+
+        console.log("Usuario encontrado:", usuario);
+        console.log("CLAVE GUARDADA:", JSON.stringify(usuario?.password));
+        console.log("CLAVE ESCRITA :", JSON.stringify(claveInput));
+
+        if (!usuario) {
+            errorMsg.textContent = "Usuario no encontrado.";
+            return;
+        }
+
+        if (usuario.password !== claveInput) {
+            errorMsg.textContent = "Clave incorrecta.";
+            return;
+        }
+
+        localStorage.setItem("usuarioActual", usuario.id);
+        // window.location.href = "index.html";
+
+    };
+});
+</script>
+
+
+</script>
+
+</body>
+</html>

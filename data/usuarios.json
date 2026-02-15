@@ -1,0 +1,19 @@
+[
+  {
+    "id": "u001",
+    "nombre": "CESAR AUGUSTO GARCIA",
+    "email": "cesarinigraciani@gmail.com",
+    "password": "Admin123#",
+    "rol": "Administrador",
+    "permisos": [
+      "crearProyecto",
+      "borrarProyecto",
+      "modificarProyecto",
+      "verProyectos",
+      "crearTareas"
+    ],
+    "obrasAsignadas": []
+  }
+]
+
+

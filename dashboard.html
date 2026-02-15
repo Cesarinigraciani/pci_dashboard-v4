@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="styles/style-v2.css">
+</head>
+
+<body>
+
+<header class="header-principal">
+  <img src="assets/img/logo-empresa.png" alt="Logo">
+  <div class="titulo-principal">
+    <h1>DASHBOARD</h1>
+    <h2 id="nombreUsuarioHeader"></h2>
+  </div>
+</header>
+
+<div class="panel-admin" id="panel-dashboard"></div>
+
+<!-- RUTAS CORREGIDAS -->
+<script src="scripts/usuarios.js"></script>
+<script src="scripts/tareas.js"></script>
+<script src="scripts/obras.js"></script>
+
+<script>
+// ===============================
+//  INICIALIZACIÓN DEL DASHBOARD
+// ===============================
+document.addEventListener("DOMContentLoaded", () => {
+    const panel = document.getElementById("panel-dashboard");
+    const usuario = getUsuarioActual();
+
+    if (!usuario) {
+        panel.innerHTML = `
+            <div class="card">
+                <h2>No hay usuario logueado</h2>
+                <button class="boton-seccion" onclick="window.location.href='index.html'">
+                    ⬅️ Volver al inicio
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    document.getElementById("nombreUsuarioHeader").textContent = usuario.nombre;
+
+    cargarDashboard(usuario);
+});
+
+
+// ===============================
+//  CARGAR DASHBOARD PRINCIPAL
+// ===============================
+function cargarDashboard(usuario) {
+    const panel = document.getElementById("panel-dashboard");
+
+    // OBRAS ASIGNADAS → AHORA USAMOS obrasPCI
+    const obras = (usuario.obrasAsignadas || [])
+        .map(id => getObraById(id))
+        .filter(o => o !== null && o !== undefined);
+
+    const tareas = obtenerTareasDeUsuario(usuario.id);
+
+    panel.innerHTML = `
+        <div class="card">
+            <h2>Obras asignadas</h2>
+            ${obras.length === 0 ? "<p>No tienes obras asignadas.</p>" : ""}
+            <ul>
+                ${
+                    obras.length > 0 
+                    ? obras.map(o => `<li><strong>${o.nombre}</strong> (${o.ciudad || "-"})</li>`).join("")
+                    : "<p>No tienes obras asignadas válidas.</p>"
+                }
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Tareas asignadas</h2>
+            ${tareas.length === 0 ? "<p>No tienes tareas asignadas.</p>" : ""}
+            <ul>
+                ${tareas.map(t => `
+                    <li>
+                        <strong>${t.titulo}</strong><br>
+                        Estado: <span>${t.estado}</span><br>
+                        Fecha inicio: ${t.fechaInicio}<br>
+                        ${t.fechaFinal ? `Fecha final: ${t.fechaFinal}` : ""}
+                        <br>
+                        ${
+                            usuario.permisos.includes("completarTareas") 
+                            ? `
+                                <select onchange="cambiarEstadoTarea('${t.id}', this.value)">
+                                    <option value="pendiente" ${t.estado === "pendiente" ? "selected" : ""}>Pendiente</option>
+                                    <option value="proceso" ${t.estado === "proceso" ? "selected" : ""}>En proceso</option>
+                                    <option value="completada" ${t.estado === "completada" ? "selected" : ""}>Completada</option>
+                                </select>
+                              `
+                            : ""
+                        }
+                    </li>
+                `).join("")}
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Acciones</h2>
+
+            <!-- BOTÓN DE RECURSOS -->
+            <button class="boton-seccion" onclick="window.location.href='recursos.html'">
+                📦 Recursos de Obra
+            </button>
+
+            ${
+                usuario.permisos.includes("crearTareas") 
+                ? `
+                    <button class="boton-seccion" onclick="window.location.href='crear_tarea.html'">
+                        📝 Crear Tarea
+                    </button>
+                  `
+                : ""
+            }
+
+            ${
+                usuario.permisos.includes("usuarios") 
+                ? `
+                    <button class="boton-seccion" onclick="cargarPanelUsuarios()">
+                        👤 Panel de Usuarios
+                    </button>
+                  `
+                : ""
+            }
+
+            ${
+                usuario.permisos.includes("crearObras") 
+                ? `
+                    <button class="boton-seccion" onclick="window.location.href='crear_obra.html'">
+                        ➕ Crear Obra
+                    </button>
+                  `
+                : ""
+            }
+
+            <button class="boton-seccion rojo" onclick="logout()">
+                ⬅️ Cerrar Sesión
+            </button>
+        </div>
+    `;
+}
+
+
+// ===============================
+//  CARGAR PANEL DE USUARIOS
+// ===============================
+function cargarPanelUsuarios() {
+    const panel = document.getElementById("panel-dashboard");
+
+    fetch("panelUsuarios.html")
+        .then(r => r.text())
+        .then(html => {
+            panel.innerHTML = html;
+
+            cargarScript("scripts/usuarios.js");
+            cargarScript("scripts/roles.js");
+            cargarScript("scripts/permisos.js");
+            cargarScript("scripts/panelUsuarios.js");
+        });
+}
+
+function cargarScript(src) {
+    const s = document.createElement("script");
+    s.src = src;
+    document.body.appendChild(s);
+}
+
+
+// ===============================
+//  LOGOUT
+// ===============================
+function logout() {
+    localStorage.removeItem("usuarioActual");
+    window.location.href = "index.html";
+}
+
+</script>
+
+</body>
+</html>

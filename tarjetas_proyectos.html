@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Obras y Tarjetas</title>
+  <link rel="stylesheet" href="styles/style-v2.css">
+
+  <style>
+    .obra-card {
+      padding: 20px;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .planta-card {
+      padding: 15px;
+      margin-top: 10px;
+      background: #f4f4f4;
+      border-radius: 8px;
+    }
+    .equipo-item {
+      background: #e9e9e9;
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 6px;
+    }
+    .btn {
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+      font-weight: bold;
+    }
+    .btn-azul { background: #0078d4; color: white; }
+    .btn-verde { background: #28a745; color: white; }
+    .btn-rojo { background: #b30000; color: white; }
+ .obra-card, 
+.planta-card, 
+.equipo-item {
+    color: #000;
+}
+
+@media (prefers-color-scheme: dark) {
+    .obra-card, 
+    .planta-card, 
+    .equipo-item {
+        background: #2b2b2b;
+        color: #fff;
+    }
+}
+
+ 
+ </style>
+</head>
+
+<body>
+
+<header class="header-principal">
+  <img src="assets/img/logo-empresa.png" alt="Logo">
+  <div class="titulo-principal">
+    <h1>Obras y Tarjetas</h1>
+    <h2>Aguero Instalaciones</h2>
+  </div>
+</header>
+
+<div class="panel-admin" id="contenedorObras"></div>
+
+<div class="panel-admin">
+  <button class="boton-seccion" onclick="window.location.href='dashboard.html'">⬅️ Volver al Dashboard</button>
+</div>
+
+<script src="scripts/obras.js"></script>
+<script src="scripts/usuarios.js"></script>
+
+<script>
+// =====================================
+// CARGAR TODAS LAS OBRAS
+// =====================================
+document.addEventListener("DOMContentLoaded", () => {
+    const obras = listarObras();
+    const cont = document.getElementById("contenedorObras");
+
+    if (obras.length === 0) {
+        cont.innerHTML = "<p>No hay obras creadas.</p>";
+        return;
+    }
+
+    obras.forEach(obra => {
+        const encargado = obtenerNombreUsuario(obra.encargado);
+
+        const div = document.createElement("div");
+        div.className = "obra-card";
+
+        div.innerHTML = `
+            <h2>${obra.nombre}</h2>
+            <p><strong>Dirección:</strong> ${obra.direccion}</p>
+            <p><strong>Ciudad:</strong> ${obra.ciudad}</p>
+            <p><strong>Encargado:</strong> ${encargado}</p>
+            <p><strong>Horas estimadas:</strong> ${obra.horasEstimadas}</p>
+
+            <button class="btn btn-azul" onclick="mostrarTarjetas('${obra.id}')">📄 Ver Tarjetas</button>
+            <button class="btn btn-verde" onclick="window.location.href='modificar_obra.html?id=${obra.id}'">✏️ Editar Obra</button>
+            <button class="btn btn-azul" onclick="window.location.href='dashboard_dinamico.html?id=${obra.id}'">📊 Dashboard</button>
+            <button class="btn btn-azul" onclick="window.location.href='recursos.html'">📦 Recursos</button>
+
+            <div id="tarjetas_${obra.id}" style="margin-top:20px;"></div>
+        `;
+
+        cont.appendChild(div);
+    });
+});
+
+
+// =====================================
+// MOSTRAR TARJETAS DE UNA OBRA
+// =====================================
+function mostrarTarjetas(obraId) {
+    const obra = getObraById(obraId);
+    const cont = document.getElementById("tarjetas_" + obraId);
+
+    if (!obra || !obra.plantas) {
+        cont.innerHTML = "<p>No hay plantas configuradas.</p>";
+        return;
+    }
+
+    cont.innerHTML = obra.plantas.map(planta => `
+        <div class="planta-card">
+            <h3>${planta.nombre}</h3>
+
+            ${planta.equipos.map(eq => `
+                <div class="equipo-item">
+                    <strong>${eq.nombre}</strong> — Cantidad: ${eq.cantidad}
+                </div>
+            `).join("")}
+
+            <button class="btn btn-azul" onclick="window.location.href='configurar_plantas.html?id=${obra.id}'">
+                ⚙️ Editar Plantas y Equipos
+            </button>
+        </div>
+    `).join("");
+}
+
+
+// =====================================
+// OBTENER NOMBRE DE USUARIO
+// =====================================
+function obtenerNombreUsuario(id) {
+    const u = usuariosData.find(x => x.id === id);
+    return u ? u.nombre : "Sin asignar";
+}
+</script>
+
+</body>
+</html>

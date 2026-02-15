@@ -1,0 +1,246 @@
+<!-- panelUsuarios.html -->
+<div id="panel-usuarios" class="panel-admin">
+
+  <h2>Gestión de Usuarios</h2>
+
+  <button id="btnCrearUsuario" class="boton-seccion">➕ Crear Usuario</button>
+
+  <div id="listaUsuarios"></div>
+
+  <div id="formularioUsuario" class="panel-usuarios-form oculto">
+
+    <h3 id="tituloFormulario">Nuevo Usuario</h3>
+
+    <label>Nombre:</label>
+    <input type="text" id="inputNombreUsuario" />
+
+    <label>Correo electrónico:</label>
+    <input type="email" id="inputCorreoUsuario" placeholder="correo@empresa.com" />
+
+    <label>Teléfono:</label>
+    <input type="text" id="inputTelefonoUsuario" />
+
+    <label>Rol:</label>
+    <select id="selectRolUsuario"></select>
+
+    <label>Clave de acceso:</label>
+    <input type="password" id="inputClaveUsuario" placeholder="Clave o PIN" />
+
+    <h3>Permisos:</h3>
+    <div id="checkboxPermisos" class="checkbox-grid"></div>
+
+    <h3>Obras asignadas:</h3>
+    <div id="checkboxObras" class="checkbox-grid"></div>
+
+    <button id="btnGuardarUsuario" class="btn-primario">💾 Guardar</button>
+    <button id="btnCancelarUsuario" class="btn-secundario">❌ Cancelar</button>
+
+  </div>
+
+</div>
+
+<script>
+// =====================================
+// VARIABLES GLOBALES
+// =====================================
+let usuarioEditando = null;
+
+
+// =====================================
+// CARGAR LISTA DE USUARIOS
+// =====================================
+function cargarListaUsuarios() {
+    const cont = document.getElementById("listaUsuarios");
+    cont.innerHTML = "";
+
+    usuariosData.forEach(u => {
+        const obrasAsignadas = (u.obrasAsignadas || [])
+            .map(id => {
+                const obra = getObraById(id);
+                return obra ? obra.nombre : "(obra eliminada)";
+            })
+            .join(", ");
+
+        const div = document.createElement("div");
+        div.className = "card usuario-card";
+
+        div.innerHTML = `
+            <h3>${u.nombre}</h3>
+            <p><strong>Rol:</strong> ${u.rol}</p>
+            <p><strong>Email:</strong> ${u.email}</p>
+            <p><strong>Obras:</strong> ${obrasAsignadas || "Ninguna"}</p>
+
+            <button class="btn-primario" onclick="editarUsuarioPanel('${u.id}')">✏️ Editar</button>
+            <button class="btn-secundario" onclick="eliminarUsuarioPanel('${u.id}')">🗑️ Eliminar</button>
+        `;
+
+        cont.appendChild(div);
+    });
+}
+
+
+// =====================================
+// MOSTRAR / OCULTAR FORMULARIO
+// =====================================
+function mostrarFormulario(nuevo = true) {
+    document.getElementById("formularioUsuario").classList.remove("oculto");
+    document.getElementById("tituloFormulario").textContent = nuevo ? "Nuevo Usuario" : "Editar Usuario";
+}
+
+function ocultarFormulario() {
+    document.getElementById("formularioUsuario").classList.add("oculto");
+    usuarioEditando = null;
+}
+
+
+// =====================================
+// CARGAR ROLES
+// =====================================
+function cargarRolesEnFormulario() {
+    const select = document.getElementById("selectRolUsuario");
+    select.innerHTML = "";
+
+    window._roles.forEach(r => {
+        const opt = document.createElement("option");
+        opt.value = r.id;
+        opt.textContent = r.id;
+        select.appendChild(opt);
+    });
+
+    select.addEventListener("change", aplicarPermisosDelRol);
+}
+
+
+// =====================================
+// CARGAR PERMISOS
+// =====================================
+function cargarPermisosEnFormulario(permisosUsuario = []) {
+    const cont = document.getElementById("checkboxPermisos");
+    cont.innerHTML = "";
+
+    window._permisos.forEach(p => {
+        const chk = document.createElement("label");
+        chk.innerHTML = `
+            <input type="checkbox" value="${p.id}" ${permisosUsuario.includes(p.id) ? "checked" : ""}>
+            ${p.nombre}
+        `;
+        cont.appendChild(chk);
+    });
+}
+
+
+// =====================================
+// CARGAR OBRAS (NUEVO SISTEMA)
+// =====================================
+function cargarObrasEnFormulario(obrasUsuario = []) {
+    const obras = listarObras(); // ← NUEVO
+    const cont = document.getElementById("checkboxObras");
+    cont.innerHTML = "";
+
+    obras.forEach(o => {
+        const chk = document.createElement("label");
+        chk.innerHTML = `
+            <input type="checkbox" value="${o.id}" ${obrasUsuario.includes(o.id) ? "checked" : ""}>
+            ${o.nombre} (${o.ciudad || "-"})
+        `;
+        cont.appendChild(chk);
+    });
+}
+
+
+// =====================================
+// APLICAR PERMISOS DEL ROL
+// =====================================
+function aplicarPermisosDelRol() {
+    const rolId = document.getElementById("selectRolUsuario").value;
+    const rol = window._roles.find(r => r.id === rolId);
+
+    if (rol) {
+        cargarPermisosEnFormulario(rol.permisos);
+    }
+}
+
+
+// =====================================
+// GUARDAR USUARIO (CREAR O EDITAR)
+// =====================================
+document.getElementById("btnGuardarUsuario").addEventListener("click", () => {
+    const nombre = document.getElementById("inputNombreUsuario").value.trim();
+    const email = document.getElementById("inputCorreoUsuario").value.trim();
+    const telefono = document.getElementById("inputTelefonoUsuario").value.trim();
+    const rol = document.getElementById("selectRolUsuario").value;
+    const clave = document.getElementById("inputClaveUsuario").value.trim();
+
+    const permisos = [...document.querySelectorAll("#checkboxPermisos input:checked")].map(c => c.value);
+    const obras = [...document.querySelectorAll("#checkboxObras input:checked")].map(c => c.value);
+
+    if (!nombre || !email || !clave) {
+        alert("Nombre, email y clave son obligatorios.");
+        return;
+    }
+
+    if (usuarioEditando) {
+        editarUsuario(usuarioEditando, { nombre, email, telefono, rol, permisos, obrasAsignadas: obras, password: clave });
+    } else {
+        crearUsuario({ nombre, email, telefono, rol, permisos, obrasAsignadas: obras, password: clave });
+    }
+
+    ocultarFormulario();
+    cargarListaUsuarios();
+});
+
+
+// =====================================
+// EDITAR USUARIO
+// =====================================
+function editarUsuarioPanel(id) {
+    const u = obtenerUsuarioPorId(id);
+    usuarioEditando = id;
+
+    mostrarFormulario(false);
+
+    document.getElementById("inputNombreUsuario").value = u.nombre;
+    document.getElementById("inputCorreoUsuario").value = u.email;
+    document.getElementById("inputTelefonoUsuario").value = u.telefono;
+    document.getElementById("inputClaveUsuario").value = u.password;
+    document.getElementById("selectRolUsuario").value = u.rol;
+
+    cargarPermisosEnFormulario(u.permisos);
+    cargarObrasEnFormulario(u.obrasAsignadas);
+}
+
+
+// =====================================
+// ELIMINAR USUARIO
+// =====================================
+function eliminarUsuarioPanel(id) {
+    if (confirm("¿Seguro que deseas eliminar este usuario?")) {
+        eliminarUsuario(id);
+        cargarListaUsuarios();
+    }
+}
+
+
+// =====================================
+// BOTONES
+// =====================================
+document.getElementById("btnCrearUsuario").addEventListener("click", () => {
+    usuarioEditando = null;
+    mostrarFormulario(true);
+    cargarPermisosEnFormulario([]);
+    cargarObrasEnFormulario([]);
+});
+
+document.getElementById("btnCancelarUsuario").addEventListener("click", ocultarFormulario);
+
+
+// =====================================
+// INICIALIZACIÓN
+// =====================================
+document.addEventListener("DOMContentLoaded", () => {
+    cargarListaUsuarios();
+    cargarRolesEnFormulario();
+    cargarPermisosEnFormulario();
+    cargarObrasEnFormulario();
+});
+</script>

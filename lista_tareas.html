@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Lista de Tareas</title>
+<link rel="stylesheet" href="styles/style-v2.css">
+
+<style>
+.card {
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.tarea {
+    padding: 12px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    margin: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tarea.completada {
+    background: #d4ffd4;
+    text-decoration: line-through;
+}
+
+select {
+    padding: 8px;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<header class="header-principal">
+  <img src="assets/img/logo-empresa.png" alt="Logo">
+  <div class="titulo-principal">
+    <h1>LISTA DE TAREAS</h1>
+    <h2>Aguero Instalaciones</h2>
+  </div>
+</header>
+
+<h1 style="text-align:center;">Lista de Tareas</h1>
+
+<div class="card">
+    <label><strong>Filtrar por estado:</strong></label>
+    <select id="filtro">
+        <option value="todas">Todas</option>
+        <option value="pendiente">Pendientes</option>
+        <option value="proceso">En proceso</option>
+        <option value="completada">Completadas</option>
+    </select>
+</div>
+
+<div id="contenedor"></div>
+
+<button class="boton-seccion" onclick="history.back()">⬅️ Volver</button>
+
+<script src="scripts/usuarios.js"></script>
+<script src="scripts/obras.js"></script>
+<script src="scripts/tareas.js"></script>
+
+<script>
+cargarUsuarios();
+
+
+function obtenerNombreUsuario(id) {
+    const u = usuariosData.find(x => x.id === id);
+    return u ? u.nombre : "Sin asignar";
+}
+
+
+function cargarTareas() {
+    return JSON.parse(localStorage.getItem("tareasPCI")) || [];
+}
+
+function guardarTareas(tareas) {
+    localStorage.setItem("tareasPCI", JSON.stringify(tareas));
+}
+
+function render() {
+    const cont = document.getElementById("contenedor");
+    const filtro = document.getElementById("filtro").value;
+    const tareas = cargarTareas();
+
+    // Obtener usuario desde la URL
+    const usuarioId = new URLSearchParams(window.location.search).get("usuario");
+
+    // Filtrar por usuario si corresponde
+    let filtradas = tareas;
+    if (usuarioId) {
+       filtradas = filtradas.filter(t => t.asignadoA === usuarioId);
+
+    }
+
+    // Filtrar por estado
+    if (filtro !== "todas") {
+        filtradas = filtradas.filter(t => t.estado === filtro);
+    }
+
+    cont.innerHTML = filtradas.map(t => `
+        <div class="card-tarea">
+            <h3>${t.titulo}</h3>
+            <p>${t.descripcion}</p>
+
+            <p><strong>Responsable:</strong> ${obtenerNombreUsuario(t.asignadoA || "")}</p>
+
+
+            <p><strong>Estado:</strong> ${t.estado}</p>
+
+            <select onchange="cambiarEstado('${t.id}', this.value)">
+                <option value="pendiente" ${t.estado === "pendiente" ? "selected" : ""}>Pendiente</option>
+                <option value="proceso" ${t.estado === "proceso" ? "selected" : ""}>En proceso</option>
+                <option value="completada" ${t.estado === "completada" ? "selected" : ""}>Completada</option>
+            </select>
+        </div>
+    `).join("");
+}
+
+
+function cambiarEstado(id, nuevoEstado) {
+    const tareas = cargarTareas();
+    const tarea = tareas.find(t => t.id === id);
+    tarea.estado = nuevoEstado;
+    guardarTareas(tareas);
+    render();
+}
+
+document.getElementById("filtro").addEventListener("change", render);
+
+render();
+</script>
+
+</body>
+</html>

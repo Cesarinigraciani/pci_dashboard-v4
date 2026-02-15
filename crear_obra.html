@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Crear Obra</title>
+  <link rel="stylesheet" href="styles/style-v2.css">
+
+  <style>
+    .form-card {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .form-card h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .form-card label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+    .form-card input, .form-card select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    .btn-guardar {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .btn-volver {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      background: #0078d4;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="form-card">
+  <h2>Crear Nueva Obra</h2>
+
+  <label>Nombre de la obra</label>
+  <input type="text" id="nombreObra" placeholder="Ej. Torre Norte">
+
+  <label>Dirección</label>
+  <input type="text" id="direccionObra" placeholder="Ej. Calle Mayor 123">
+
+  <label>Ciudad</label>
+  <input type="text" id="ciudadObra" placeholder="Ej. Madrid">
+
+  <label>Fecha de inicio</label>
+  <input type="date" id="fechaObra">
+
+  <label>Encargado de la obra</label>
+  <select id="encargadoObra"></select>
+
+  <label>Horas estimadas</label>
+  <input type="number" id="horasObra" placeholder="Ej. 120" min="1">
+
+  <button class="btn-guardar" onclick="guardarObra()">Guardar Obra</button>
+  <button class="btn-volver" onclick="window.location.href='lista_obras.html'">⬅️ Volver</button>
+</div>
+
+<script src="scripts/usuarios.js"></script>
+<script src="scripts/obras.js"></script>
+
+<script>
+// ===============================
+// CARGAR USUARIOS COMO ENCARGADOS
+// ===============================
+document.addEventListener("DOMContentLoaded", () => {
+  const select = document.getElementById("encargadoObra");
+  select.innerHTML = "";
+
+  (window.usuariosData || []).forEach(u => {
+    const opt = document.createElement("option");
+    opt.value = u.id;
+    opt.textContent = u.nombre;
+    select.appendChild(opt);
+  });
+});
+
+// ===============================
+// GUARDAR OBRA
+// ===============================
+function guardarObra() {
+  const nombre = document.getElementById("nombreObra").value.trim();
+  const direccion = document.getElementById("direccionObra").value.trim();
+  const ciudad = document.getElementById("ciudadObra").value.trim();
+  const fecha = document.getElementById("fechaObra").value;
+  const encargado = document.getElementById("encargadoObra").value;
+  const horas = document.getElementById("horasObra").value.trim();
+
+  if (!nombre) {
+    alert("La obra debe tener un nombre.");
+    return;
+  }
+
+  const nuevaObra = {
+    id: "obra_" + Date.now(),
+    nombre,
+    direccion,
+    ciudad,
+    fechaInicio: fecha || new Date().toISOString().split("T")[0],
+    encargado, // ID del usuario encargado
+    horasEstimadas: horas ? Number(horas) : 0,
+    tareas: [],
+    plantas: [],
+    fechaCreacion: new Date().toISOString()
+  };
+
+  guardarProyectoPCI(nuevaObra);
+
+  alert("Obra creada correctamente.");
+  window.location.href = "configurar_plantas.html?id=" + nuevaObra.id;
+}
+</script>
+
+</body>
+</html>

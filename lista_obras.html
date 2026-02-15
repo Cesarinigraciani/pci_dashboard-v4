@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de Obras</title>
+  <link rel="stylesheet" href="styles/style-v2.css">
+
+  <style>
+    .contenedor {
+      max-width: 900px;
+      margin: 30px auto;
+    }
+    .card-proyecto {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .acciones button {
+      margin-left: 10px;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn-abrir { background: #0078d4; color: white; }
+    .btn-editar { background: #ffc107; color: black; }
+    .btn-eliminar { background: #d9534f; color: white; }
+    .btn-config { background: #28a745; color: white; }
+    .btn-volver {
+      width: 100%;
+      padding: 12px;
+      background: #0078d4;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    /* Tarjetas fijas Welcome y Misterios */
+    .card-fijo {
+      background: #2b2b2b;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      margin-bottom: 20px;
+      color: #f0f0f0;
+      border-left: 6px solid #0078d4;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .card-fijo:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+    }
+    .card-fijo h3 {
+      margin: 0 0 10px 0;
+      font-size: 1.3em;
+      font-weight: bold;
+    }
+    .card-fijo p {
+      margin: 4px 0;
+      opacity: 0.9;
+    }
+    .card-fijo button {
+      margin-top: 10px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      background: #0078d4;
+      color: white;
+      transition: background .2s;
+    }
+    .card-fijo button:hover {
+      background: #005fa3;
+    }
+
+    .card-welcome { border-left-color: #1e90ff; }
+    .card-misterios { border-left-color: #9b59b6; }
+  .boton-seccion {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  background: #0078d4;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.boton-seccion:hover {
+  background: #005fa3;
+}
+
+@media (prefers-color-scheme: dark) {
+  .boton-seccion {
+    background: #1e90ff;
+    color: #fff;
+  }
+}
+.boton-seccion {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: bold;
+}
+
+.boton-seccion:hover {
+  background: #f0f0f0 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .boton-seccion {
+    background: #2b2b2b !important;
+    color: #ffffff !important;
+    border: 1px solid #444;
+  }
+}
+
+
+  
+  </style>
+</head>
+
+<body>
+
+<header class="header-principal">
+  <img src="assets/img/logo-empresa.png" alt="Logo">
+  <div class="titulo-principal">
+    <h1>LISTA DE OBRAS</h1>
+    <h2>Aguero Instalaciones</h2>
+  </div>
+</header>
+
+<div class="contenedor" id="listaObras"></div>
+
+<!-- ============================
+     OBRAS FIJAS (WELCOME + MISTERIOS)
+============================ -->
+<div class="contenedor">
+
+  <div class="card-fijo card-welcome">
+    <h3>🟦 Obra Welcome</h3>
+    <p><strong>Tipo:</strong> Dashboard Google Sheets</p>
+    <p><strong>Descripción:</strong> Hotel Welcome II (Vallecas)</p>
+    <button onclick="abrirWelcome()">Abrir</button>
+  </div>
+
+  <div class="card-fijo card-misterios">
+    <h3>🟪 Obra Misterios</h3>
+    <p><strong>Tipo:</strong> Dashboard Google Sheets</p>
+    <p><strong>Descripción:</strong> Residencias Misterios (Madrid)</p>
+    <button onclick="abrirMisterios()">Abrir</button>
+  </div>
+
+</div>
+
+<button class="btn-volver" onclick="window.location.href='index.html'">⬅️ Volver</button>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const contenedor = document.getElementById("listaObras");
+  const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+
+  if (obras.length === 0) {
+    contenedor.innerHTML = `
+      <div class="card">
+        <h2>No hay obras creadas</h2>
+      </div>
+    `;
+    return;
+  }
+
+  obras.forEach(o => {
+    const div = document.createElement("div");
+    div.className = "card-proyecto";
+
+    div.innerHTML = `
+      <div>
+        <h3>${o.nombre}</h3>
+        <p><strong>Ciudad:</strong> ${o.ciudad || "—"}</p>
+        <p><strong>Fecha creación:</strong> ${o.fechaCreacion || "—"}</p>
+      </div>
+
+      <div class="acciones">
+        <button class="btn-abrir" onclick="abrirObra('${o.id}')">Abrir</button>
+        <button class="btn-config" onclick="configurarPlantas('${o.id}')">Configurar Plantas</button>
+        <button class="btn-editar" onclick="editarObra('${o.id}')">Editar</button>
+        <button class="btn-eliminar" onclick="eliminarObra('${o.id}')">Eliminar</button>
+      </div>
+    `;
+
+    contenedor.appendChild(div);
+  });
+});
+
+function abrirObra(id) {
+  // SIEMPRE ABRIR EN INDEX
+  window.location.href = "index.html?id=" + id;
+}
+
+function configurarPlantas(id) {
+  window.location.href = "configurar_plantas.html?id=" + id;
+}
+
+function editarObra(id) {
+  window.location.href = "modificar_obra.html?id=" + id;
+}
+
+function eliminarObra(id) {
+  if (!confirm("¿Seguro que deseas eliminar esta obra?")) return;
+
+  let obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+  obras = obras.filter(o => o.id !== id);
+
+  localStorage.setItem("obrasPCI", JSON.stringify(obras));
+
+  alert("Obra eliminada.");
+  location.reload();
+}
+
+/* ============================================
+   FUNCIONES PARA OBRAS FIJAS
+============================================ */
+const ENDPOINT_WELCOME = "https://script.google.com/macros/s/AKfycbwfgMEz_12nEmQoTvrM43p7rEjGuMT1ZCKBVwZ9aBROWpelSoItPKhyF7NGhICnlwGm/exec";
+const ENDPOINT_MISTERIOS = "https://script.google.com/macros/s/AKfycbyJovic2_XrRXPFrW5I9lsmJKfxQUAybwN0EIjUELw5zetoJ_HpqEjMHfYP7xNb4k9r/exec";
+
+function abrirWelcome() {
+  localStorage.setItem("endpointProyecto", ENDPOINT_WELCOME);
+  window.location.href = "dashboard_welcome.html";
+}
+
+function abrirMisterios() {
+  localStorage.setItem("endpointProyecto", ENDPOINT_MISTERIOS);
+  window.location.href = "dashboard_misterios.html";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Usuarios Existentes</title>
+<link rel="stylesheet" href="styles/style-v2.css">
+
+<style>
+.card-user {
+    background: #fff;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.card-user h3 {
+    margin: 0;
+}
+</style>
+</head>
+
+<body>
+
+<header class="header-principal">
+  <img src="assets/img/logo-empresa.png">
+  <div class="titulo-principal">
+    <h1>Usuarios Existentes</h1>
+    <h2>Aguero Instalaciones</h2>
+  </div>
+</header>
+
+<div class="panel-admin" id="contenedorUsuarios"></div>
+
+<button class="boton-seccion" onclick="history.back()">⬅️ Volver</button>
+
+<script src="scripts/usuarios.js"></script>
+<script src="scripts/obras.js"></script>
+<script src="scripts/tareas.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    await cargarUsuarios();
+
+    const cont = document.getElementById("contenedorUsuarios");
+
+    cont.innerHTML = usuariosData.map(u => `
+        <div class="card-user">
+            <h3>${u.nombre}</h3>
+            <p><strong>Rol:</strong> ${u.rol}</p>
+            <p><strong>Obras asignadas:</strong> ${u.obrasAsignadas?.length || 0}</p>
+
+            <button class="boton-seccion" onclick="verObra('${u.id}')">🏗️ Ver Obra Asignada</button>
+            <button class="boton-seccion" onclick="verTareas('${u.id}')">📝 Ver Tareas</button>
+            <button class="boton-seccion" onclick="cambiarUsuario('${u.id}')">🔄 Cambiar a este Usuario</button>
+        </div>
+    `).join("");
+});
+
+function verObra(idUsuario) {
+    const u = obtenerUsuarioPorId(idUsuario);
+    if (!u || !u.obrasAsignadas || u.obrasAsignadas.length === 0) {
+        alert("Este usuario no tiene obras asignadas.");
+        return;
+    }
+
+    const obraId = u.obrasAsignadas[0];
+    window.location.href = `kpi_tareas.html?id=${obraId}`;
+}
+
+function verTareas(idUsuario) {
+    window.location.href = "lista_tareas.html?usuario=" + idUsuario;
+}
+
+
+function cambiarUsuario(idUsuario) {
+    setUsuarioActual(idUsuario);
+}
+</script>
+
+</body>
+</html>

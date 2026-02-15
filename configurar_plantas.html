@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Configurar Plantas</title>
+    <link rel="stylesheet" href="styles/styles-residencias-misterios.css">
+
+    <style>
+        .planta-box {
+            border: 1px solid #ccc;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+        }
+        .equipo-item {
+            margin-top: 8px;
+            padding: 8px;
+            background: #eef2f5;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .equipo-nombre {
+            font-weight: bold;
+        }
+        .equipo-cantidad {
+            width: 60px;
+            padding: 4px;
+            margin-left: 10px;
+        }
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-azul { background: #0078d4; color: white; }
+        .btn-rojo { background: #d9534f; color: white; }
+        .btn-verde { background: #28a745; color: white; }
+    </style>
+</head>
+
+<body>
+
+<div class="cabecera-proyecto">
+    <h1>Configurar Plantas</h1>
+</div>
+
+<div class="tarjeta-planta">
+
+    <!-- GENERADOR INICIAL -->
+    <label id="labelNumPlantas">Número de plantas</label>
+    <input type="number" id="numPlantas" min="1" value="1">
+
+    <button id="btnGenerar" class="btn btn-azul" onclick="generarPlantas()">Generar</button>
+
+    <hr>
+
+    <div id="contenedorPlantas"></div>
+
+    <button class="btn btn-verde" onclick="guardarPlantas()">Guardar Obra</button>
+
+    <button class="btn btn-azul" onclick="guardarYVolver()">💾 Guardar y Volver</button>
+
+    <button class="btn btn-azul" onclick="window.location.href='lista_obras.html'">
+        ⬅️ Volver a Lista de Obras
+    </button>
+
+</div>
+
+<script>
+const EQUIPOS = [
+    "ZÓCALOS",
+    "DETECTORES",
+    "PUKAY",
+    "SIRAY+BSCL",
+    "MSTAY 8",
+    "MSTAY 2",
+    "CENTRAL COFEM",
+    "CENTRAL CO2",
+    "BATERIAS",
+    "EXTINTORES",
+    "SOPORTES",
+    "KAMAY",
+    "KIT-PMR",
+    "FUENTE AUXILIAR",
+    "MDA1Y",
+    "MDA2 YLT"
+];
+
+/* ============================================================
+   OBTENER ID DE LA OBRA DESDE LA URL
+   ============================================================ */
+const params = new URLSearchParams(window.location.search);
+const obraID = params.get("id");
+
+/* ============================================================
+   CARGAR PLANTAS EXISTENTES
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+    const obra = obras.find(o => o.id === obraID);
+
+    if (!obra) return;
+
+    if (obra.plantas && obra.plantas.length > 0) {
+        cargarPlantasExistentes(obra.plantas);
+
+        document.getElementById("labelNumPlantas").style.display = "none";
+        document.getElementById("numPlantas").style.display = "none";
+        document.getElementById("btnGenerar").style.display = "none";
+    }
+});
+
+/* ============================================================
+   CARGAR PLANTAS YA GUARDADAS
+   ============================================================ */
+function cargarPlantasExistentes(plantas) {
+    const contenedor = document.getElementById("contenedorPlantas");
+    contenedor.innerHTML = "";
+
+    plantas.forEach((planta) => {
+        const div = document.createElement("div");
+        div.className = "planta-box";
+
+        div.innerHTML = `
+            <h3>${planta.nombre}</h3>
+
+            <label>Nombre personalizado</label>
+            <input type="text" class="nombre-planta" value="${planta.nombre}">
+
+            <label>Equipo</label>
+            <select class="equipo-select">
+                ${EQUIPOS.map(e => `<option value="${e}">${e}</option>`).join("")}
+            </select>
+
+            <label>Cantidad</label>
+            <input type="number" class="equipo-cantidad-input" min="1" value="1">
+
+            <button class="btn btn-verde" onclick="agregarEquipo(this)">Añadir equipo</button>
+            <button class="btn btn-rojo" onclick="this.parentElement.remove()">Eliminar planta</button>
+
+            <div class="equipos-lista"></div>
+        `;
+
+        const lista = div.querySelector(".equipos-lista");
+
+        planta.equipos.forEach(eq => {
+            const item = document.createElement("div");
+            item.className = "equipo-item";
+
+            item.innerHTML = `
+                <span class="equipo-nombre">${eq.nombre}</span>
+                <input type="number" class="equipo-cantidad" value="${eq.cantidad}" min="1">
+                <button class="btn btn-rojo" onclick="this.parentElement.remove()">X</button>
+            `;
+
+            lista.appendChild(item);
+        });
+
+        contenedor.appendChild(div);
+    });
+}
+
+/* ============================================================
+   GENERAR PLANTAS NUEVAS
+   ============================================================ */
+function generarPlantas() {
+    const contenedor = document.getElementById("contenedorPlantas");
+    contenedor.innerHTML = "";
+
+    const n = parseInt(document.getElementById("numPlantas").value);
+
+    for (let i = 1; i <= n; i++) {
+        const div = document.createElement("div");
+        div.className = "planta-box";
+
+        div.innerHTML = `
+            <h3>Planta ${i}</h3>
+
+            <label>Nombre personalizado</label>
+            <input type="text" class="nombre-planta" placeholder="Ej. Planta ${i}">
+
+            <label>Equipo</label>
+            <select class="equipo-select">
+                ${EQUIPOS.map(e => `<option value="${e}">${e}</option>`).join("")}
+            </select>
+
+            <label>Cantidad</label>
+            <input type="number" class="equipo-cantidad-input" min="1" value="1">
+
+            <button class="btn btn-verde" onclick="agregarEquipo(this)">Añadir equipo</button>
+            <button class="btn btn-rojo" onclick="this.parentElement.remove()">Eliminar planta</button>
+
+            <div class="equipos-lista"></div>
+        `;
+
+        contenedor.appendChild(div);
+    }
+}
+
+/* ============================================================
+   AÑADIR EQUIPO A UNA PLANTA
+   ============================================================ */
+function agregarEquipo(btn) {
+    const plantaDiv = btn.parentElement;
+    const equipo = plantaDiv.querySelector(".equipo-select").value;
+    const cantidad = parseInt(plantaDiv.querySelector(".equipo-cantidad-input").value);
+
+    const lista = plantaDiv.querySelector(".equipos-lista");
+
+    const item = document.createElement("div");
+    item.className = "equipo-item";
+
+    item.innerHTML = `
+        <span class="equipo-nombre">${equipo}</span>
+        <input type="number" class="equipo-cantidad" value="${cantidad}" min="1">
+        <button class="btn btn-rojo" onclick="this.parentElement.remove()">X</button>
+    `;
+
+    lista.appendChild(item);
+}
+
+/* ============================================================
+   GUARDAR PLANTAS (OBRAS)
+   ============================================================ */
+function guardarPlantas() {
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+    const obra = obras.find(o => o.id === obraID);
+
+    if (!obra) {
+        alert("No se encontró la obra.");
+        return;
+    }
+
+    const plantasFinales = [];
+
+    document.querySelectorAll(".planta-box").forEach(plantaDiv => {
+        const nombre = plantaDiv.querySelector(".nombre-planta").value.trim()
+            || plantaDiv.querySelector("h3").textContent;
+
+        const equipos = [...plantaDiv.querySelectorAll(".equipo-item")].map(e => ({
+            nombre: e.querySelector(".equipo-nombre").textContent.trim(),
+            cantidad: parseInt(e.querySelector(".equipo-cantidad").value),
+            instalados: 0
+        }));
+
+        plantasFinales.push({ nombre, equipos });
+    });
+
+    obra.plantas = plantasFinales;
+
+    localStorage.setItem("obrasPCI", JSON.stringify(obras));
+
+    alert("Plantas y equipos guardados correctamente.");
+}
+
+/* ============================================================
+   GUARDAR Y VOLVER
+   ============================================================ */
+function guardarYVolver() {
+    guardarPlantas();
+    window.location.href = "lista_obras.html";
+}
+</script>
+
+<!-- ESTILOS ESPECÍFICOS -->
+<style>
+#contenedorPlantas .planta-box {
+    background: #242424 !important;
+    border-radius: 14px !important;
+    padding: 20px !important;
+    margin-bottom: 25px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+    border-left: 8px solid #0A84FF !important;
+}
+#contenedorPlantas .planta-box h3 {
+    color: #E5F1FF !important;
+    font-size: 22px !important;
+    margin-top: 0 !important;
+}
+#contenedorPlantas .planta-box label {
+    color: #dcdcdc !important;
+    font-weight: 600 !important;
+    margin-top: 12px !important;
+}
+#contenedorPlantas input,
+#contenedorPlantas select {
+    width: 100% !important;
+    padding: 10px !important;
+    margin-top: 6px !important;
+    border-radius: 8px !important;
+    border: 1px solid #555 !important;
+    background: #1b1b1b !important;
+    color: #e6e6e6 !important;
+}
+#contenedorPlantas .equipos-lista {
+    margin-top: 18px !important;
+}
+#contenedorPlantas .equipo-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: #2d2d2d !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    margin-bottom: 10px !important;
+    border: 1px solid #444 !important;
+}
+#contenedorPlantas .equipo-nombre {
+    color: #E5F1FF !important;
+    font-weight: bold !important;
+    flex: 1 !important;
+}
+#contenedorPlantas .equipo-cantidad {
+    width: 70px !important;
+    padding: 6px !important;
+    border-radius: 6px !important;
+    border: 1px solid #666 !important;
+    background: #1b1b1b !important;
+    color: #fff !important;
+    text-align: center !important;
+}
+#contenedorPlantas .btn {
+    padding: 12px 18px !important;
+    border-radius: 10px !important;
+    font-size: 16px !important;
+    margin-top: 12px !important;
+}
+#contenedorPlantas .btn-azul { background: #0A3D62 !important; color: white !important; }
+#contenedorPlantas .btn-verde { background: #28a745 !important; color: white !important; }
+#contenedorPlantas .btn-rojo { background: #8e0000 !important; color: white !important; }
+#contenedorPlantas .btn-azul:hover { background: #0A84FF !important; }
+#contenedorPlantas .btn-verde:hover { background: #2ecc71 !important; }
+#contenedorPlantas .btn-rojo:hover { background: #b30000 !important; }
+</style>
+
+</body>
+</html>

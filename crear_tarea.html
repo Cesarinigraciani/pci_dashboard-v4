@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Crear Tarea</title>
+    <link rel="stylesheet" href="styles/style-v2.css">
+
+    <style>
+        .form-card {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .form-card h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-card label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+        .form-card input, .form-card textarea, .form-card select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .btn-guardar {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn-volver {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            background: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="form-card">
+    <h2>Crear Nueva Tarea</h2>
+
+    <label>Título de la tarea</label>
+    <input type="text" id="tituloTarea">
+
+    <label>Descripción</label>
+    <textarea id="descripcionTarea" rows="4"></textarea>
+
+    <label>Fecha de inicio</label>
+    <input type="date" id="fechaInicioTarea">
+
+    <label>Obra asignada</label>
+    <select id="selectObra" disabled></select>
+
+    <label>Asignada a</label>
+    <select id="selectUsuarioAsignado"></select>
+
+    <label>Estado inicial</label>
+    <select id="estadoTarea">
+        <option value="pendiente">Pendiente</option>
+        <option value="proceso">En proceso</option>
+        <option value="completada">Completada</option>
+    </select>
+
+    <button class="btn-guardar" onclick="guardarTarea()">Guardar Tarea</button>
+    <button class="btn-volver" onclick="window.location.href='dashboard.html'">⬅️ Volver</button>
+</div>
+
+<!-- RUTAS CORREGIDAS -->
+<script src="scripts/usuarios.js"></script>
+<script src="scripts/obras.js"></script>
+<script src="scripts/tareas.js"></script>
+
+<script>
+// ===============================
+// CARGAR OBRA DEL USUARIO LOGUEADO
+// ===============================
+function cargarObraUsuario() {
+    const user = getUsuarioActual();
+    const select = document.getElementById("selectObra");
+
+    if (!user || !user.obrasAsignadas || user.obrasAsignadas.length === 0) {
+        select.innerHTML = `<option>No tiene obras asignadas</option>`;
+        return;
+    }
+
+    const obraId = user.obrasAsignadas[0]; // Primera obra asignada
+    const obra = getObraById(obraId); // ← CORREGIDO
+
+    if (obra) {
+        select.innerHTML = `<option value="${obra.id}">${obra.nombre}</option>`;
+    }
+}
+
+// ===============================
+// CARGAR USUARIOS PARA ASIGNAR TAREA
+// ===============================
+function cargarUsuariosAsignables() {
+    const usuarios = usuariosData;
+    const select = document.getElementById("selectUsuarioAsignado");
+
+    select.innerHTML = "";
+
+    usuarios.forEach(u => {
+        const option = document.createElement("option");
+        option.value = u.id;
+        option.textContent = u.nombre;
+        select.appendChild(option);
+    });
+
+    // Por defecto, asignar al usuario logueado
+    const actual = getUsuarioActual();
+    if (actual) select.value = actual.id;
+}
+
+// ===============================
+// GUARDAR TAREA
+// ===============================
+function guardarTarea() {
+    const titulo = document.getElementById("tituloTarea").value.trim();
+    const descripcion = document.getElementById("descripcionTarea").value.trim();
+    const fechaInicio = document.getElementById("fechaInicioTarea").value;
+    const obraId = document.getElementById("selectObra").value;
+    const asignadoA = document.getElementById("selectUsuarioAsignado").value;
+    const estado = document.getElementById("estadoTarea").value;
+
+    if (!titulo || !descripcion) {
+        alert("El título y la descripción son obligatorios.");
+        return;
+    }
+
+    const creador = getUsuarioActual();
+
+    crearTarea({
+        titulo,
+        descripcion,
+        obraId,
+        asignadoA,
+        estado,
+        creadoPor: creador.id,
+        fechaInicio
+    });
+
+    alert("Tarea creada correctamente.");
+    window.location.href = "dashboard.html";
+}
+
+// ===============================
+// INICIALIZACIÓN
+// ===============================
+document.addEventListener("DOMContentLoaded", () => {
+    cargarObraUsuario();
+    cargarUsuariosAsignables();
+});
+</script>
+
+</body>
+</html>

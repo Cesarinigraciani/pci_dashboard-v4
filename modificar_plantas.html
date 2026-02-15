@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Modificar Plantas</title>
+  <link rel="stylesheet" href="styles/style-v2.css">
+</head>
+
+<body>
+
+<header class="header-principal">
+  <img src="assets/img/logo-empresa.png" alt="Logo">
+  <div class="titulo-principal">
+    <h1>MODIFICAR PLANTAS</h1>
+    <h2>Aguero Instalaciones</h2>
+  </div>
+</header>
+
+<div class="panel-admin">
+  <h2>Gestión de Plantas</h2>
+
+  <label>Nueva planta:</label>
+  <input type="text" id="nuevaPlanta" class="input-text" placeholder="Ej: Planta Baja">
+
+  <button onclick="agregarPlanta()" class="btn-primario">➕ Añadir Planta</button>
+
+  <h3>Plantas existentes:</h3>
+  <div id="listaPlantas" class="lista-usuarios"></div>
+
+  <button onclick="window.location.href='index.html'" class="btn-secundario">🔙 Volver</button>
+</div>
+
+<script src="scripts/modificar_plantas.js"></script>
+
+</body>
+</html>

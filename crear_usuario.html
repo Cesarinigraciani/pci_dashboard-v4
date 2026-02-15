@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Crear Usuario</title>
+    <link rel="stylesheet" href="styles/style-v2.css">
+
+    <style>
+        .form-card {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .form-card h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-card label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+        .form-card input, .form-card select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .checkbox-group {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #f9f9f9;
+        }
+        .checkbox-group label {
+            font-weight: normal;
+            display: block;
+            margin: 4px 0;
+        }
+        .btn-guardar {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn-volver {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            background: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="form-card">
+    <h2>Crear Nuevo Usuario</h2>
+
+    <label>Nombre completo</label>
+    <input type="text" id="nombreUsuario">
+
+    <label>Email</label>
+    <input type="email" id="emailUsuario">
+
+    <label>Teléfono</label>
+    <input type="text" id="telefonoUsuario">
+
+    <label>Rol</label>
+    <select id="selectRolUsuario"></select>
+
+    <label>Permisos del usuario</label>
+    <div id="checkboxPermisos" class="checkbox-group"></div>
+
+    <label>Obras asignadas</label>
+    <div id="checkboxObras" class="checkbox-group"></div>
+
+    <label>Contraseña</label>
+    <input type="password" id="passwordUsuario">
+
+    <button class="btn-guardar" onclick="guardarUsuario()">Guardar Usuario</button>
+    <button class="btn-volver" onclick="window.location.href='dashboard.html'">⬅️ Volver</button>
+</div>
+
+<!-- Archivos necesarios -->
+<script src="scripts/roles.js"></script>
+<script src="scripts/permisos.js"></script>
+<script src="scripts/usuarios.js"></script>
+<script src="scripts/obras.js"></script>
+
+
+<script>
+// ===============================
+// CARGAR ROLES
+// ===============================
+function cargarRoles() {
+    const select = document.getElementById("selectRolUsuario");
+    select.innerHTML = "";
+
+    window._roles.forEach(rol => {
+        const option = document.createElement("option");
+        option.value = rol.id;
+        option.textContent = rol.id;
+        select.appendChild(option);
+    });
+}
+
+// ===============================
+// CARGAR PERMISOS
+// ===============================
+function cargarPermisos(permisosPreseleccionados = []) {
+    const cont = document.getElementById("checkboxPermisos");
+    cont.innerHTML = "";
+
+    window._permisos.forEach(p => {
+        const label = document.createElement("label");
+        const checked = permisosPreseleccionados.includes(p.id) ? "checked" : "";
+
+        label.innerHTML = `
+            <input type="checkbox" value="${p.id}" ${checked}> ${p.nombre}
+        `;
+
+        cont.appendChild(label);
+    });
+}
+
+// ===============================
+// CARGAR OBRAS
+// ===============================
+function cargarObras() {
+    const obras = listarObras(); // ESTA SÍ EXISTE
+    const cont = document.getElementById("checkboxObras");
+    cont.innerHTML = "";
+
+    obras.forEach(o => {
+        const label = document.createElement("label");
+        label.innerHTML = `
+            <input type="checkbox" value="${o.id}"> ${o.nombre} (${o.ubicacion || ""})
+        `;
+        cont.appendChild(label);
+    });
+}
+
+// ===============================
+// APLICAR PERMISOS DEL ROL
+// ===============================
+function aplicarPermisosRol() {
+    const rolId = document.getElementById("selectRolUsuario").value;
+    const rol = window._roles.find(r => r.id === rolId);
+
+    if (rol) {
+        cargarPermisos(rol.permisos);
+    }
+}
+
+// ===============================
+// GUARDAR USUARIO
+// ===============================
+function guardarUsuario() {
+    const nombre = document.getElementById("nombreUsuario").value.trim();
+    const email = document.getElementById("emailUsuario").value.trim();
+    const telefono = document.getElementById("telefonoUsuario").value.trim();
+    const rol = document.getElementById("selectRolUsuario").value;
+    const password = document.getElementById("passwordUsuario").value.trim();
+
+    if (!nombre || !email || !password) {
+        alert("Nombre, email y contraseña son obligatorios.");
+        return;
+    }
+
+    const permisos = [...document.querySelectorAll("#checkboxPermisos input:checked")]
+        .map(chk => chk.value);
+
+    const obras = [...document.querySelectorAll("#checkboxObras input:checked")]
+        .map(chk => chk.value);
+
+    crearUsuario({
+        nombre,
+        email,
+        telefono,
+        rol,
+        permisos,
+        obras,
+        password
+    });
+
+    alert("Usuario creado correctamente.");
+    window.location.href = "dashboard.html";
+}
+
+// ===============================
+// INICIALIZACIÓN
+// ===============================
+document.addEventListener("DOMContentLoaded", () => {
+    cargarRoles();
+    cargarObras();
+    aplicarPermisosRol();
+
+    document.getElementById("selectRolUsuario")
+        .addEventListener("change", aplicarPermisosRol);
+});
+</script>
+
+</body>
+</html>

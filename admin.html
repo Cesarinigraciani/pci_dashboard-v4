@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Administración</title>
+  <link rel="stylesheet" href="styles/style-v2.css">
+
+  <style>
+    .info-box { margin-bottom: 15px; }
+    .info-box p { margin: 4px 0; }
+  </style>
+</head>
+
+<body>
+
+<header class="header-principal">
+  <img src="assets/img/logo-empresa.png" alt="Logo">
+  <div class="titulo-principal">
+    <h1>Administración del Sistema</h1>
+    <h2 id="nombreUsuarioHeader"></h2>
+  </div>
+</header>
+
+<div class="panel-admin" id="panel-admin">
+  <!-- Se llena dinámicamente -->
+</div>
+
+<div class="panel-admin">
+  <div class="card">
+    <button class="boton-seccion" onclick="window.location.href='dashboard.html'">⬅️ Volver al Dashboard</button>
+    <button class="boton-seccion" onclick="window.location.href='index.html'">🏠 Volver al Inicio</button>
+  </div>
+</div>
+
+<!-- RUTAS CORREGIDAS -->
+<script src="scripts/usuarios.js"></script>
+<script src="scripts/obras.js"></script>
+<script src="scripts/tareas.js"></script>
+
+<script>
+// ===============================
+//  INICIALIZACIÓN
+// ===============================
+document.addEventListener("DOMContentLoaded", () => {
+    const panel = document.getElementById("panel-admin");
+    const usuario = getUsuarioActual();
+
+    if (!usuario) {
+        panel.innerHTML = `
+            <div class="card">
+                <h2>No hay usuario logueado</h2>
+                <button class="boton-seccion" onclick="window.location.href='index.html'">Volver</button>
+            </div>
+        `;
+        return;
+    }
+
+    document.getElementById("nombreUsuarioHeader").textContent = usuario.nombre;
+
+    // Seguridad: solo admin o usuarios con permiso "usuarios"
+    if (!usuario.permisos.includes("usuarios") && usuario.rol !== "Administrador") {
+        panel.innerHTML = `
+            <div class="card">
+                <h2>Acceso restringido</h2>
+                <p>No tienes permisos para acceder a esta sección.</p>
+            </div>
+        `;
+        return;
+    }
+
+    cargarPanelAdmin();
+});
+
+
+// ===============================
+//  CARGAR PANEL ADMIN
+// ===============================
+function cargarPanelAdmin() {
+    const panel = document.getElementById("panel-admin");
+
+    const usuarios = usuariosData.length;
+    const obras = listarObras().length; // ← CORREGIDO
+    const tareas = tareasData.length;
+
+    panel.innerHTML = `
+        <div class="card">
+            <h2>Resumen del Sistema</h2>
+            <div class="info-box">
+                <p><strong>Usuarios registrados:</strong> ${usuarios}</p>
+                <p><strong>Obras creadas:</strong> ${obras}</p>
+                <p><strong>Tareas registradas:</strong> ${tareas}</p>
+                <p><strong>Último acceso:</strong> ${new Date().toLocaleString()}</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Accesos Rápidos</h2>
+
+            <button class="boton-seccion" onclick="window.location.href='crear_usuario.html'">👤 Crear Usuario</button>
+            <button class="boton-seccion" onclick="window.location.href='crear_obra.html'">🏗️ Crear Obra</button>
+            <button class="boton-seccion" onclick="window.location.href='crear_tarea.html'">📝 Crear Tarea</button>
+            <button class="boton-seccion" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
+            <button class="boton-seccion" onclick="window.location.href='panelUsuarios.html'">📋 Panel de Usuarios</button>
+            <button class="boton-seccion" onclick="window.location.href='recursos.html'">📦 Recursos</button>
+        </div>
+
+        <div class="card">
+            <h2>Exportar Datos</h2>
+
+            <button class="boton-seccion" onclick="exportarDatos('usuarios')">📤 Exportar Usuarios</button>
+            <button class="boton-seccion" onclick="exportarDatos('obras')">📤 Exportar Obras</button>
+            <button class="boton-seccion" onclick="exportarDatos('tareas')">📤 Exportar Tareas</button>
+
+            <pre id="export-output" style="margin-top:15px; white-space:pre-wrap; max-height:300px; overflow:auto;"></pre>
+        </div>
+
+        <div class="card">
+            <h2>Herramientas Internas</h2>
+
+            <button class="boton-seccion rojo" onclick="resetUsuarios()">🗑️ Reset Usuarios</button>
+            <button class="boton-seccion rojo" onclick="resetObras()">🗑️ Reset Obras</button>
+            <button class="boton-seccion rojo" onclick="resetTareas()">🗑️ Reset Tareas</button>
+            <button class="boton-seccion rojo" onclick="resetTodo()">🗑️ Reset TODO el sistema</button>
+        </div>
+    `;
+}
+
+
+// ===============================
+//  EXPORTACIONES
+// ===============================
+function exportarDatos(tipo) {
+    const salida = document.getElementById("export-output");
+
+    if (tipo === "usuarios") {
+        salida.textContent = JSON.stringify(usuariosData, null, 2);
+    }
+
+    if (tipo === "obras") {
+        salida.textContent = JSON.stringify(listarObras(), null, 2); // ← CORREGIDO
+    }
+
+    if (tipo === "tareas") {
+        salida.textContent = JSON.stringify(tareasData, null, 2);
+    }
+}
+
+
+// ===============================
+//  RESET DEL SISTEMA
+// ===============================
+function resetUsuarios() {
+    if (!confirm("¿Seguro que deseas borrar TODOS los usuarios?")) return;
+    localStorage.removeItem("usuariosPCI");
+    alert("Usuarios eliminados.");
+    location.reload();
+}
+
+function resetObras() {
+    if (!confirm("¿Seguro que deseas borrar TODAS las obras?")) return;
+    localStorage.removeItem("obrasPCI"); // ← CORREGIDO
+    alert("Obras eliminadas.");
+    location.reload();
+}
+
+function resetTareas() {
+    if (!confirm("¿Seguro que deseas borrar TODAS las tareas?")) return;
+    localStorage.removeItem("tareasPCI");
+    alert("Tareas eliminadas.");
+    location.reload();
+}
+
+function resetTodo() {
+    if (!confirm("⚠️ Esto borrará absolutamente TODO. ¿Seguro?")) return;
+    localStorage.clear();
+    alert("Sistema reseteado por completo.");
+    location.reload();
+}
+</script>
+
+</body>
+</html>

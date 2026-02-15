@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Misterios</title>
+  <link rel="stylesheet" href="styles/style-v2.css">
+<link rel="stylesheet" href="styles/styles-residencias-misterios.css">
+  <script defer>
+    const urlMisterios = "https://script.google.com/macros/s/112BNc8vIXkekBY7tiVBjRA-ubD7Si2Dm7amMH6ARVOA/exec";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+
+      const contenedor = document.getElementById("contenedor-misterios");
+
+      try {
+        // ============================
+        // FETCH AL ENDPOINT
+        // ============================
+        const resp = await fetch(urlMisterios);
+        const data = await resp.json();
+
+        const resumen = data.resumen || [];
+        const avanceLogico = data.avanceLogico || [];
+        const promediosFisicos = data.promedios || [];
+
+        // ============================
+        // AVANCE GLOBAL
+        // ============================
+        const promedioFisicoGlobal = Math.round(
+          promediosFisicos.reduce((a, b) => a + b.promedio, 0) /
+          (promediosFisicos.length || 1)
+        );
+
+        const promedioLogicoGlobal = Math.round(
+          avanceLogico.reduce((a, b) => a + b.promedio, 0) /
+          (avanceLogico.length || 1)
+        );
+
+        contenedor.innerHTML += `
+          <div class="card tarjeta-dashboard">
+            <h2>Avance Global</h2>
+
+            <p><strong>Físico:</strong> ${promedioFisicoGlobal}%</p>
+            <div class="barra-premium">
+              <div class="barra-premium-fill" style="width:${promedioFisicoGlobal}%; background:#0A84FF;"></div>
+            </div>
+
+            <p><strong>Lógico:</strong> ${promedioLogicoGlobal}%</p>
+            <div class="barra-premium">
+              <div class="barra-premium-fill" style="width:${promedioLogicoGlobal}%; background:#00C851;"></div>
+            </div>
+          </div>
+        `;
+
+        // ============================
+        // AVANCE FÍSICO POR PLANTA
+        // ============================
+        contenedor.innerHTML += `<div class="card tarjeta-dashboard"><h2>Avance Físico por Planta</h2></div>`;
+        const cardFisico = contenedor.lastElementChild;
+
+        promediosFisicos.forEach(p => {
+          cardFisico.innerHTML += `
+            <p><strong>${p.planta}:</strong> ${p.promedio}%</p>
+            <div class="barra-premium">
+              <div class="barra-premium-fill" style="width:${p.promedio}%; background:#0A84FF;"></div>
+            </div>
+          `;
+        });
+
+        // ============================
+        // AVANCE LÓGICO POR PLANTA
+        // ============================
+        contenedor.innerHTML += `<div class="card tarjeta-dashboard"><h2>Avance Lógico por Planta</h2></div>`;
+        const cardLogico = contenedor.lastElementChild;
+
+        avanceLogico.forEach(p => {
+          cardLogico.innerHTML += `
+            <p><strong>${p.planta}:</strong> ${p.promedio}%</p>
+            <div class="barra-premium">
+              <div class="barra-premium-fill" style="width:${p.promedio}%; background:#00C851;"></div>
+            </div>
+          `;
+        });
+
+        // ============================
+        // TARJETAS POR TIPO (FÍSICO)
+        // ============================
+        contenedor.innerHTML += `<div class="card tarjeta-dashboard"><h2>Avance por Tipo</h2></div>`;
+        const cardTipos = contenedor.lastElementChild;
+
+        resumen.forEach(r => {
+          const color =
+            r.estado === "INSTALADO" ? "#00C851" :
+            r.estado === "EXISTE_NO_INSTALADO" ? "#ffbb33" :
+            "#ff4444";
+
+          cardTipos.innerHTML += `
+            <div class="proyecto-reciente">
+              <div style="flex:1;">
+                <strong>${r.tipo}</strong><br>
+                <small>${r.planta}</small><br>
+                <small>Estado: ${r.estado}</small>
+              </div>
+
+              <div style="width:40%;">
+                <div class="barra-premium">
+                  <div class="barra-premium-fill" style="width:${r.porcentaje}%; background:${color};"></div>
+                </div>
+                <small>${r.instalados}/${r.total}</small>
+              </div>
+            </div>
+          `;
+        });
+
+      } catch (err) {
+        contenedor.innerHTML = `
+          <div class="card">
+            <h2>Error al cargar datos</h2>
+            <p>${err.message}</p>
+          </div>
+        `;
+      }
+
+    });
+  </script>
+</head>
+
+<body>
+
+<header class="header-principal">
+  <img src="assets/img/logo-empresa.png" alt="Logo">
+  <div class="titulo-principal">
+    <h1>Dashboard Misterios</h1>
+    <h2>Aguero Instalaciones</h2>
+  </div>
+</header>
+
+<div class="panel-admin" id="contenedor-misterios">
+  <!-- Se llena dinámicamente -->
+</div>
+
+<div class="panel-admin">
+  <div class="card">
+    <button class="boton-seccion" onclick="window.location.href='dashboard.html'">⬅️ Volver al Dashboard</button>
+    <button class="boton-seccion" onclick="window.location.href='index.html'">🏠 Volver al Inicio</button>
+  </div>
+</div>
+
+</body>
+</html>
