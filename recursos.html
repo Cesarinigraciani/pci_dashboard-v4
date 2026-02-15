@@ -138,12 +138,18 @@ function mostrarRecursos() {
     `).join("");
 
     cont.innerHTML = `
-        <div class="card">
-            <h2>Recursos de la obra</h2>
-            ${htmlLista || "<p>No hay recursos registrados.</p>"}
-            <button class="boton-seccion" onclick="mostrarFormulario()">➕ Añadir Recurso</button>
-        </div>
-    `;
+    <div class="card">
+        <h2>Recursos de la obra</h2>
+        ${htmlLista || "<p>No hay recursos registrados.</p>"}
+
+        <button class="boton-seccion" onclick="mostrarFormulario()">➕ Añadir Recurso</button>
+
+        <button class="boton-seccion" onclick="window.location.href='editar_instalados.html?id=${obraActual.id}'">
+            🛠️ Editar equipos instalados
+        </button>
+    </div>
+`;
+
 }
 
 
@@ -286,3 +292,4 @@ function guardarObraPCI(obraActualizada) {
 
 </body>
 </html>
+
