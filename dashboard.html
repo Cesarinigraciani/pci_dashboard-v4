@@ -63,17 +63,25 @@ function cargarDashboard(usuario) {
     const tareas = obtenerTareasDeUsuario(usuario.id);
 
     panel.innerHTML = `
-        <div class="card">
-            <h2>Obras asignadas</h2>
-            ${obras.length === 0 ? "<p>No tienes obras asignadas.</p>" : ""}
-            <ul>
-                ${
-                    obras.length > 0 
-                    ? obras.map(o => `<li><strong>${o.nombre}</strong> (${o.ciudad || "-"})</li>`).join("")
-                    : "<p>No tienes obras asignadas válidas.</p>"
-                }
-            </ul>
-        </div>
+    <div class="card">
+        <h2>Obras asignadas</h2>
+
+        ${obras.length === 0 ? "<p>No tienes obras asignadas.</p>" : ""}
+
+        <ul>
+            ${
+                obras.length > 0 
+                ? obras.map(o => `<li><strong>${o.nombre}</strong> (${o.ciudad || "-"})</li>`).join("")
+                : "<p>No tienes obras asignadas válidas.</p>"
+            }
+        </ul>
+
+        <!-- ⭐ BOTÓN NUEVO PARA EDITAR EQUIPOS INSTALADOS ⭐ -->
+        <button class="boton-seccion" onclick="window.location.href='editar_instalados.html?id=${obras[0].id}'">
+            🛠️ Editar equipos instalados
+        </button>
+    </div>
+`;
 
         <div class="card">
             <h2>Tareas asignadas</h2>
@@ -185,3 +193,4 @@ function logout() {
 
 </body>
 </html>
+
