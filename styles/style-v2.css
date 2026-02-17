@@ -172,3 +172,19 @@ table td {
   line-height: 22px;
   transition: width .6s ease;
 }
+.card {
+  color: #ffffff;
+}
+
+.card h2,
+.card h3,
+.card p,
+.card li,
+.card span,
+.card strong {
+  color: #ffffff;
+}
+#mensajeBienvenida {
+  color: #ffffff;
+  font-weight: 600;
+}
