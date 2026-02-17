@@ -17,29 +17,51 @@
 </header>
 
 <div class="panel-admin">
-  <h2>Editar Datos de la Obra</h2>
+ <div class="form-card">
 
-  <label>Nombre de la obra:</label>
-  <input type="text" id="nombreObra" class="input-text">
+  <h2 class="form-title">Editar Datos de la Obra</h2>
 
-  <label>Dirección:</label>
-  <input type="text" id="direccionObra" class="input-text">
+  <div class="form-grid">
 
-  <label>Ciudad:</label>
-  <input type="text" id="ciudadObra" class="input-text">
+    <div class="form-group">
+      <label>Nombre de la obra</label>
+      <input type="text" id="nombreObra">
+    </div>
 
-  <label>Fecha de inicio:</label>
-  <input type="date" id="fechaInicio" class="input-text">
+    <div class="form-group">
+      <label>Dirección</label>
+      <input type="text" id="direccionObra">
+    </div>
 
-  <label>Encargado:</label>
-  <input type="text" id="encargadoObra" class="input-text">
+    <div class="form-group">
+      <label>Ciudad</label>
+      <input type="text" id="ciudadObra">
+    </div>
 
-  <label>Horas estimadas:</label>
-  <input type="number" id="horasObra" class="input-text" min="0">
+    <div class="form-group">
+      <label>Fecha de inicio</label>
+      <input type="date" id="fechaInicio">
+    </div>
 
-  <button onclick="guardarCambios()" class="btn-primario">💾 Guardar Cambios</button>
-  <button onclick="window.location.href='lista_obras.html'" class="btn-secundario">🔙 Volver</button>
+    <div class="form-group">
+      <label>Encargado</label>
+      <input type="text" id="encargadoObra">
+    </div>
+
+    <div class="form-group">
+      <label>Horas estimadas</label>
+      <input type="number" id="horasObra" min="0">
+    </div>
+
+  </div>
+
+  <div class="form-buttons">
+    <button onclick="window.location.href='lista_obras.html'" class="btn-secundario">⬅️ Volver</button>
+    <button onclick="guardarCambios()" class="btn-primario">💾 Guardar Cambios</button>
+  </div>
+
 </div>
+
 
 <script>
 // ===============================
@@ -97,3 +119,4 @@ function guardarCambios() {
 
 </body>
 </html>
+
