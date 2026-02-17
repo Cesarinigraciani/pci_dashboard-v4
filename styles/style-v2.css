@@ -188,3 +188,94 @@ table td {
   color: #ffffff;
   font-weight: 600;
 }
+/* Tarjeta principal */
+.form-card {
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 14px;
+  max-width: 900px;
+  margin: 30px auto;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+
+/* Título */
+.form-title {
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #0033A0;
+  text-align: center;
+}
+
+/* Grid de 2 columnas responsivas */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Grupo de campo */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.form-group input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  background: #f9f9f9;
+  transition: border-color .2s, background .2s;
+}
+
+.form-group input:focus {
+  border-color: #0078d4;
+  background: #ffffff;
+  outline: none;
+}
+
+/* Botones */
+.form-buttons {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.btn-primario {
+  background: #0078d4;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-primario:hover {
+  background: #005fa3;
+}
+
+.btn-secundario {
+  background: #666;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.btn-secundario:hover {
+  background: #444;
+}
+
