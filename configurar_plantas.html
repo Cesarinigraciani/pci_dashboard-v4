@@ -154,6 +154,11 @@
 
 <script>
 /* ============================================================
+   OBTENER ID DE LA OBRA DESDE LA URL
+============================================================ */
+let obraID = new URLSearchParams(window.location.search).get("id");
+
+/* ============================================================
    DISCIPLINAS GLOBALES
 ============================================================ */
 let DISCIPLINAS = JSON.parse(localStorage.getItem("disciplinasPCI")) || [
@@ -195,12 +200,6 @@ const EQUIPOS = [
 ];
 
 /* ============================================================
-   OBTENER ID DE LA OBRA DESDE LA URL
-============================================================ */
-const params = new URLSearchParams(window.location.search);
-const obraID = params.get("id");
-
-/* ============================================================
    CARGAR PLANTAS EXISTENTES
 ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
@@ -219,6 +218,8 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("btnGenerar").style.display = "none";
     }
 });
+</script>
+
 
 /* ============================================================
    NORMALIZAR TEXTO PARA IDs
