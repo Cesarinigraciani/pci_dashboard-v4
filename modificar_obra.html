@@ -19,48 +19,55 @@
 <div class="panel-admin">
   <div class="form-card">
 
-  <h2 class="form-title">Editar Datos de la Obra</h2>
+    <h2 class="form-title">Editar Datos de la Obra</h2>
 
-  <div class="form-grid">
+    <div class="form-grid">
 
-    <div class="form-group">
-      <label>Nombre de la obra</label>
-      <input type="text" id="nombreObra">
+      <div class="form-group">
+        <label>Nombre de la obra</label>
+        <input type="text" id="nombreObra">
+      </div>
+
+      <div class="form-group">
+        <label>Nombre corto</label>
+        <input type="text" id="nombreCorto">
+      </div>
+
+      <div class="form-group">
+        <label>Dirección</label>
+        <input type="text" id="direccionObra">
+      </div>
+
+      <div class="form-group">
+        <label>Ciudad</label>
+        <input type="text" id="ciudadObra">
+      </div>
+
+      <div class="form-group">
+        <label>Fecha de inicio</label>
+        <input type="date" id="fechaInicio">
+      </div>
+
+      <div class="form-group">
+        <label>Encargado</label>
+        <input type="text" id="encargadoObra">
+      </div>
+
+      <div class="form-group">
+        <label>Horas estimadas</label>
+        <input type="number" id="horasObra" min="0">
+      </div>
+
     </div>
 
-    <div class="form-group">
-      <label>Dirección</label>
-      <input type="text" id="direccionObra">
-    </div>
-
-    <div class="form-group">
-      <label>Ciudad</label>
-      <input type="text" id="ciudadObra">
-    </div>
-
-    <div class="form-group">
-      <label>Fecha de inicio</label>
-      <input type="date" id="fechaInicio">
-    </div>
-
-    <div class="form-group">
-      <label>Encargado</label>
-      <input type="text" id="encargadoObra">
-    </div>
-
-    <div class="form-group">
-      <label>Horas estimadas</label>
-      <input type="number" id="horasObra" min="0">
+    <div class="form-buttons">
+      <button onclick="window.location.href='lista_obras.html'" class="btn-secundario">⬅️ Volver</button>
+      <button onclick="guardarCambios()" class="btn-primario">💾 Guardar Cambios</button>
     </div>
 
   </div>
-
-  <div class="form-buttons">
-    <button onclick="window.location.href='lista_obras.html'" class="btn-secundario">⬅️ Volver</button>
-    <button onclick="guardarCambios()" class="btn-primario">💾 Guardar Cambios</button>
-  </div>
-
 </div>
+
 
 
 <script>
@@ -84,6 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("nombreObra").value = obra.nombre || "";
+  document.getElementById("nombreCorto").value = obra.nombreCorto || normalizar(obra.nombre);
   document.getElementById("direccionObra").value = obra.direccion || "";
   document.getElementById("ciudadObra").value = obra.ciudad || "";
   document.getElementById("fechaInicio").value = obra.fechaInicio || "";
@@ -104,6 +112,7 @@ function guardarCambios() {
   }
 
   obras[index].nombre = document.getElementById("nombreObra").value.trim();
+  obra.nombreCorto = document.getElementById("nombreCorto").value;
   obras[index].direccion = document.getElementById("direccionObra").value.trim();
   obras[index].ciudad = document.getElementById("ciudadObra").value.trim();
   obras[index].fechaInicio = document.getElementById("fechaInicio").value;
