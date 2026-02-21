@@ -35,6 +35,10 @@ function crearTarea(datos) {
         titulo: datos.titulo,
         descripcion: datos.descripcion,
         obraId: datos.obraId,
+        plantaId: datos.plantaId || null,
+        planoId: datos.planoId || null,
+        posX: datos.posX || 0,
+        posY: datos.posY || 0,
         asignadoA: datos.asignadoA,
         creadoPor: datos.creadoPor,
         estado: datos.estado || "pendiente",
@@ -47,6 +51,7 @@ function crearTarea(datos) {
     guardarTareas();
     return nuevaTarea;
 }
+
 
 
 // ===============================

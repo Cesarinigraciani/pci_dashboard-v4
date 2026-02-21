@@ -1,5 +1,5 @@
 // ===============================
-//  MANEJO DE OBRAS PCI (SISTEMA UNIFICADO)
+//  MANEJO DE OBRAS PCI (SISTEMA MODERNO)
 // ===============================
 
 // Obtener todas las obras
@@ -29,29 +29,7 @@ function guardarObra(obraActualizada) {
     }
 }
 
-// Crear una nueva obra
-function crearObra(datos) {
-    const obras = listarObras();
-
-    const nuevaObra = {
-        id: "obra_" + Date.now(),
-        nombre: datos.nombre || "",
-        direccion: datos.direccion || "",
-        ciudad: datos.ciudad || "",
-        fechaInicio: datos.fechaInicio || new Date().toISOString().split("T")[0],
-        encargado: datos.encargado || "",
-        horasEstimadas: datos.horasEstimadas || 0,
-        plantas: [],
-        fechaCreacion: new Date().toISOString()
-    };
-
-    obras.push(nuevaObra);
-    guardarObras(obras);
-
-    return nuevaObra;
-}
-
-// Guardar obra desde crear_proyecto.html
+// Crear una nueva obra (versión moderna)
 function guardarProyectoPCI(obra) {
     const obras = listarObras();
     obras.push(obra);

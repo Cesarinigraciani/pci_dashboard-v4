@@ -56,7 +56,7 @@ function agregarPlanta() {
 
 function renombrarPlanta(index) {
   const id = localStorage.getItem("proyectoActivo");
-  const proyectos = JSON.parse(localStorage.getItem("proyectosPCI")) || [];
+  const proyectos = JSON.parse(localStorage.getItem("obrasPCI")) || [];
   const proyecto = proyectos.find(p => p.id === id);
 
   const nuevoNombre = prompt("Nuevo nombre de la planta:", proyecto.plantas[index].nombre);
@@ -72,11 +72,11 @@ function eliminarPlanta(index) {
   if (!confirm("¿Seguro que deseas eliminar esta planta?")) return;
 
   const id = localStorage.getItem("proyectoActivo");
-  const proyectos = JSON.parse(localStorage.getItem("proyectosPCI")) || [];
+  const proyectos = JSON.parse(localStorage.getItem("obrasPCI")) || [];
   const proyecto = proyectos.find(p => p.id === id);
 
   proyecto.plantas.splice(index, 1);
 
-  localStorage.setItem("proyectosPCI", JSON.stringify(proyectos));
+  localStorage.setItem("obrasPCI", JSON.stringify(proyectos));
   cargarPlantas();
 }
