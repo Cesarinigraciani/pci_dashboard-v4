@@ -102,29 +102,38 @@ document.addEventListener("DOMContentLoaded", () => {
 // ===============================
 //  GUARDAR CAMBIOS
 // ===============================
+
 function guardarCambios() {
-  const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
-  const index = obras.findIndex(o => o.id === obraID);
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
 
-  if (index === -1) {
-    alert("Error: no se encontró la obra.");
-    return;
-  }
+    // Obtener ID desde la URL
+    const params = new URLSearchParams(window.location.search);
+    const obraID = params.get("id");
 
-  obras[index].nombre = document.getElementById("nombreObra").value.trim();
-  obra.nombreCorto = document.getElementById("nombreCorto").value;
-  obras[index].direccion = document.getElementById("direccionObra").value.trim();
-  obras[index].ciudad = document.getElementById("ciudadObra").value.trim();
-  obras[index].fechaInicio = document.getElementById("fechaInicio").value;
-  obras[index].encargado = document.getElementById("encargadoObra").value.trim();
-  obras[index].horasEstimadas = Number(document.getElementById("horasObra").value);
+    // Buscar la obra
+    const obra = obras.find(o => o.id === obraID);
+    if (!obra) {
+        alert("No se encontró la obra.");
+        return;
+    }
 
-  localStorage.setItem("obrasPCI", JSON.stringify(obras));
+    // Actualizar datos
+    obra.nombre = document.getElementById("nombreObra").value;
+    obra.nombreCorto = document.getElementById("nombreCorto").value || normalizar(obra.nombre);
+    obra.direccion = document.getElementById("direccionObra").value;
+    obra.ciudad = document.getElementById("ciudadObra").value;
+    obra.fechaInicio = document.getElementById("fechaInicio").value;
+    obra.encargado = document.getElementById("encargadoObra").value;
+    obra.horas = document.getElementById("horasObra").value;
 
-  alert("Cambios guardados correctamente.");
-  window.location.href = "lista_obras.html";
+    // Guardar en localStorage
+    localStorage.setItem("obrasPCI", JSON.stringify(obras));
+
+    alert("Cambios guardados correctamente.");
+    window.location.href = "lista_obras.html";
 }
 </script>
+
 
 </body>
 </html>
