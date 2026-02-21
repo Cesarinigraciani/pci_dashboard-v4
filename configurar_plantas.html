@@ -347,7 +347,6 @@ function abrirSubidaPlano(btn, idPlanta) {
         <option value="">Seleccionar plano</option>
         </select>
 
-
         <button class="btn btn-azul" onclick="guardarPlano(this, '${idPlanta}')">Guardar plano</button>
     `;
 
@@ -371,6 +370,26 @@ function agregarNuevaDisciplina(btn) {
     // Recargar selects
     document.querySelectorAll(".disciplina-select").forEach(sel => {
         sel.innerHTML = DISCIPLINAS.map(d => `<option value="${d}">${d}</option>`).join("");
+    });
+}
+async function cargarPlanosEnSelect() {
+    const response = await fetch("data/planos.json");
+    const data = await response.json();
+
+    const selects = document.querySelectorAll(".selector-plano");
+
+    selects.forEach(sel => {
+        // Evitar duplicados si se abre varias veces
+        if (sel.dataset.cargado === "true") return;
+
+        data.planos.forEach(nombre => {
+            const opt = document.createElement("option");
+            opt.value = nombre;
+            opt.textContent = nombre;
+            sel.appendChild(opt);
+        });
+
+        sel.dataset.cargado = "true";
     });
 }
 
