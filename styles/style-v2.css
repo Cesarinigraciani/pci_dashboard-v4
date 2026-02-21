@@ -278,4 +278,26 @@ table td {
 .btn-secundario:hover {
   background: #444;
 }
+/* Texto claro en header oscuro */
+.header-principal,
+.header-principal * {
+  color: #fff !important;
+}
+
+/* Texto oscuro dentro del panel blanco de recursos */
+/* SOLO el contenido del panel blanco debe ser negro */
+.panel-recursos .card,
+.panel-recursos .card *,
+.panel-recursos .card-recurso,
+.panel-recursos .card-recurso *,
+.panel-recursos .form-card,
+.panel-recursos .form-card * {
+  color: #111 !important;
+}
+/* Títulos sobre fondo oscuro o azul */
+.header-principal *,
+#mensajeBienvenida,
+#contenedor-recursos > .card > h2 {
+  color: #fff !important;
+}
 
