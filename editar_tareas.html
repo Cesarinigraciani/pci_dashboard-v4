@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Editar Tarea</title>
+<link rel="stylesheet" href="styles/style-v2.css">
+
+<style>
+body {
+    background: #1b1b1b;
+    color: #e6e6e6;
+    font-family: Arial, sans-serif;
+}
+
+.form-card {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 20px;
+    background: #242424;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.form-card h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #0A84FF;
+}
+
+label {
+    font-weight: bold;
+    margin-top: 10px;
+    display: block;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 8px;
+    border: 1px solid #555;
+    background: #1b1b1b;
+    color: #e6e6e6;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-azul { background: #0A84FF; color: white; }
+.btn-verde { background: #28a745; color: white; }
+.btn-rojo { background: #ff3b30; color: white; }
+
+/* Modal plano */
+#modalPlano {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+#modalPlano img {
+    max-width: 90%;
+    max-height: 90%;
+    border: 4px solid white;
+    border-radius: 10px;
+    cursor: crosshair;
+}
+</style>
+</head>
+
+<body>
+
+<div class="form-card">
+    <h2>Editar Tarea</h2>
+
+    <label>Título</label>
+    <input type="text" id="titulo">
+
+    <label>Descripción</label>
+    <textarea id="descripcion" rows="4"></textarea>
+
+    <label>Fecha de inicio</label>
+    <input type="date" id="fechaInicio">
+
+    <label>Obra</label>
+    <input type="text" id="obraNombre" disabled>
+
+    <label>Planta</label>
+    <input type="text" id="plantaNombre" disabled>
+
+    <!-- Selector de plano -->
+    <label>Plano</label>
+    <select id="planoSelect"></select>
+
+    <button class="btn-azul" onclick="abrirModalPlano()">📍 Cambiar ubicación en plano</button>
+
+    <label>Responsable</label>
+    <select id="responsable"></select>
+
+    <label>Estado</label>
+    <select id="estado">
+        <option value="pendiente">Pendiente</option>
+        <option value="proceso">En proceso</option>
+        <option value="bloqueada">Bloqueada</option>
+        <option value="completada">Completada</option>
+    </select>
+
+    <div id="bloqueoBox" style="display:none;">
+        <label>Motivo de bloqueo</label>
+        <textarea id="motivoBloqueo" rows="3"></textarea>
+    </div>
+
+    <label>Observaciones</label>
+    <textarea id="observaciones" rows="3"></textarea>
+
+    <button class="btn-verde" onclick="guardarCambios()">💾 Guardar Cambios</button>
+    <button class="btn-rojo" onclick="history.back()">⬅️ Volver</button>
+</div>
+
+<!-- MODAL PARA SELECCIONAR POSICIÓN -->
+<div id="modalPlano">
+    <img id="imgPlanoSeleccion" src="">
+</div>
+
+<script src="scripts/usuarios.js"></script>
+<script src="scripts/obras.js"></script>
+<script src="scripts/tareas.js"></script>
+
+<script>
+let tareaId = new URLSearchParams(window.location.search).get("id");
+let tarea = null;
+let posX = null;
+let posY = null;
+
+/* ============================================================
+   CARGAR TAREA
+============================================================ */
+function cargarTarea() {
+    const tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+    tarea = tareas.find(t => t.id === tareaId);
+
+    if (!tarea) {
+        alert("No se encontró la tarea.");
+        return;
+    }
+
+    document.getElementById("titulo").value = tarea.titulo;
+    document.getElementById("descripcion").value = tarea.descripcion;
+    document.getElementById("fechaInicio").value = tarea.fechaInicio || "";
+
+    const obra = getObraById(tarea.obraId);
+    const planta = obra.plantas.find(p => p.id === tarea.plantaId);
+
+    document.getElementById("obraNombre").value = obra.nombre;
+    document.getElementById("plantaNombre").value = planta.nombre;
+
+    cargarPlanos();
+
+    posX = tarea.posX;
+    posY = tarea.posY;
+
+    cargarResponsables();
+    document.getElementById("responsable").value = tarea.asignadoA;
+
+    document.getElementById("estado").value = tarea.estado;
+
+    if (tarea.estado === "bloqueada") {
+        document.getElementById("bloqueoBox").style.display = "block";
+        document.getElementById("motivoBloqueo").value = tarea.motivoBloqueo || "";
+    }
+
+    document.getElementById("observaciones").value = tarea.observaciones || "";
+}
+
+/* ============================================================
+   CARGAR PLANOS
+============================================================ */
+function cargarPlanos() {
+    const obra = getObraById(tarea.obraId);
+    const planta = obra.plantas.find(p => p.id === tarea.plantaId);
+
+    const select = document.getElementById("planoSelect");
+    select.innerHTML = "";
+
+    planta.planos.forEach(pl => {
+        const opt = document.createElement("option");
+        opt.value = pl.id;
+        opt.textContent = `${pl.disciplina} (${pl.id})`;
+        select.appendChild(opt);
+    });
+
+    if (tarea.planoId) {
+        select.value = tarea.planoId;
+    }
+}
+
+/* ============================================================
+   CARGAR RESPONSABLES
+============================================================ */
+function cargarResponsables() {
+    const select = document.getElementById("responsable");
+    select.innerHTML = "";
+
+    usuariosData.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = u.nombre;
+        select.appendChild(opt);
+    });
+}
+
+/* ============================================================
+   CAMBIAR UBICACIÓN EN PLANO
+============================================================ */
+function abrirModalPlano() {
+    const obra = getObraById(tarea.obraId);
+    const planta = obra.plantas.find(p => p.id === tarea.plantaId);
+    const plano = planta.planos.find(pl => pl.id === document.getElementById("planoSelect").value);
+
+    const modal = document.getElementById("modalPlano");
+    const img = document.getElementById("imgPlanoSeleccion");
+
+    img.src = plano.imagen;
+    modal.style.display = "flex";
+
+    img.onclick = function(e) {
+        const rect = img.getBoundingClientRect();
+        posX = (e.clientX - rect.left) / rect.width;
+        posY = (e.clientY - rect.top) / rect.height;
+
+        alert("Nueva ubicación seleccionada.");
+        modal.style.display = "none";
+    };
+}
+
+/* ============================================================
+   GUARDAR CAMBIOS
+============================================================ */
+function guardarCambios() {
+    const tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+    const t = tareas.find(x => x.id === tareaId);
+
+    t.titulo = document.getElementById("titulo").value.trim();
+    t.descripcion = document.getElementById("descripcion").value.trim();
+    t.fechaInicio = document.getElementById("fechaInicio").value;
+    t.asignadoA = document.getElementById("responsable").value;
+    t.estado = document.getElementById("estado").value;
+    t.observaciones = document.getElementById("observaciones").value.trim();
+
+    t.planoId = document.getElementById("planoSelect").value;
+
+    if (t.estado === "bloqueada") {
+        t.motivoBloqueo = document.getElementById("motivoBloqueo").value.trim();
+    } else {
+        t.motivoBloqueo = "";
+    }
+
+    t.posX = posX;
+    t.posY = posY;
+
+    localStorage.setItem("tareasPCI", JSON.stringify(tareas));
+
+    alert("Cambios guardados correctamente.");
+    history.back();
+}
+
+/* ============================================================
+   MOSTRAR/OCULTAR MOTIVO BLOQUEO
+============================================================ */
+document.getElementById("estado").addEventListener("change", function() {
+    if (this.value === "bloqueada") {
+        document.getElementById("bloqueoBox").style.display = "block";
+    } else {
+        document.getElementById("bloqueoBox").style.display = "none";
+    }
+});
+
+/* ============================================================
+   INICIALIZACIÓN
+============================================================ */
+document.addEventListener("DOMContentLoaded", cargarTarea);
+</script>
+
+</body>
+</html>

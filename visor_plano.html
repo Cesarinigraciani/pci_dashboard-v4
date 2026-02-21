@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Vista por Plano</title>
+    <link rel="stylesheet" href="styles/style-v2.css">
+
+    <style>
+        body {
+            background: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .filtros {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .filtros select {
+            padding: 8px;
+            border-radius: 6px;
+            margin: 0 10px;
+        }
+
+        .plano-container {
+            width: 90%;
+            margin: auto;
+            position: relative;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        #imgPlano {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .tarea-punto {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            border: 2px solid white;
+        }
+
+        .estado-bloqueada { background: #e53935; }
+        .estado-proceso { background: #1e88e5; }
+        .estado-pendiente { background: #fdd835; }
+        .estado-completada { background: #43a047; }
+
+        .tooltip {
+            position: absolute;
+            background: black;
+            color: white;
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            display: none;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .volver-btn {
+            margin: 20px auto;
+            display: block;
+            width: 200px;
+            padding: 12px;
+            background: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Vista por Plano</h1>
+
+<div class="filtros">
+    <label><strong>Obra:</strong></label>
+    <select id="filtroObra" onchange="cargarPlantas()">
+        <option value="">Seleccionar obra</option>
+    </select>
+
+    <label><strong>Planta:</strong></label>
+    <select id="filtroPlanta" onchange="cargarPlanos()">
+        <option value="">Seleccionar planta</option>
+    </select>
+
+    <label><strong>Plano:</strong></label>
+    <select id="filtroPlano" onchange="actualizarPlano()">
+        <option value="">Seleccionar plano</option>
+    </select>
+
+    <label><strong>Usuario:</strong></label>
+    <select id="filtroUsuario" onchange="actualizarPlano()">
+        <option value="todos">Todos</option>
+    </select>
+</div>
+
+<div class="plano-container">
+    <img id="imgPlano" src="" alt="Plano">
+    <div id="tooltip" class="tooltip"></div>
+</div>
+
+<button class="volver-btn" onclick="window.location.href='dashboard.html'">⬅️ Volver</button>
+
+<script src="scripts/tareas.js"></script>
+<script src="scripts/obras.js"></script>
+<script src="scripts/usuarios.js"></script>
+
+<script>
+let tareas = [];
+let obras = [];
+let usuarios = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+    tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+    obras = listarObras();
+    usuarios = window.usuariosData || [];
+
+    cargarObras();
+    cargarUsuarios();
+});
+
+// ===============================
+// CARGAR OBRAS
+// ===============================
+function cargarObras() {
+    const sel = document.getElementById("filtroObra");
+    obras.forEach(o => {
+        const opt = document.createElement("option");
+        opt.value = o.id;
+        opt.textContent = o.nombre;
+        sel.appendChild(opt);
+    });
+}
+
+// ===============================
+// CARGAR USUARIOS
+// ===============================
+function cargarUsuarios() {
+    const sel = document.getElementById("filtroUsuario");
+    usuarios.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = u.nombre;
+        sel.appendChild(opt);
+    });
+}
+
+// ===============================
+// CARGAR PLANTAS
+// ===============================
+function cargarPlantas() {
+    const obraId = document.getElementById("filtroObra").value;
+    const obra = getObraById(obraId);
+
+    const sel = document.getElementById("filtroPlanta");
+    sel.innerHTML = '<option value="">Seleccionar planta</option>';
+
+    if (!obra) return;
+
+    obra.plantas.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.nombre;
+        sel.appendChild(opt);
+    });
+}
+
+// ===============================
+// CARGAR PLANOS
+// ===============================
+function cargarPlanos() {
+    const obraId = document.getElementById("filtroObra").value;
+    const plantaId = document.getElementById("filtroPlanta").value;
+
+    const obra = getObraById(obraId);
+    if (!obra) return;
+
+    const planta = obra.plantas.find(p => p.id === plantaId);
+    if (!planta) return;
+
+    const sel = document.getElementById("filtroPlano");
+    sel.innerHTML = '<option value="">Seleccionar plano</option>';
+
+    planta.planos.forEach(pl => {
+
+        // ⭐ GENERAR RUTA AUTOMÁTICA
+        const nombreArchivo = pl.id.replace(/ /g, "%20") + ".png";
+        pl.imagen = `assets/img/planos/${nombreArchivo}`;
+
+        const opt = document.createElement("option");
+        opt.value = pl.id;
+        opt.textContent = pl.id;
+        sel.appendChild(opt);
+    });
+}
+
+
+// ===============================
+// ACTUALIZAR PLANO
+// ===============================
+function actualizarPlano() {
+    const obraId = document.getElementById("filtroObra").value;
+    const plantaId = document.getElementById("filtroPlanta").value;
+    const planoId = document.getElementById("filtroPlano").value;
+    const usuarioSel = document.getElementById("filtroUsuario").value;
+
+    const obra = getObraById(obraId);
+    if (!obra) return;
+
+    const planta = obra.plantas.find(p => p.id === plantaId);
+    if (!planta) return;
+
+    const plano = planta.planos.find(pl => pl.id === planoId);
+    if (!plano) return;
+
+    document.getElementById("imgPlano").src = plano.imagen;
+
+    renderTareas(obraId, plantaId, planoId, usuarioSel);
+}
+
+// ===============================
+// RENDERIZAR TAREAS SOBRE EL PLANO
+// ===============================
+function renderTareas(obraId, plantaId, planoId, usuarioSel) {
+    document.querySelectorAll(".tarea-punto").forEach(e => e.remove());
+
+    const lista = tareas.filter(t =>
+        t.obraId === obraId &&
+        t.plantaId === plantaId &&
+        t.planoId === planoId &&
+        (usuarioSel === "todos" || t.asignadoA === usuarioSel)
+    );
+
+    const cont = document.querySelector(".plano-container");
+    const tooltip = document.getElementById("tooltip");
+
+    lista.forEach(t => {
+        const punto = document.createElement("div");
+        punto.className = "tarea-punto estado-" + t.estado;
+
+        punto.style.left = t.posX + "%";
+        punto.style.top = t.posY + "%";
+
+        punto.onmouseenter = () => {
+            tooltip.style.display = "block";
+            tooltip.textContent = t.titulo;
+        };
+
+        punto.onmousemove = (e) => {
+            tooltip.style.left = e.pageX + 10 + "px";
+            tooltip.style.top = e.pageY + 10 + "px";
+        };
+
+        punto.onmouseleave = () => {
+            tooltip.style.display = "none";
+        };
+
+        cont.appendChild(punto);
+    });
+}
+</script>
+
+</body>
+</html>

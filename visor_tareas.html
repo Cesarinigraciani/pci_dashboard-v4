@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Visor de Tareas</title>
+    <link rel="stylesheet" href="styles/style-v2.css">
+
+    <style>
+        body {
+            background: #f4f4f4;
+        }
+
+        .kanban-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .kanban-column {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            min-height: 400px;
+        }
+
+        .kanban-column h2 {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .tarea-card {
+            background: #e9e9e9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 5px solid #0078d4;
+            cursor: grab;
+            transition: transform 0.2s;
+        }
+
+        .tarea-card:active {
+            cursor: grabbing;
+            transform: scale(1.03);
+        }
+
+        .drop-hover {
+            background: #d0e7ff !important;
+        }
+
+        .volver-btn {
+            margin: 20px auto;
+            display: block;
+            width: 200px;
+            padding: 12px;
+            background: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1 style="text-align:center; margin-top:20px;">Visor de Tareas</h1>
+<div style="text-align:center; margin-bottom:20px;">
+    <div style="text-align:center; margin-bottom:10px;">
+    <label><strong>Mes:</strong></label>
+    <select id="filtroMes" onchange="renderKanban()" style="padding:8px; border-radius:6px;">
+        <option value="0">Enero</option>
+        <option value="1">Febrero</option>
+        <option value="2">Marzo</option>
+        <option value="3">Abril</option>
+        <option value="4">Mayo</option>
+        <option value="5">Junio</option>
+        <option value="6">Julio</option>
+        <option value="7">Agosto</option>
+        <option value="8">Septiembre</option>
+        <option value="9">Octubre</option>
+        <option value="10">Noviembre</option>
+        <option value="11">Diciembre</option>
+    </select>
+
+    <label><strong>Año:</strong></label>
+    <select id="filtroAño" onchange="renderKanban()" style="padding:8px; border-radius:6px;"></select>
+</div>
+
+    
+    <label><strong>Filtrar por obra:</strong></label>
+    <select id="filtroObra" onchange="filtrarPorObra()" style="padding:8px; border-radius:6px;">
+        <option value="todas">Todas las obras</option>
+    </select>
+</div>
+<div style="text-align:center; margin-bottom:20px;">
+    <label><strong>Filtrar por usuario:</strong></label>
+    <select id="filtroUsuario" onchange="filtrarPorUsuario()" style="padding:8px; border-radius:6px;">
+        <option value="todos">Todos los usuarios</option>
+    </select>
+</div>
+
+<div class="kanban-container">
+    <div class="kanban-column" id="bloqueada" ondragover="allowDrop(event)" ondrop="drop(event, 'bloqueada')">
+       <h2 id="titulo-bloqueada">🟥 Bloqueadas (0)</h2> 
+    </div>
+
+    <div class="kanban-column" id="proceso" ondragover="allowDrop(event)" ondrop="drop(event, 'proceso')">
+        <h2 id="titulo-proceso">🟦 En proceso (0)</h2>
+    </div>
+
+    <div class="kanban-column" id="pendiente" ondragover="allowDrop(event)" ondrop="drop(event, 'pendiente')">
+        <h2 id="titulo-pendiente">🟨 Pendientes (0)</h2>
+    </div>
+
+    <div class="kanban-column" id="completada" ondragover="allowDrop(event)" ondrop="drop(event, 'completada')">
+        <h2 id="titulo-completada">🟩 Completadas (0)</h2>
+    </div>
+</div>
+
+<button class="volver-btn" onclick="window.location.href='dashboard.html'">⬅️ Volver</button>
+
+<script src="scripts/tareas.js"></script>
+<script src="scripts/obras.js"></script>
+<script src="scripts/usuarios.js"></script>
+
+<script>
+let tareas = [];
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await cargarUsuarios();   // si tu usuarios.js lo necesita
+    await cargarObrasEnFiltro();
+    cargarUsuariosEnFiltro();
+
+    tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+
+    cargarAños();
+    const selMes = document.getElementById("filtroMes");
+    if (selMes) selMes.value = new Date().getMonth();
+
+    renderKanban();
+});
+
+
+function cargarAños() {
+    const sel = document.getElementById("filtroAño");
+    if (!sel) return;
+
+    sel.innerHTML = "";
+
+    const añoActual = new Date().getFullYear();
+
+    for (let a = añoActual - 3; a <= añoActual + 3; a++) {
+        const opt = document.createElement("option");
+        opt.value = a;
+        opt.textContent = a;
+        sel.appendChild(opt);
+    }
+
+    sel.value = añoActual;
+}
+
+
+// ===============================
+// RENDERIZAR KANBAN
+// ===============================
+function renderKanban() {
+    const usuarioActual = getUsuarioActual();
+    const esAdmin = usuarioActual?.rol === "Administrador";
+
+    let tareasFiltradas = tareas;
+
+    if (!esAdmin && usuarioActual) {
+        tareasFiltradas = tareasFiltradas.filter(t => t.asignadoA === usuarioActual.id);
+    }
+
+    // 🔹 Filtro por mes y año
+    const selMes = document.getElementById("filtroMes");
+    const selAño = document.getElementById("filtroAño");
+
+    if (selMes && selAño) {
+        const mesSel = parseInt(selMes.value);
+        const añoSel = parseInt(selAño.value);
+
+        tareasFiltradas = tareasFiltradas.filter(t => {
+            if (!t.fechaInicio) return false;
+            const f = new Date(t.fechaInicio);
+            if (isNaN(f.getTime())) return false;
+            return f.getMonth() === mesSel && f.getFullYear() === añoSel;
+        });
+    }
+
+    // Limpiar columnas
+    document.querySelectorAll(".kanban-column").forEach(col => {
+        col.querySelectorAll(".tarea-card").forEach(card => card.remove());
+    });
+
+    let count = { bloqueada: 0, proceso: 0, pendiente: 0, completada: 0 };
+
+    tareasFiltradas.forEach(t => {
+        // ... resto de tu código tal cual
+
+        const card = document.createElement("div");
+        card.className = "tarea-card";
+        card.draggable = true;
+        card.id = t.id;
+
+        card.ondragstart = drag;
+
+        card.innerHTML = `
+            <strong>${t.titulo}</strong><br>
+            Obra: ${getObraById(t.obraId)?.nombre || "-"}<br>
+            Asignada a: ${getUsuarioById(t.asignadoA)?.nombre || "-"}<br>
+            Inicio: ${t.fechaInicio}
+        `;
+
+        document.getElementById(t.estado).appendChild(card);
+        count[t.estado]++;
+    });
+
+    document.getElementById("titulo-bloqueada").textContent = `🟥 Bloqueadas (${count.bloqueada})`;
+    document.getElementById("titulo-proceso").textContent = `🟦 En proceso (${count.proceso})`;
+    document.getElementById("titulo-pendiente").textContent = `🟨 Pendientes (${count.pendiente})`;
+    document.getElementById("titulo-completada").textContent = `🟩 Completadas (${count.completada})`;
+}
+
+function filtrarPorObra() {
+    const obraSeleccionada = document.getElementById("filtroObra").value;
+
+    if (obraSeleccionada === "todas") {
+        tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+    } else {
+        const todas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+        tareas = todas.filter(t => t.obraId === obraSeleccionada);
+    }
+
+    renderKanban();
+}
+
+
+// ===============================
+// DRAG & DROP
+// ===============================
+function drag(event) {
+    event.dataTransfer.setData("text", event.target.id);
+}
+
+function allowDrop(event) {
+    event.preventDefault();
+}
+
+function drop(event, nuevoEstado) {
+    event.preventDefault();
+    const idTarea = event.dataTransfer.getData("text");
+
+    const tarea = tareas.find(t => t.id === idTarea);
+    if (!tarea) return;
+
+    tarea.estado = nuevoEstado;
+
+    localStorage.setItem("tareasPCI", JSON.stringify(tareas));
+
+    renderKanban();
+}
+function cargarObrasEnFiltro() {
+    const obras = listarObras();
+    const select = document.getElementById("filtroObra");
+
+    obras.forEach(o => {
+        const opt = document.createElement("option");
+        opt.value = o.id;
+        opt.textContent = o.nombre;
+        select.appendChild(opt);
+    });
+}
+function filtrarPorUsuario() {
+    const usuarioSeleccionado = document.getElementById("filtroUsuario").value;
+
+    // Primero aplicamos el filtro por obra si está activo
+    const obraSeleccionada = document.getElementById("filtroObra").value;
+    let todas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+
+    if (obraSeleccionada !== "todas") {
+        todas = todas.filter(t => t.obraId === obraSeleccionada);
+    }
+
+    // Ahora filtramos por usuario
+    if (usuarioSeleccionado === "todos") {
+        tareas = todas;
+    } else {
+        tareas = todas.filter(t => t.asignadoA === usuarioSeleccionado);
+    }
+
+    renderKanban();
+}
+
+
+function cargarUsuariosEnFiltro() {
+    usuarios = JSON.parse(localStorage.getItem("usuariosPCI")) || [];
+    const select = document.getElementById("filtroUsuario");
+
+    usuarios.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = u.nombre;
+        select.appendChild(opt);
+    });
+}
+function getUsuarioById(id) {
+    return usuariosData.find(u => u.id === id) || null;
+}
+
+function getObraById(id) {
+    const obras = JSON.parse(localStorage.getItem("proyectosPCI")) || [];
+    return obras.find(o => o.id === id) || null;
+}
+
+
+</script>
+
+</body>
+</html>

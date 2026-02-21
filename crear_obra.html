@@ -61,7 +61,10 @@
   <h2>Crear Nueva Obra</h2>
 
   <label>Nombre de la obra</label>
-  <input type="text" id="nombreObra" placeholder="Ej. Torre Norte">
+  <input type="text" id="nombreObra" placeholder="Ej. Apartamentos Turísticos Acacias">
+
+  <label>Nombre corto de la obra</label>
+  <input type="text" id="nombreCortoObra" placeholder="Ej. acacias">
 
   <label>Dirección</label>
   <input type="text" id="direccionObra" placeholder="Ej. Calle Mayor 123">
@@ -93,19 +96,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const select = document.getElementById("encargadoObra");
   select.innerHTML = "";
 
-  (window.usuariosData || []).forEach(u => {
-    const opt = document.createElement("option");
-    opt.value = u.id;
-    opt.textContent = u.nombre;
-    select.appendChild(opt);
-  });
-});
+  // Cargar usuarios desde localStorage
+  const usuarios = JSON.parse(localStorage.getItem("usuariosPCI")) || [];
 
+  // Filtrar solo encargados
+  usuarios
+    .filter(u => u.rol === "Encargado de Obra")
+    .forEach(u => {
+      const opt = document.createElement("option");
+      opt.value = u.id;
+      opt.textContent = u.nombre;
+      select.appendChild(opt);
+    });
+});
+</script>
+
+<script>
 // ===============================
 // GUARDAR OBRA
 // ===============================
 function guardarObra() {
   const nombre = document.getElementById("nombreObra").value.trim();
+  const nombreCorto = document.getElementById("nombreCortoObra").value.trim().toLowerCase();
   const direccion = document.getElementById("direccionObra").value.trim();
   const ciudad = document.getElementById("ciudadObra").value.trim();
   const fecha = document.getElementById("fechaObra").value;
@@ -117,24 +129,33 @@ function guardarObra() {
     return;
   }
 
+  if (!nombreCorto) {
+    alert("Debes introducir un nombre corto para la obra.");
+    return;
+  }
+
   const nuevaObra = {
     id: "obra_" + Date.now(),
     nombre,
+    nombreCorto,
     direccion,
     ciudad,
     fechaInicio: fecha || new Date().toISOString().split("T")[0],
-    encargado, // ID del usuario encargado
+    encargado,
     horasEstimadas: horas ? Number(horas) : 0,
-    tareas: [],
     plantas: [],
     fechaCreacion: new Date().toISOString()
   };
 
-  guardarProyectoPCI(nuevaObra);
+  // 🔥 CORRECCIÓN: guardar en obrasPCI
+  let obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+  obras.push(nuevaObra);
+  localStorage.setItem("obrasPCI", JSON.stringify(obras));
 
   alert("Obra creada correctamente.");
   window.location.href = "configurar_plantas.html?id=" + nuevaObra.id;
 }
+
 </script>
 
 </body>

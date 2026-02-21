@@ -52,6 +52,24 @@
             font-size: 16px;
             cursor: pointer;
         }
+
+        /* Modal plano */
+        #modalPlano {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        #modalPlano img {
+            max-width: 90%;
+            max-height: 90%;
+            border: 4px solid white;
+            border-radius: 10px;
+            cursor: crosshair;
+        }
     </style>
 </head>
 
@@ -69,8 +87,16 @@
     <label>Fecha de inicio</label>
     <input type="date" id="fechaInicioTarea">
 
-    <label>Obra asignada</label>
-    <select id="selectObra" disabled></select>
+    <label>Obra</label>
+    <select id="selectObra"></select>
+
+    <label>Planta</label>
+    <select id="selectPlanta"></select>
+
+    <label>Plano</label>
+    <select id="selectPlano"></select>
+
+    <button class="btn-guardar" onclick="abrirModalPlano()">Seleccionar ubicación en plano</button>
 
     <label>Asignada a</label>
     <select id="selectUsuarioAsignado"></select>
@@ -79,42 +105,134 @@
     <select id="estadoTarea">
         <option value="pendiente">Pendiente</option>
         <option value="proceso">En proceso</option>
+        <option value="bloqueada">Bloqueada</option>
         <option value="completada">Completada</option>
     </select>
+    <label>Prioridad</label>
+    <select id="prioridadTarea">
+    <option value="alta">Alta</option>
+    <option value="media">Media</option>
+    <option value="baja" selected>Baja</option>
+</select>
 
     <button class="btn-guardar" onclick="guardarTarea()">Guardar Tarea</button>
     <button class="btn-volver" onclick="window.location.href='dashboard.html'">⬅️ Volver</button>
 </div>
 
-<!-- RUTAS CORREGIDAS -->
+<!-- MODAL PARA SELECCIONAR POSICIÓN -->
+<div id="modalPlano">
+    <img id="imgPlanoSeleccion" src="">
+</div>
+
 <script src="scripts/usuarios.js"></script>
 <script src="scripts/obras.js"></script>
 <script src="scripts/tareas.js"></script>
 
 <script>
-// ===============================
-// CARGAR OBRA DEL USUARIO LOGUEADO
-// ===============================
-function cargarObraUsuario() {
-    const user = getUsuarioActual();
+let posX = null;
+let posY = null;
+
+/* ============================================================
+   CARGAR OBRAS
+============================================================ */
+function cargarObras() {
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
     const select = document.getElementById("selectObra");
 
-    if (!user || !user.obrasAsignadas || user.obrasAsignadas.length === 0) {
-        select.innerHTML = `<option>No tiene obras asignadas</option>`;
+    select.innerHTML = `<option value="">Seleccione una obra</option>`;
+
+    obras.forEach(o => {
+        const opt = document.createElement("option");
+        opt.value = o.id;
+        opt.textContent = o.nombre;
+        select.appendChild(opt);
+    });
+}
+
+/* ============================================================
+   CARGAR PLANTAS SEGÚN OBRA
+============================================================ */
+function cargarPlantas() {
+    const obraId = document.getElementById("selectObra").value;
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+    const obra = obras.find(o => o.id === obraId);
+
+    const select = document.getElementById("selectPlanta");
+    select.innerHTML = "";
+
+    if (!obra) return;
+
+    obra.plantas.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.nombre;
+        select.appendChild(opt);
+    });
+
+    cargarPlanos();
+}
+
+/* ============================================================
+   CARGAR PLANOS SEGÚN PLANTA
+============================================================ */
+function cargarPlanos() {
+    const obraId = document.getElementById("selectObra").value;
+    const plantaId = document.getElementById("selectPlanta").value;
+
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+    const obra = obras.find(o => o.id === obraId);
+    const planta = obra?.plantas.find(p => p.id === plantaId);
+
+    const select = document.getElementById("selectPlano");
+    select.innerHTML = "";
+
+    if (!planta || !planta.planos) return;
+
+    planta.planos.forEach(pl => {
+        const opt = document.createElement("option");
+        opt.value = pl.id;
+        opt.textContent = `${pl.disciplina} (${pl.id})`;
+        select.appendChild(opt);
+    });
+}
+
+/* ============================================================
+   ABRIR MODAL PARA SELECCIONAR POSICIÓN
+============================================================ */
+function abrirModalPlano() {
+    const obraId = document.getElementById("selectObra").value;
+    const plantaId = document.getElementById("selectPlanta").value;
+    const planoId = document.getElementById("selectPlano").value;
+
+    if (!obraId || !plantaId || !planoId) {
+        alert("Debe seleccionar obra, planta y plano.");
         return;
     }
 
-    const obraId = user.obrasAsignadas[0]; // Primera obra asignada
-    const obra = getObraById(obraId); // ← CORREGIDO
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+    const obra = obras.find(o => o.id === obraId);
+    const planta = obra.plantas.find(p => p.id === plantaId);
+    const plano = planta.planos.find(pl => pl.id === planoId);
 
-    if (obra) {
-        select.innerHTML = `<option value="${obra.id}">${obra.nombre}</option>`;
-    }
+    const modal = document.getElementById("modalPlano");
+    const img = document.getElementById("imgPlanoSeleccion");
+
+    img.src = plano.imagen;
+    modal.style.display = "flex";
+
+    img.onclick = function(e) {
+        const rect = img.getBoundingClientRect();
+        posX = (e.clientX - rect.left) / rect.width;
+        posY = (e.clientY - rect.top) / rect.height;
+
+        alert("Ubicación seleccionada correctamente.");
+        modal.style.display = "none";
+    };
 }
 
-// ===============================
-// CARGAR USUARIOS PARA ASIGNAR TAREA
-// ===============================
+/* ============================================================
+   CARGAR USUARIOS
+============================================================ */
 function cargarUsuariosAsignables() {
     const usuarios = usuariosData;
     const select = document.getElementById("selectUsuarioAsignado");
@@ -128,24 +246,36 @@ function cargarUsuariosAsignables() {
         select.appendChild(option);
     });
 
-    // Por defecto, asignar al usuario logueado
     const actual = getUsuarioActual();
     if (actual) select.value = actual.id;
 }
 
-// ===============================
-// GUARDAR TAREA
-// ===============================
+/* ============================================================
+   GUARDAR TAREA
+============================================================ */
 function guardarTarea() {
     const titulo = document.getElementById("tituloTarea").value.trim();
     const descripcion = document.getElementById("descripcionTarea").value.trim();
     const fechaInicio = document.getElementById("fechaInicioTarea").value;
     const obraId = document.getElementById("selectObra").value;
+    const plantaId = document.getElementById("selectPlanta").value;
+    const planoId = document.getElementById("selectPlano").value;
     const asignadoA = document.getElementById("selectUsuarioAsignado").value;
     const estado = document.getElementById("estadoTarea").value;
+    const prioridad = document.getElementById("prioridadTarea").value;
 
     if (!titulo || !descripcion) {
         alert("El título y la descripción son obligatorios.");
+        return;
+    }
+
+    if (!obraId || !plantaId || !planoId) {
+        alert("Debe seleccionar obra, planta y plano.");
+        return;
+    }
+
+    if (posX === null || posY === null) {
+        alert("Debe seleccionar una ubicación en el plano.");
         return;
     }
 
@@ -155,8 +285,13 @@ function guardarTarea() {
         titulo,
         descripcion,
         obraId,
+        plantaId,
+        planoId,
+        posX,
+        posY,
         asignadoA,
         estado,
+        prioridad, // ← AQUI
         creadoPor: creador.id,
         fechaInicio
     });
@@ -165,13 +300,38 @@ function guardarTarea() {
     window.location.href = "dashboard.html";
 }
 
-// ===============================
-// INICIALIZACIÓN
-// ===============================
+/* ============================================================
+   INICIALIZACIÓN
+============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-    cargarObraUsuario();
+    cargarObras();
     cargarUsuariosAsignables();
+
+    const params = new URLSearchParams(window.location.search);
+    const obraId = params.get("obra");
+
+    if (obraId) {
+        document.getElementById("selectObra").value = obraId;
+        cargarPlantas();
+
+        // Seleccionar automáticamente la primera planta
+        const plantas = document.getElementById("selectPlanta");
+        if (plantas.options.length > 0) {
+            plantas.selectedIndex = 0;
+            cargarPlanos();
+
+            // Seleccionar automáticamente el primer plano
+            const planos = document.getElementById("selectPlano");
+            if (planos.options.length > 0) {
+                planos.selectedIndex = 0;
+            }
+        }
+    }
+
+    document.getElementById("selectObra").addEventListener("change", cargarPlantas);
+    document.getElementById("selectPlanta").addEventListener("change", cargarPlanos);
 });
+
 </script>
 
 </body>

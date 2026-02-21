@@ -40,6 +40,87 @@
         .btn-azul { background: #0078d4; color: white; }
         .btn-rojo { background: #d9534f; color: white; }
         .btn-verde { background: #28a745; color: white; }
+
+        /* --- ESTILOS OSCUROS PREMIUM --- */
+        #contenedorPlantas .planta-box {
+            background: #242424 !important;
+            border-radius: 14px !important;
+            padding: 20px !important;
+            margin-bottom: 25px !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+            border-left: 8px solid #0A84FF !important;
+        }
+        #contenedorPlantas .planta-box h3 {
+            color: #E5F1FF !important;
+            font-size: 22px !important;
+            margin-top: 0 !important;
+        }
+        #contenedorPlantas .planta-box label {
+            color: #dcdcdc !important;
+            font-weight: 600 !important;
+            margin-top: 12px !important;
+        }
+        #contenedorPlantas input,
+        #contenedorPlantas select {
+            width: 100% !important;
+            padding: 10px !important;
+            margin-top: 6px !important;
+            border-radius: 8px !important;
+            border: 1px solid #555 !important;
+            background: #1b1b1b !important;
+            color: #e6e6e6 !important;
+        }
+        #contenedorPlantas .equipos-lista {
+            margin-top: 18px !important;
+        }
+        #contenedorPlantas .equipo-item {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            background: #2d2d2d !important;
+            padding: 12px !important;
+            border-radius: 8px !important;
+            margin-bottom: 10px !important;
+            border: 1px solid #444 !important;
+        }
+        #contenedorPlantas .equipo-nombre {
+            color: #E5F1FF !important;
+            font-weight: bold !important;
+            flex: 1 !important;
+        }
+        #contenedorPlantas .equipo-cantidad {
+            width: 70px !important;
+            padding: 6px !important;
+            border-radius: 6px !important;
+            border: 1px solid #666 !important;
+            background: #1b1b1b !important;
+            color: #fff !important;
+            text-align: center !important;
+        }
+        #contenedorPlantas .btn {
+            padding: 12px 18px !important;
+            border-radius: 10px !important;
+            font-size: 16px !important;
+            margin-top: 12px !important;
+        }
+        #contenedorPlantas .btn-azul:hover { background: #0A84FF !important; }
+        #contenedorPlantas .btn-verde:hover { background: #2ecc71 !important; }
+        #contenedorPlantas .btn-rojo:hover { background: #b30000 !important; }
+
+        /* --- PLANOS --- */
+        .plano-item {
+            background: #1e1e1e;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 1px solid #444;
+            color: #fff;
+        }
+        .plano-item img {
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
     </style>
 </head>
 
@@ -72,6 +153,28 @@
 </div>
 
 <script>
+/* ============================================================
+   DISCIPLINAS GLOBALES
+============================================================ */
+let DISCIPLINAS = JSON.parse(localStorage.getItem("disciplinasPCI")) || [
+    "Eléctrico",
+    "Telecomunicaciones",
+    "CCTV",
+    "AP",
+    "PCI",
+    "PCI Agua",
+    "Refrigeración",
+    "Climatización",
+    "Domótica"
+];
+
+function guardarDisciplinas() {
+    localStorage.setItem("disciplinasPCI", JSON.stringify(DISCIPLINAS));
+}
+
+/* ============================================================
+   EQUIPOS (tu lista original)
+============================================================ */
 const EQUIPOS = [
     "ZÓCALOS",
     "DETECTORES",
@@ -93,18 +196,20 @@ const EQUIPOS = [
 
 /* ============================================================
    OBTENER ID DE LA OBRA DESDE LA URL
-   ============================================================ */
+============================================================ */
 const params = new URLSearchParams(window.location.search);
 const obraID = params.get("id");
 
 /* ============================================================
    CARGAR PLANTAS EXISTENTES
-   ============================================================ */
+============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
     const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
     const obra = obras.find(o => o.id === obraID);
 
     if (!obra) return;
+
+    window.obraActual = obra; // Guardamos referencia global
 
     if (obra.plantas && obra.plantas.length > 0) {
         cargarPlantasExistentes(obra.plantas);
@@ -116,95 +221,236 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
+   NORMALIZAR TEXTO PARA IDs
+============================================================ */
+function normalizar(str) {
+    return str
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+}
+
+/* ============================================================
    CARGAR PLANTAS YA GUARDADAS
-   ============================================================ */
+============================================================ */
 function cargarPlantasExistentes(plantas) {
     const contenedor = document.getElementById("contenedorPlantas");
     contenedor.innerHTML = "";
 
-    plantas.forEach((planta) => {
-        const div = document.createElement("div");
-        div.className = "planta-box";
-
-        div.innerHTML = `
-            <h3>${planta.nombre}</h3>
-
-            <label>Nombre personalizado</label>
-            <input type="text" class="nombre-planta" value="${planta.nombre}">
-
-            <label>Equipo</label>
-            <select class="equipo-select">
-                ${EQUIPOS.map(e => `<option value="${e}">${e}</option>`).join("")}
-            </select>
-
-            <label>Cantidad</label>
-            <input type="number" class="equipo-cantidad-input" min="1" value="1">
-
-            <button class="btn btn-verde" onclick="agregarEquipo(this)">Añadir equipo</button>
-            <button class="btn btn-rojo" onclick="this.parentElement.remove()">Eliminar planta</button>
-
-            <div class="equipos-lista"></div>
-        `;
-
-        const lista = div.querySelector(".equipos-lista");
-
-        planta.equipos.forEach(eq => {
-            const item = document.createElement("div");
-            item.className = "equipo-item";
-
-            item.innerHTML = `
-                <span class="equipo-nombre">${eq.nombre}</span>
-                <input type="number" class="equipo-cantidad" value="${eq.cantidad}" min="1">
-                <button class="btn btn-rojo" onclick="this.parentElement.remove()">X</button>
-            `;
-
-            lista.appendChild(item);
-        });
-
-        contenedor.appendChild(div);
+    plantas.forEach((planta, index) => {
+        contenedor.appendChild(crearTarjetaPlanta(planta, index));
     });
 }
 
 /* ============================================================
+   CREAR TARJETA DE PLANTA
+============================================================ */
+function crearTarjetaPlanta(planta, index) {
+    const div = document.createElement("div");
+    div.className = "planta-box";
+
+    const idPlanta = planta.id || `${obraActual.nombreCorto}_${normalizar(planta.nombre)}`;
+    planta.id = idPlanta;
+
+    div.innerHTML = `
+        <h3>${planta.nombre}</h3>
+
+        <label>Nombre personalizado</label>
+        <input type="text" class="nombre-planta" value="${planta.nombre}">
+
+        <label>Equipo</label>
+        <select class="equipo-select">
+            ${EQUIPOS.map(e => `<option value="${e}">${e}</option>`).join("")}
+        </select>
+
+        <label>Cantidad</label>
+        <input type="number" class="equipo-cantidad-input" min="1" value="1">
+
+        <button class="btn btn-verde" onclick="agregarEquipo(this)">Añadir equipo</button>
+        <button class="btn btn-rojo" onclick="this.parentElement.remove()">Eliminar planta</button>
+
+        <div class="equipos-lista"></div>
+
+        <hr>
+
+        <h3>Planos de esta planta</h3>
+
+        <button class="btn btn-azul" onclick="abrirSubidaPlano(this, '${idPlanta}')">➕ Añadir plano</button>
+
+        <div class="planos-lista"></div>
+    `;
+
+    /* Cargar equipos existentes */
+    const listaEquipos = div.querySelector(".equipos-lista");
+    planta.equipos.forEach(eq => {
+        const item = document.createElement("div");
+        item.className = "equipo-item";
+
+        item.innerHTML = `
+            <span class="equipo-nombre">${eq.nombre}</span>
+            <input type="number" class="equipo-cantidad" value="${eq.cantidad}" min="1">
+            <button class="btn btn-rojo" onclick="this.parentElement.remove()">X</button>
+        `;
+
+        listaEquipos.appendChild(item);
+    });
+
+    /* Cargar planos existentes */
+    const listaPlanos = div.querySelector(".planos-lista");
+    (planta.planos || []).forEach(plano => {
+        listaPlanos.appendChild(crearTarjetaPlano(plano));
+    });
+
+    return div;
+}
+
+/* ============================================================
+   TARJETA DE PLANO
+============================================================ */
+function crearTarjetaPlano(plano) {
+    const div = document.createElement("div");
+    div.className = "plano-item";
+
+    div.setAttribute("data-id", plano.id);
+div.setAttribute("data-disciplina", plano.disciplina);
+
+div.innerHTML = `
+    <strong>${plano.disciplina}</strong><br>
+    ID: ${plano.id}
+    <img src="${plano.imagen}">
+    <button class="btn btn-rojo" onclick="this.parentElement.remove()">Eliminar plano</button>
+`;
+
+    return div;
+}
+
+/* ============================================================
+   SUBIR PLANO
+============================================================ */
+function abrirSubidaPlano(btn, idPlanta) {
+    const contenedor = btn.parentElement.querySelector(".planos-lista");
+
+    const div = document.createElement("div");
+    div.className = "plano-item";
+
+    div.innerHTML = `
+        <label>Disciplina</label>
+        <select class="disciplina-select">
+            ${DISCIPLINAS.map(d => `<option value="${d}">${d}</option>`).join("")}
+        </select>
+
+        <button class="btn btn-verde" onclick="agregarNuevaDisciplina(this)">➕ Añadir disciplina</button>
+
+        <label>Subir plano (imagen)</label>
+        <input type="file" accept="image/*" class="input-plano">
+
+        <button class="btn btn-azul" onclick="guardarPlano(this, '${idPlanta}')">Guardar plano</button>
+    `;
+
+    contenedor.appendChild(div);
+}
+
+/* ============================================================
+   AÑADIR NUEVA DISCIPLINA GLOBAL
+============================================================ */
+function agregarNuevaDisciplina(btn) {
+    const nombre = prompt("Nombre de la nueva disciplina:");
+
+    if (!nombre) return;
+
+    DISCIPLINAS.push(nombre);
+    guardarDisciplinas();
+
+    alert("Disciplina añadida globalmente.");
+
+    // Recargar selects
+    document.querySelectorAll(".disciplina-select").forEach(sel => {
+        sel.innerHTML = DISCIPLINAS.map(d => `<option value="${d}">${d}</option>`).join("");
+    });
+}
+
+/* ============================================================
+   GUARDAR PLANO
+============================================================ */
+function guardarPlano(btn, idPlanta) {
+    const contenedor = btn.parentElement;
+    const disciplina = contenedor.querySelector(".disciplina-select").value;
+    const archivo = contenedor.querySelector(".input-plano").files[0];
+
+    if (!archivo) {
+        alert("Debes seleccionar una imagen.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const base64 = e.target.result;
+
+        const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+        const obra = obras.find(o => o.id === obraID);
+
+        const planta = obra.plantas.find(p => p.id === idPlanta);
+
+        if (!planta.planos) planta.planos = [];
+
+        const correlativo = String(planta.planos.length + 1).padStart(3, "0");
+
+        const idPlano = `${obra.nombreCorto}_${normalizar(planta.nombre)}_${normalizar(disciplina)}_${correlativo}`;
+
+        const nuevoPlano = {
+            id: idPlano,
+            disciplina,
+            imagen: base64
+        };
+
+        planta.planos.push(nuevoPlano);
+
+        localStorage.setItem("obrasPCI", JSON.stringify(obras));
+
+        alert("Plano guardado correctamente.");
+
+        // Reemplazar formulario por tarjeta final
+        contenedor.replaceWith(crearTarjetaPlano(nuevoPlano));
+    };
+
+    reader.readAsDataURL(archivo);
+}
+
+/* ============================================================
    GENERAR PLANTAS NUEVAS
-   ============================================================ */
+============================================================ */
 function generarPlantas() {
     const contenedor = document.getElementById("contenedorPlantas");
     contenedor.innerHTML = "";
 
     const n = parseInt(document.getElementById("numPlantas").value);
 
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+    const obra = obras.find(o => o.id === obraID);
+
+    obra.plantas = [];  // 🔥 Reiniciar plantas reales
+
     for (let i = 1; i <= n; i++) {
-        const div = document.createElement("div");
-        div.className = "planta-box";
+        const planta = {
+            id: `${obra.nombreCorto}_planta_${i}`,
+            nombre: `Planta ${i}`,
+            equipos: [],
+            planos: []   // 🔥 NECESARIO
+        };
 
-        div.innerHTML = `
-            <h3>Planta ${i}</h3>
+        obra.plantas.push(planta);  // 🔥 Guardar en la obra REAL
 
-            <label>Nombre personalizado</label>
-            <input type="text" class="nombre-planta" placeholder="Ej. Planta ${i}">
-
-            <label>Equipo</label>
-            <select class="equipo-select">
-                ${EQUIPOS.map(e => `<option value="${e}">${e}</option>`).join("")}
-            </select>
-
-            <label>Cantidad</label>
-            <input type="number" class="equipo-cantidad-input" min="1" value="1">
-
-            <button class="btn btn-verde" onclick="agregarEquipo(this)">Añadir equipo</button>
-            <button class="btn btn-rojo" onclick="this.parentElement.remove()">Eliminar planta</button>
-
-            <div class="equipos-lista"></div>
-        `;
-
-        contenedor.appendChild(div);
+        contenedor.appendChild(crearTarjetaPlanta(planta, i));
     }
+
+    localStorage.setItem("obrasPCI", JSON.stringify(obras)); // 🔥 Guardar cambios
 }
+
 
 /* ============================================================
    AÑADIR EQUIPO A UNA PLANTA
-   ============================================================ */
+============================================================ */
 function agregarEquipo(btn) {
     const plantaDiv = btn.parentElement;
     const equipo = plantaDiv.querySelector(".equipo-select").value;
@@ -225,8 +471,8 @@ function agregarEquipo(btn) {
 }
 
 /* ============================================================
-   GUARDAR PLANTAS (OBRAS)
-   ============================================================ */
+   GUARDAR PLANTAS EN LA OBRA
+============================================================ */
 function guardarPlantas() {
     const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
     const obra = obras.find(o => o.id === obraID);
@@ -242,25 +488,39 @@ function guardarPlantas() {
         const nombre = plantaDiv.querySelector(".nombre-planta").value.trim()
             || plantaDiv.querySelector("h3").textContent;
 
+        const idPlanta = `${obra.nombreCorto}_${normalizar(nombre)}`;
+
         const equipos = [...plantaDiv.querySelectorAll(".equipo-item")].map(e => ({
             nombre: e.querySelector(".equipo-nombre").textContent.trim(),
             cantidad: parseInt(e.querySelector(".equipo-cantidad").value),
             instalados: 0
         }));
 
-        plantasFinales.push({ nombre, equipos });
+        const planos = [...plantaDiv.querySelectorAll(".plano-item")].map(p => {
+            const img = p.querySelector("img");
+            if (!img) return null;
+
+            return {
+               id: p.getAttribute("data-id"),
+            disciplina: p.getAttribute("data-disciplina"),
+            imagen: img.src
+
+            };
+        }).filter(Boolean);
+
+        plantasFinales.push({ id: idPlanta, nombre, equipos, planos });
     });
 
     obra.plantas = plantasFinales;
 
     localStorage.setItem("obrasPCI", JSON.stringify(obras));
 
-    alert("Plantas y equipos guardados correctamente.");
+    alert("Plantas y planos guardados correctamente.");
 }
 
 /* ============================================================
    GUARDAR Y VOLVER
-   ============================================================ */
+============================================================ */
 function guardarYVolver() {
     guardarPlantas();
     window.location.href = "lista_obras.html";

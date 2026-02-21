@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Editar Usuario</title>
+  <link rel="stylesheet" href="styles/style-v2.css">
+
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    .form-card {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #111;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    .form-card h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .form-card label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+      color: #fff;
+    }
+
+    .form-card input,
+    .form-card select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: #222;
+      color: #fff;
+    }
+
+    .checkbox-list label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: normal;
+      color: #fff;
+    }
+
+    .btn-guardar {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .btn-volver {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      background: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="form-card">
+  <h2>Editar Usuario</h2>
+
+  <label>Nombre</label>
+  <input type="text" id="nombre">
+
+  <label>Correo electrónico</label>
+  <input type="email" id="email">
+
+  <label>Teléfono</label>
+  <input type="text" id="telefono">
+
+  <label>Rol</label>
+  <select id="rol">
+    <option value="Administrador">Administrador</option>
+    <option value="Supervisor">Supervisor</option>
+    <option value="Tecnico">Tecnico</option>
+    <option value="Ingeniero Técnico">Ingeniero Técnico</option>
+    <option value="Encargado de Obra">Encargado de Obra</option>
+    <option value="Oficial de Primera">Oficial de Primera</option>
+    <option value="Oficial de Segunda">Oficial de Segunda</option>
+    <option value="Sub-contrata">Sub-contrata</option>
+  </select>
+
+  <label>Clave de acceso</label>
+  <input type="text" id="clave">
+
+  <label>Obras asignadas</label>
+  <div id="listaObras" class="checkbox-list"></div>
+
+  <button class="btn-guardar" onclick="guardarCambios()">Guardar Cambios</button>
+  <button class="btn-volver" onclick="window.location.href='lista_usuarios.html'">⬅️ Volver</button>
+</div>
+
+<script>
+// ===============================
+// CARGAR DATOS DEL USUARIO
+// ===============================
+const params = new URLSearchParams(window.location.search);
+const userId = params.get("id");
+
+let usuarios = JSON.parse(localStorage.getItem("usuariosPCI")) || [];
+let obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+
+const usuario = usuarios.find(u => u.id === userId);
+
+document.getElementById("nombre").value = usuario.nombre;
+document.getElementById("email").value = usuario.mail || "";
+document.getElementById("telefono").value = usuario.telefono || "";
+document.getElementById("rol").value = usuario.rol;
+document.getElementById("clave").value = usuario.password || "";
+
+// ===============================
+// CARGAR LISTA DE OBRAS (CHECKBOXES)
+// ===============================
+const cont = document.getElementById("listaObras");
+
+obras.forEach(o => {
+  const div = document.createElement("label");
+  div.innerHTML = `
+    <input type="checkbox" value="${o.id}" 
+      ${usuario.obrasAsignadas.includes(o.id) ? "checked" : ""}>
+    ${o.nombre}
+  `;
+  cont.appendChild(div);
+});
+
+// ===============================
+// GUARDAR CAMBIOS
+// ===============================
+function guardarCambios() {
+  usuario.nombre = document.getElementById("nombre").value.trim();
+  usuario.mail = document.getElementById("email").value.trim();
+  usuario.telefono = document.getElementById("telefono").value.trim();
+  usuario.rol = document.getElementById("rol").value;
+  usuario.password = document.getElementById("clave").value.trim();
+
+  const checks = document.querySelectorAll("#listaObras input[type='checkbox']");
+  usuario.obrasAsignadas = [...checks]
+    .filter(c => c.checked)
+    .map(c => c.value);
+
+  localStorage.setItem("usuariosPCI", JSON.stringify(usuarios));
+
+  alert("Usuario actualizado correctamente.");
+  window.location.href = "lista_usuarios.html";
+}
+</script>
+
+</body>
+</html>

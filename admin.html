@@ -78,17 +78,18 @@ document.addEventListener("DOMContentLoaded", () => {
 function cargarPanelAdmin() {
     const panel = document.getElementById("panel-admin");
 
-    const usuarios = usuariosData.length;
-    const obras = listarObras().length; // ← CORREGIDO
-    const tareas = tareasData.length;
+    // Cargar datos reales desde LocalStorage
+    const usuarios = JSON.parse(localStorage.getItem("usuariosPCI")) || [];
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+    const tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
 
     panel.innerHTML = `
         <div class="card">
             <h2>Resumen del Sistema</h2>
             <div class="info-box">
-                <p><strong>Usuarios registrados:</strong> ${usuarios}</p>
-                <p><strong>Obras creadas:</strong> ${obras}</p>
-                <p><strong>Tareas registradas:</strong> ${tareas}</p>
+                <p><strong>Usuarios registrados:</strong> ${usuarios.length}</p>
+                <p><strong>Obras creadas:</strong> ${obras.length}</p>
+                <p><strong>Tareas registradas:</strong> ${tareas.length}</p>
                 <p><strong>Último acceso:</strong> ${new Date().toLocaleString()}</p>
             </div>
         </div>
@@ -126,6 +127,7 @@ function cargarPanelAdmin() {
 }
 
 
+
 // ===============================
 //  EXPORTACIONES
 // ===============================
@@ -133,17 +135,18 @@ function exportarDatos(tipo) {
     const salida = document.getElementById("export-output");
 
     if (tipo === "usuarios") {
-        salida.textContent = JSON.stringify(usuariosData, null, 2);
+        salida.textContent = JSON.stringify(JSON.parse(localStorage.getItem("usuariosPCI")) || [], null, 2);
     }
 
     if (tipo === "obras") {
-        salida.textContent = JSON.stringify(listarObras(), null, 2); // ← CORREGIDO
+        salida.textContent = JSON.stringify(JSON.parse(localStorage.getItem("obrasPCI")) || [], null, 2);
     }
 
     if (tipo === "tareas") {
-        salida.textContent = JSON.stringify(tareasData, null, 2);
+        salida.textContent = JSON.stringify(JSON.parse(localStorage.getItem("tareasPCI")) || [], null, 2);
     }
 }
+
 
 
 // ===============================

@@ -36,10 +36,18 @@
       border-radius: 6px;
       border: 1px solid #ccc;
     }
+/* Corrección exclusiva para recursos.html */
+.panel-recursos,
+.panel-recursos * {
+  color: #111 !important;
+}
+
+
   </style>
 </head>
 
 <body>
+<div class="panel-recursos">
 
 <header class="header-principal">
   <img src="assets/img/logo-empresa.png" alt="Logo">
@@ -138,18 +146,12 @@ function mostrarRecursos() {
     `).join("");
 
     cont.innerHTML = `
-    <div class="card">
-        <h2>Recursos de la obra</h2>
-        ${htmlLista || "<p>No hay recursos registrados.</p>"}
-
-        <button class="boton-seccion" onclick="mostrarFormulario()">➕ Añadir Recurso</button>
-
-        <button class="boton-seccion" onclick="window.location.href='editar_instalados.html?id=${obraActual.id}'">
-            🛠️ Editar equipos instalados
-        </button>
-    </div>
-`;
-
+        <div class="card">
+            <h2>Recursos de la obra</h2>
+            ${htmlLista || "<p>No hay recursos registrados.</p>"}
+            <button class="boton-seccion" onclick="mostrarFormulario()">➕ Añadir Recurso</button>
+        </div>
+    `;
 }
 
 
@@ -289,7 +291,6 @@ function guardarObraPCI(obraActualizada) {
 }
 
 </script>
-
+</div>
 </body>
 </html>
-

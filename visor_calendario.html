@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Vista Calendario</title>
+    <link rel="stylesheet" href="styles/style-v2.css">
+
+    <style>
+        body {
+            background: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #nombreMes {
+            text-align: center;
+            margin-top: -10px;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .filtros {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .filtros select {
+            padding: 8px;
+            border-radius: 6px;
+            margin: 0 10px;
+        }
+
+        .calendario {
+            width: 95%;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .dia {
+            background: white;
+            min-height: 120px;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .dia-numero {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .tarea {
+            padding: 4px 6px;
+            border-radius: 5px;
+            margin-bottom: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .estado-bloqueada { background: #e53935; }
+        .estado-proceso { background: #1e88e5; }
+        .estado-pendiente { background: #fdd835; color: black; }
+        .estado-completada { background: #43a047; }
+
+        .volver-btn {
+            margin: 20px auto;
+            display: block;
+            width: 200px;
+            padding: 12px;
+            background: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Vista Calendario</h1>
+<h2 id="nombreMes"></h2>
+
+<div class="filtros">
+
+    <label><strong>Mes:</strong></label>
+    <select id="filtroMes" onchange="actualizarCalendario()">
+        <option value="0">Enero</option>
+        <option value="1">Febrero</option>
+        <option value="2">Marzo</option>
+        <option value="3">Abril</option>
+        <option value="4">Mayo</option>
+        <option value="5">Junio</option>
+        <option value="6">Julio</option>
+        <option value="7">Agosto</option>
+        <option value="8">Septiembre</option>
+        <option value="9">Octubre</option>
+        <option value="10">Noviembre</option>
+        <option value="11">Diciembre</option>
+    </select>
+
+    <label><strong>Año:</strong></label>
+    <select id="filtroAño" onchange="actualizarCalendario()"></select>
+
+    <br><br>
+
+    <label><strong>Obra:</strong></label>
+    <select id="filtroObra" onchange="actualizarCalendario()">
+        <option value="todas">Todas</option>
+    </select>
+
+    <label><strong>Usuario:</strong></label>
+    <select id="filtroUsuario" onchange="actualizarCalendario()">
+        <option value="todos">Todos</option>
+    </select>
+</div>
+
+<div class="calendario" id="calendario"></div>
+
+
+<button class="volver-btn" onclick="window.location.href='dashboard.html'">⬅️ Volver</button>
+
+<script src="scripts/tareas.js"></script>
+<script src="scripts/obras.js"></script>
+<script src="scripts/usuarios.js"></script>
+
+<script>
+let tareas = [];
+let obras = [];
+let usuarios = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+    tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+    obras = listarObras();
+    usuarios = JSON.parse(localStorage.getItem("usuariosPCI")) || [];
+
+    cargarFiltros();
+    cargarUsuariosCalendario();
+    mostrarNombreMes(new Date());
+    cargarAños();
+    document.getElementById("filtroMes").value = new Date().getMonth();
+    actualizarCalendario();
+});
+
+// ===============================
+// MOSTRAR NOMBRE DEL MES
+// ===============================
+function mostrarNombreMes(fecha) {
+    const meses = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+
+    const nombre = meses[fecha.getMonth()] + " " + fecha.getFullYear();
+    document.getElementById("nombreMes").textContent = nombre;
+}
+function cargarAños() {
+    const sel = document.getElementById("filtroAño");
+    sel.innerHTML = ""; // limpiar por si acaso
+
+    const añoActual = new Date().getFullYear();
+
+    for (let a = añoActual - 3; a <= añoActual + 3; a++) {
+        const opt = document.createElement("option");
+        opt.value = a;
+        opt.textContent = a;
+        sel.appendChild(opt);
+    }
+
+    sel.value = añoActual;
+}
+
+// ===============================
+// CARGAR FILTROS
+// ===============================
+function cargarFiltros() {
+    const selObra = document.getElementById("filtroObra");
+    obras.forEach(o => {
+        const opt = document.createElement("option");
+        opt.value = o.id;
+        opt.textContent = o.nombre;
+        selObra.appendChild(opt);
+    });
+}
+
+function cargarUsuariosCalendario() {
+    const sel = document.getElementById("filtroUsuario");
+    sel.innerHTML = '<option value="todos">Todos</option>';
+
+    usuarios.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = u.nombre;
+        sel.appendChild(opt);
+    });
+}
+
+// ===============================
+// ACTUALIZAR CALENDARIO
+// ===============================
+function actualizarCalendario() {
+    const obraSel = document.getElementById("filtroObra").value;
+    const usuarioSel = document.getElementById("filtroUsuario").value;
+
+    let filtradas = tareas;
+
+    if (obraSel !== "todas") {
+        filtradas = filtradas.filter(t => t.obraId === obraSel);
+    }
+
+    if (usuarioSel !== "todos") {
+        filtradas = filtradas.filter(t => t.asignadoA === usuarioSel);
+    }
+
+    renderCalendario(filtradas);
+}
+
+// ===============================
+// RENDERIZAR CALENDARIO
+// ===============================
+function renderCalendario(lista) {
+    const cont = document.getElementById("calendario");
+    cont.innerHTML = "";
+
+    const mes = parseInt(document.getElementById("filtroMes").value);
+    const año = parseInt(document.getElementById("filtroAño").value);
+
+    mostrarNombreMes(new Date(año, mes, 1));
+
+    const primerDia = new Date(año, mes, 1);
+    const ultimoDia = new Date(año, mes + 1, 0);
+
+    const offset = primerDia.getDay();
+
+    // Celdas vacías antes del día 1
+    for (let i = 0; i < offset; i++) {
+        const celda = document.createElement("div");
+        cont.appendChild(celda);
+    }
+
+    // Días del mes
+    for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+        const celda = document.createElement("div");
+        celda.className = "dia";
+
+        const num = document.createElement("div");
+        num.className = "dia-numero";
+        num.textContent = dia;
+
+        celda.appendChild(num);
+
+        const fechaStr = `${año}-${String(mes + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+
+        lista
+            .filter(t => t.fechaInicio === fechaStr)
+            .forEach(t => {
+                const tareaDiv = document.createElement("div");
+                tareaDiv.className = "tarea estado-" + t.estado;
+                tareaDiv.textContent = t.titulo;
+
+                tareaDiv.onclick = () => {
+                    window.location.href = `ver_tarea.html?id=${t.id}`;
+                };
+
+                celda.appendChild(tareaDiv);
+            });
+
+        cont.appendChild(celda);
+    }
+}
+
+</script>
+
+</body>
+</html>

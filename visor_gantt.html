@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Vista Gantt</title>
+    <link rel="stylesheet" href="styles/style-v2.css">
+
+    <style>
+        body {
+            background: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .filtros {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .filtros select {
+            padding: 8px;
+            border-radius: 6px;
+            margin: 0 10px;
+        }
+
+        .gantt-container {
+    width: 95%;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+    /* NUEVO: scroll horizontal */
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+}
+
+        .gantt-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .gantt-label {
+            width: 200px;
+            font-weight: bold;
+        }
+
+        .gantt-bar {
+            height: 25px;
+            border-radius: 5px;
+            color: white;
+            text-align: center;
+            font-size: 12px;
+            line-height: 25px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .estado-bloqueada { background: #e53935; }
+        .estado-proceso { background: #1e88e5; }
+        .estado-pendiente { background: #fdd835; color: black; }
+        .estado-completada { background: #43a047; }
+
+        .volver-btn {
+            margin: 20px auto;
+            display: block;
+            width: 200px;
+            padding: 12px;
+            background: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .tooltip {
+    position: absolute;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 999;
+    display: none;
+    white-space: nowrap;
+}
+.gantt-grid-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(0,0,0,0.1);
+}
+.gantt-row {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding-bottom: 5px;
+}
+
+    </style>
+</head>
+
+<body>
+
+    <div id="tooltip" class="tooltip"></div>
+<h1>Vista Gantt</h1>
+
+<div class="filtros">
+    <div style="text-align:center; margin-bottom: 15px;">
+    <button onclick="setZoom(20)">Zoom Día</button>
+    <button onclick="setZoom(5)">Zoom Semana</button>
+    <button onclick="setZoom(1)">Zoom Mes</button>
+</div>
+   
+    <label><strong>Obra:</strong></label>
+    <select id="filtroObra" onchange="actualizarGantt()">
+        <option value="todas">Todas</option>
+    </select>
+
+    <label><strong>Usuario:</strong></label>
+    <select id="filtroUsuario" onchange="actualizarGantt()">
+        <option value="todos">Todos</option>
+    </select>
+</div>
+
+<div class="gantt-container" id="gantt"></div>
+
+<button class="volver-btn" onclick="window.location.href='dashboard.html'">⬅️ Volver</button>
+
+<script src="scripts/tareas.js"></script>
+<script src="scripts/obras.js"></script>
+<script src="scripts/usuarios.js"></script>
+
+<script>
+let tareas = [];
+let obras = [];
+let usuarios = [];
+let escala = 20; // px por día (zoom por defecto)
+
+usuarios = JSON.parse(localStorage.getItem("usuariosPCI")) || [];
+
+document.addEventListener("DOMContentLoaded", () => {
+    tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+    obras = listarObras();
+    usuarios = JSON.parse(localStorage.getItem("usuariosPCI")) || [];
+    cargarFiltros();
+    cargarUsuarios();
+    actualizarGantt();
+});
+
+// ===============================
+// CARGAR FILTROS
+// ===============================
+function cargarFiltros() {
+    const selObra = document.getElementById("filtroObra");
+    obras.forEach(o => {
+        const opt = document.createElement("option");
+        opt.value = o.id;
+        opt.textContent = o.nombre;
+        selObra.appendChild(opt);
+    });
+
+    const selUsuario = document.getElementById("filtroUsuario");
+    usuarios.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = u.nombre;
+        selUsuario.appendChild(opt);
+    });
+}
+function cargarUsuarios() {
+    const sel = document.getElementById("filtroUsuario");
+    sel.innerHTML = '<option value="todos">Todos</option>';
+
+    usuarios.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = u.nombre;
+        sel.appendChild(opt);
+    });
+}
+function setZoom(valor) {
+    escala = valor;
+    actualizarGantt();
+}
+
+// ===============================
+// ACTUALIZAR GANTT
+// ===============================
+function actualizarGantt() {
+    const obraSel = document.getElementById("filtroObra").value;
+    const usuarioSel = document.getElementById("filtroUsuario").value;
+
+    let filtradas = tareas;
+
+    if (obraSel !== "todas") {
+        filtradas = filtradas.filter(t => t.obraId === obraSel);
+    }
+
+    if (usuarioSel !== "todos") {
+        filtradas = filtradas.filter(t => t.asignadoA === usuarioSel);
+    }
+
+    renderGantt(filtradas);
+}
+
+// ===============================
+// RENDERIZAR GANTT
+// ===============================
+function renderGantt(lista) {
+    const cont = document.getElementById("gantt");
+    cont.innerHTML = "";
+
+    if (lista.length === 0) {
+        cont.innerHTML = "<p>No hay tareas para mostrar.</p>";
+        return;
+    }
+
+    // Calcular fechas mínimas y máximas
+    const fechas = lista.map(t => new Date(t.fechaInicio));
+    const minFecha = new Date(Math.min(...fechas));
+    const maxFecha = new Date(Math.max(...fechas));
+    maxFecha.setDate(maxFecha.getDate() + 5);
+
+    const totalDias = Math.ceil((maxFecha - minFecha) / (1000 * 60 * 60 * 24));
+
+    // ===============================
+    // CABECERA DE DÍAS (NUEVO)
+    // ===============================
+    const header = document.createElement("div");
+    header.style.display = "flex";
+    header.style.marginLeft = "200px"; // espacio para etiquetas
+    header.style.marginBottom = "10px";
+
+    for (let i = 0; i < totalDias; i++) {
+        const dia = new Date(minFecha);
+        dia.setDate(minFecha.getDate() + i);
+
+        const celda = document.createElement("div");
+        celda.style.width = escala + "px";
+        celda.style.fontSize = "10px";
+        celda.style.textAlign = "center";
+        celda.textContent = dia.getDate(); // número del día
+
+        header.appendChild(celda);
+    }
+
+    cont.appendChild(header);
+// ===============================
+// LÍNEAS VERTICALES DEL GRID
+// ===============================
+for (let i = 0; i < totalDias; i++) {
+    const linea = document.createElement("div");
+    linea.className = "gantt-grid-line";
+    linea.style.left = (200 + i * escala) + "px"; // 200px = ancho de etiquetas
+    cont.appendChild(linea);
+}
+
+    // ===============================
+    // BARRAS DEL GANTT
+    // ===============================
+    lista.forEach(t => {
+        const fila = document.createElement("div");
+        fila.className = "gantt-row";
+
+        const label = document.createElement("div");
+        label.className = "gantt-label";
+        label.textContent = t.titulo;
+
+        const barra = document.createElement("div");
+        barra.className = "gantt-bar estado-" + t.estado;
+
+        const inicio = new Date(t.fechaInicio);
+        const offset = Math.floor((inicio - minFecha) / (1000 * 60 * 60 * 24));
+
+        barra.style.marginLeft = (offset * escala) + "px";
+
+
+        // Calcular duración real
+        let fechaFin = t.fechaFinal ? new Date(t.fechaFinal) : new Date(t.fechaInicio);
+        const duracionDias = Math.max(1, Math.ceil((fechaFin - inicio) / (1000 * 60 * 60 * 24)));
+
+        barra.style.width = (duracionDias * escala) + "px";
+        barra.textContent = t.estado;
+// Tooltip dinámico
+barra.addEventListener("mousemove", (e) => {
+    const tooltip = document.getElementById("tooltip");
+
+    let fechaFin = t.fechaFinal ? t.fechaFinal : "—";
+    let duracion = t.fechaFinal
+        ? Math.max(1, Math.ceil((new Date(t.fechaFinal) - new Date(t.fechaInicio)) / (1000*60*60*24)))
+        : 1;
+
+    tooltip.innerHTML = `
+        <strong>${t.titulo}</strong><br>
+        Inicio: ${t.fechaInicio}<br>
+        Fin: ${fechaFin}<br>
+        Duración: ${duracion} día(s)<br>
+        Estado: ${t.estado}<br>
+        Usuario: ${t.asignadoA}
+    `;
+
+    tooltip.style.left = (e.pageX + 10) + "px";
+    tooltip.style.top = (e.pageY + 10) + "px";
+    tooltip.style.display = "block";
+});
+
+    barra.addEventListener("mouseleave", () => {
+    document.getElementById("tooltip").style.display = "none";
+});
+    // Abrir tarea al hacer clic
+    barra.addEventListener("click", () => {
+    window.location.href = `ver_tarea.html?id=${t.id}`;
+});
+
+        fila.appendChild(label);
+        fila.appendChild(barra);
+        cont.appendChild(fila);
+    });
+}
+
+</script>
+
+</body>
+</html>

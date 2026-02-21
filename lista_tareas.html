@@ -6,33 +6,71 @@
 <link rel="stylesheet" href="styles/style-v2.css">
 
 <style>
+body {
+    background: #1b1b1b;
+    color: #e6e6e6;
+    font-family: Arial, sans-serif;
+}
+
 .card {
-    background: #fff;
+    background: #242424;
     padding: 20px;
     margin-bottom: 20px;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
-.tarea {
-    padding: 12px;
-    background: #f5f5f5;
-    border-radius: 8px;
-    margin: 8px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.card h3 {
+    color: #0A84FF;
 }
 
-.tarea.completada {
-    background: #d4ffd4;
-    text-decoration: line-through;
-}
-
-select {
-    padding: 8px;
-    font-size: 16px;
+.tarea-card {
+    background: #2d2d2d;
+    padding: 16px;
+    border-radius: 10px;
     margin-bottom: 15px;
+    border-left: 6px solid #0A84FF;
+}
+
+.tarea-card.bloqueada {
+    border-left-color: #ff3b30;
+    background: #3a1f1f;
+}
+
+.tarea-card.pendiente {
+    border-left-color: #ffcc00;
+}
+
+.tarea-card.proceso {
+    border-left-color: #0A84FF;
+}
+
+.tarea-card.completada {
+    border-left-color: #28a745;
+    background: #1f3a1f;
+}
+
+select, button {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    margin-top: 8px;
+}
+
+button {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-azul { background: #0A84FF; color: white; }
+.btn-rojo { background: #ff3b30; color: white; }
+.btn-verde { background: #28a745; color: white; }
+.btn-amarillo { background: #ffcc00; color: black; }
+
+.filtros {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 </style>
 </head>
@@ -47,95 +85,238 @@ select {
   </div>
 </header>
 
-<h1 style="text-align:center;">Lista de Tareas</h1>
-
 <div class="card">
-    <label><strong>Filtrar por estado:</strong></label>
-    <select id="filtro">
-        <option value="todas">Todas</option>
-        <option value="pendiente">Pendientes</option>
-        <option value="proceso">En proceso</option>
-        <option value="completada">Completadas</option>
-    </select>
+    <h3>Filtros</h3>
+
+    <div class="filtros">
+        <select id="filtroObra"></select>
+        <select id="filtroPlanta"></select>
+        <select id="filtroPlano"></select>
+
+        <select id="filtroEstado">
+            <option value="todas">Estado: Todas</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="proceso">En proceso</option>
+            <option value="bloqueada">Bloqueada</option>
+            <option value="completada">Completada</option>
+        </select>
+
+        <select id="filtroResponsable"></select>
+    </div>
 </div>
 
-<div id="contenedor"></div>
+<div id="contenedorTareas"></div>
 
-<button class="boton-seccion" onclick="history.back()">⬅️ Volver</button>
+<button class="btn-azul" onclick="history.back()">⬅️ Volver</button>
 
 <script src="scripts/usuarios.js"></script>
 <script src="scripts/obras.js"></script>
 <script src="scripts/tareas.js"></script>
 
 <script>
-cargarUsuarios();
+/* ============================================================
+   CARGAR OBRAS
+============================================================ */
+function cargarObras() {
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+    const select = document.getElementById("filtroObra");
 
+    select.innerHTML = `<option value="todas">Obra: Todas</option>`;
 
+    obras.forEach(o => {
+        const opt = document.createElement("option");
+        opt.value = o.id;
+        opt.textContent = o.nombre;
+        select.appendChild(opt);
+    });
+}
+
+/* ============================================================
+   CARGAR PLANTAS SEGÚN OBRA
+============================================================ */
+function cargarPlantas() {
+    const obraId = document.getElementById("filtroObra").value;
+    const select = document.getElementById("filtroPlanta");
+
+    select.innerHTML = `<option value="todas">Planta: Todas</option>`;
+
+    if (obraId === "todas") return;
+
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+    const obra = obras.find(o => o.id === obraId);
+
+    obra.plantas.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.nombre;
+        select.appendChild(opt);
+    });
+}
+
+/* ============================================================
+   CARGAR PLANOS SEGÚN PLANTA
+============================================================ */
+function cargarPlanos() {
+    const obraId = document.getElementById("filtroObra").value;
+    const plantaId = document.getElementById("filtroPlanta").value;
+    const select = document.getElementById("filtroPlano");
+
+    select.innerHTML = `<option value="todas">Plano: Todos</option>`;
+
+    if (obraId === "todas" || plantaId === "todas") return;
+
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+    const obra = obras.find(o => o.id === obraId);
+    const planta = obra.plantas.find(p => p.id === plantaId);
+
+    planta.planos.forEach(pl => {
+        const opt = document.createElement("option");
+        opt.value = pl.id;
+        opt.textContent = `${pl.disciplina} (${pl.id})`;
+        select.appendChild(opt);
+    });
+}
+
+/* ============================================================
+   CARGAR RESPONSABLES
+============================================================ */
+function cargarResponsables() {
+    const select = document.getElementById("filtroResponsable");
+
+    select.innerHTML = `<option value="todas">Responsable: Todos</option>`;
+
+    usuariosData.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = u.nombre;
+        select.appendChild(opt);
+    });
+}
+
+/* ============================================================
+   RENDERIZAR TAREAS
+============================================================ */
+function renderTareas() {
+    const cont = document.getElementById("contenedorTareas");
+    const tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+
+    const obraId = document.getElementById("filtroObra").value;
+    const plantaId = document.getElementById("filtroPlanta").value;
+    const planoId = document.getElementById("filtroPlano").value;
+    const estado = document.getElementById("filtroEstado").value;
+    const responsable = document.getElementById("filtroResponsable").value;
+
+    let filtradas = tareas;
+
+    if (obraId !== "todas") filtradas = filtradas.filter(t => t.obraId === obraId);
+    if (plantaId !== "todas") filtradas = filtradas.filter(t => t.plantaId === plantaId);
+    if (planoId !== "todas") filtradas = filtradas.filter(t => t.planoId === planoId);
+    if (estado !== "todas") filtradas = filtradas.filter(t => t.estado === estado);
+    if (responsable !== "todas") filtradas = filtradas.filter(t => t.asignadoA === responsable);
+
+    cont.innerHTML = "";
+
+    filtradas.forEach(t => {
+        const div = document.createElement("div");
+        div.className = `tarea-card ${t.estado}`;
+
+        div.innerHTML = `
+            <h3>${t.titulo}</h3>
+            <p>${t.descripcion}</p>
+
+            <p><strong>Responsable:</strong> ${obtenerNombreUsuario(t.asignadoA)}</p>
+            <p><strong>Estado:</strong> ${t.estado.toUpperCase()}</p>
+
+            ${t.estado === "bloqueada" ? `<p><strong>Motivo bloqueo:</strong> ${t.motivoBloqueo || "Sin especificar"}</p>` : ""}
+
+            <button class="btn-azul" onclick="verEnMapa('${t.id}')">📍 Ver en mapa</button>
+            <button class="btn-verde" onclick="editarTarea('${t.id}')">✏️ Editar</button>
+
+            ${t.estado !== "bloqueada" 
+                ? `<button class="btn-rojo" onclick="bloquearTarea('${t.id}')">🔒 Bloquear</button>`
+                : `<button class="btn-amarillo" onclick="desbloquearTarea('${t.id}')">🔓 Desbloquear</button>`
+            }
+        `;
+
+        cont.appendChild(div);
+    });
+}
+
+/* ============================================================
+   ACCIONES
+============================================================ */
 function obtenerNombreUsuario(id) {
     const u = usuariosData.find(x => x.id === id);
     return u ? u.nombre : "Sin asignar";
 }
 
+function verEnMapa(id) {
+    const tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+    const t = tareas.find(x => x.id === id);
 
-function cargarTareas() {
-    return JSON.parse(localStorage.getItem("tareasPCI")) || [];
+    if (!t) {
+        alert("No se encontró la tarea.");
+        return;
+    }
+
+    window.location.href =
+        `mapa_tareas.html?obra=${t.obraId}&planta=${t.plantaId}&plano=${t.planoId}`;
 }
 
-function guardarTareas(tareas) {
+
+function editarTarea(id) {
+    window.location.href = `editar_tareas.html?id=${id}`;
+}
+
+function bloquearTarea(id) {
+    const motivo = prompt("Motivo del bloqueo:");
+    if (!motivo) return;
+
+    const tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+    const t = tareas.find(x => x.id === id);
+
+    t.estado = "bloqueada";
+    t.motivoBloqueo = motivo;
+
     localStorage.setItem("tareasPCI", JSON.stringify(tareas));
+    renderTareas();
 }
 
-function render() {
-    const cont = document.getElementById("contenedor");
-    const filtro = document.getElementById("filtro").value;
-    const tareas = cargarTareas();
+function desbloquearTarea(id) {
+    const tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+    const t = tareas.find(x => x.id === id);
 
-    // Obtener usuario desde la URL
-    const usuarioId = new URLSearchParams(window.location.search).get("usuario");
+    t.estado = "pendiente";
+    t.motivoBloqueo = "";
 
-    // Filtrar por usuario si corresponde
-    let filtradas = tareas;
-    if (usuarioId) {
-       filtradas = filtradas.filter(t => t.asignadoA === usuarioId);
-
-    }
-
-    // Filtrar por estado
-    if (filtro !== "todas") {
-        filtradas = filtradas.filter(t => t.estado === filtro);
-    }
-
-    cont.innerHTML = filtradas.map(t => `
-        <div class="card-tarea">
-            <h3>${t.titulo}</h3>
-            <p>${t.descripcion}</p>
-
-            <p><strong>Responsable:</strong> ${obtenerNombreUsuario(t.asignadoA || "")}</p>
-
-
-            <p><strong>Estado:</strong> ${t.estado}</p>
-
-            <select onchange="cambiarEstado('${t.id}', this.value)">
-                <option value="pendiente" ${t.estado === "pendiente" ? "selected" : ""}>Pendiente</option>
-                <option value="proceso" ${t.estado === "proceso" ? "selected" : ""}>En proceso</option>
-                <option value="completada" ${t.estado === "completada" ? "selected" : ""}>Completada</option>
-            </select>
-        </div>
-    `).join("");
+    localStorage.setItem("tareasPCI", JSON.stringify(tareas));
+    renderTareas();
 }
 
+/* ============================================================
+   INICIALIZACIÓN
+============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+    cargarObras();
+    cargarResponsables();
 
-function cambiarEstado(id, nuevoEstado) {
-    const tareas = cargarTareas();
-    const tarea = tareas.find(t => t.id === id);
-    tarea.estado = nuevoEstado;
-    guardarTareas(tareas);
-    render();
-}
+    document.getElementById("filtroObra").addEventListener("change", () => {
+        cargarPlantas();
+        cargarPlanos();
+        renderTareas();
+    });
 
-document.getElementById("filtro").addEventListener("change", render);
+    document.getElementById("filtroPlanta").addEventListener("change", () => {
+        cargarPlanos();
+        renderTareas();
+    });
 
-render();
+    document.getElementById("filtroPlano").addEventListener("change", renderTareas);
+    document.getElementById("filtroEstado").addEventListener("change", renderTareas);
+    document.getElementById("filtroResponsable").addEventListener("change", renderTareas);
+
+    renderTareas();
+});
 </script>
 
 </body>

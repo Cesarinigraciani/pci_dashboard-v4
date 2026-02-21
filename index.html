@@ -75,6 +75,31 @@
         background: #555;
       }
     }
+
+    .visores-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columnas */
+    gap: 15px;
+    width: 100%;
+    margin: auto;
+}
+
+.visores-grid .boton-seccion {
+    background: #0078d4 !important;
+    color: white !important;
+    font-size: 16px;
+    padding: 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+}
+
+.visores-grid .boton-seccion:hover {
+    background: #005fa3 !important;
+}
+
   </style>
 </head>
 
@@ -106,6 +131,7 @@
 
 <!-- Mensaje de bienvenida dinámico -->
 <h2 id="mensajeBienvenida" style="text-align:center; margin-top:10px; color:white;"></h2>
+
 <!-- Botón para instalar la app -->
 <div style="text-align:center; margin-top:10px;">
   <button id="btnInstalarApp" class="boton-seccion" style="background:#007bff;">
@@ -125,18 +151,28 @@ document.addEventListener("DOMContentLoaded", async () => {
   await cargarUsuarios();
   const usuario = getUsuarioActual();
   // Si es administrador, no debe tener obra asignada
-if (usuario.rol === "admin") {
-  usuario.obrasAsignadas = [];
+// ❌ Eliminamos esto porque borraba las obras del admin
+// if (usuario.rol === "admin") {
+//   usuario.obrasAsignadas = [];
+// }
+
+// Obra asignada (solo aplica a usuarios normales)
+const obraIdAsignada = usuario?.obrasAsignadas?.[0];
+const obraAsignada = obraIdAsignada ? getObraById(obraIdAsignada) : null;
+
+// Mensaje de bienvenida dinámico
+let mensaje = `Bienvenido, ${usuario.nombre}`;
+
+if (usuario.rol !== "admin") {
+    if (obraAsignada) {
+        mensaje += ` — Obra asignada: ${obraAsignada.nombre}`;
+    } else {
+        mensaje += ` — No tienes obra asignada`;
+    }
 }
 
-  const obraIdAsignada = usuario?.obrasAsignadas?.[0];
-  const obraAsignada = obraIdAsignada ? getObraById(obraIdAsignada) : null;
+document.getElementById("mensajeBienvenida").textContent = mensaje;
 
-  const mensaje = obraAsignada
-    ? `Bienvenido, ${usuario.nombre} — Obra asignada: ${obraAsignada.nombre}`
-    : `Bienvenido, ${usuario?.nombre || "Usuario"} — No tienes obra asignada`;
-
-  document.getElementById("mensajeBienvenida").textContent = mensaje;
 
   const panel = document.getElementById("panel-principal");
 
@@ -162,10 +198,38 @@ if (usuario.rol === "admin") {
         <button class="boton-seccion" onclick="window.location.href='panelUsuarios.html'">👥 Panel de Usuarios</button>
         <button class="boton-seccion" onclick="window.location.href='crear_tarea.html'">📝 Crear Tarea</button>
         <button class="boton-seccion" onclick="window.location.href='lista_tareas.html'">📋 Lista de Tareas</button>
+       <button onclick="window.location.href='lista_usuarios.html'"
+        style="
+          width: 100%;
+          background: #1a2b47;
+          color: white;
+          padding: 14px;
+          font-size: 18px;
+          border: none;
+          border-radius: 8px;
+          margin-bottom: 10px;
+          text-align: center;
+          cursor: pointer;
+        ">
+        🧑‍🤝‍🧑 Gestión de Usuarios
+        </button>
+
         <button class="boton-seccion" onclick="window.location.href='recursos.html'">📦 Recursos</button>
         <button class="boton-seccion" onclick="window.location.href='kpi_selector.html'">📈 Indicadores de Avance (KPI)</button>
         <button class="boton-seccion" onclick="window.location.href='admin.html'">⚙️ Administración</button>
       </div>
+      <div class="panel-section" style="margin-top:20px; text-align:center;">
+    <h2 style="text-align:center; margin-bottom:15px;">Acceso a Visores</h2>
+
+    <div class="visores-grid">
+        <button class="boton-seccion" onclick="window.location.href='visor_calendario.html'">📅 Calendario</button>
+        <button class="boton-seccion" onclick="window.location.href='visor_gantt.html'">📊 Gantt</button>
+        <button class="boton-seccion" onclick="window.location.href='visor_plano.html'">📐 Plano</button>
+        <button class="boton-seccion" onclick="window.location.href='visor_tareas.html'">🗂️ Tareas</button>
+    </div>
+</div>
+
+</div>
 
       <button class="boton-seccion" onclick="window.location.href='usuarios_existentes.html'">
         👥 Usuarios Existentes
@@ -219,7 +283,7 @@ if (usuario.rol === "admin") {
       <button class="boton-seccion" onclick="window.location.href='tarjetas_proyectos.html'">📄 Tarjetas de Obras</button>
       <button class="boton-seccion" onclick="window.location.href='recursos.html'">📦 Recursos</button>
       <button class="boton-seccion" onclick="window.location.href='kpi_selector.html'">📈 Indicadores de Avance (KPI)</button>
-      <button class="boton-seccion" onclick="window.location.href='crear_tarea.html'">📝 Crear Tarea</button>
+      <button class="boton-seccion" onclick="window.location.href='crear_tarea.html?obra=${obra.id}'">📝 Crear Tarea</button>
       <button class="boton-seccion" onclick="window.location.href='panelUsuarios.html'">👥 Panel de Usuarios</button>
       <button class="boton-seccion" onclick="window.location.href='admin.html'">⚙️ Administración</button>
       <button class="boton-seccion" onclick="window.location.href='editar_instalados.html?id=${obra.id}'">🔧 Modificar Equipos Instalados</button>
@@ -301,4 +365,3 @@ window.addEventListener("beforeinstallprompt", (e) => {
 
 </body>
 </html>
-
