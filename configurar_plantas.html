@@ -342,13 +342,17 @@ function abrirSubidaPlano(btn, idPlanta) {
 
         <button class="btn btn-verde" onclick="agregarNuevaDisciplina(this)">➕ Añadir disciplina</button>
 
-        <label>Subir plano (imagen)</label>
-        <input type="file" accept="image/*" class="input-plano">
+        <label>Seleccionar plano existente</label>
+        <select class="selector-plano">
+        <option value="">Seleccionar plano</option>
+        </select>
+
 
         <button class="btn btn-azul" onclick="guardarPlano(this, '${idPlanta}')">Guardar plano</button>
     `;
 
     contenedor.appendChild(div);
+    cargarPlanosEnSelect();
 }
 
 /* ============================================================
@@ -373,49 +377,37 @@ function agregarNuevaDisciplina(btn) {
 /* ============================================================
    GUARDAR PLANO
 ============================================================ */
-function guardarPlano(btn, idPlanta) {
+async function guardarPlano(btn, idPlanta) {
     const contenedor = btn.parentElement;
     const disciplina = contenedor.querySelector(".disciplina-select").value;
-    const archivo = contenedor.querySelector(".input-plano").files[0];
+    const archivoSeleccionado = contenedor.querySelector(".selector-plano").value;
 
-    if (!archivo) {
-        alert("Debes seleccionar una imagen.");
+    if (!archivoSeleccionado) {
+        alert("Debes seleccionar un plano existente.");
         return;
     }
 
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const base64 = e.target.result;
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+    const obra = obras.find(o => o.id === obraID);
+    const planta = obra.plantas.find(p => p.id === idPlanta);
 
-        const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
-        const obra = obras.find(o => o.id === obraID);
+    if (!planta.planos) planta.planos = [];
 
-        const planta = obra.plantas.find(p => p.id === idPlanta);
+    const correlativo = String(planta.planos.length + 1).padStart(3, "0");
+    const idPlano = `${obra.nombreCorto}_${normalizar(planta.nombre)}_${normalizar(disciplina)}_${correlativo}`;
 
-        if (!planta.planos) planta.planos = [];
-
-        const correlativo = String(planta.planos.length + 1).padStart(3, "0");
-
-        const idPlano = `${obra.nombreCorto}_${normalizar(planta.nombre)}_${normalizar(disciplina)}_${correlativo}`;
-
-        const nuevoPlano = {
-            id: idPlano,
-            disciplina,
-            imagen: base64
-        };
-
-        planta.planos.push(nuevoPlano);
-
-        localStorage.setItem("obrasPCI", JSON.stringify(obras));
-
-        alert("Plano guardado correctamente.");
-
-        // Reemplazar formulario por tarjeta final
-        contenedor.replaceWith(crearTarjetaPlano(nuevoPlano));
+    const nuevoPlano = {
+        id: idPlano,
+        disciplina,
+        imagen: "assets/img/planos/" + archivoSeleccionado
     };
 
-    reader.readAsDataURL(archivo);
+    planta.planos.push(nuevoPlano);
+    localStorage.setItem("obrasPCI", JSON.stringify(obras));
+    alert("Plano guardado correctamente.");
+    contenedor.replaceWith(crearTarjetaPlano(nuevoPlano));
 }
+
 
 /* ============================================================
    GENERAR PLANTAS NUEVAS
