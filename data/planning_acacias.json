@@ -1,0 +1,226 @@
+[
+  {
+    "id": "COMPRA_CENTRAL",
+    "nombre_tarea": "Compra central incendios + CO",
+    "duracion_dias": 5,
+    "fecha_inicio": "2026-01-12",
+    "fecha_fin": "2026-01-16"
+  },
+  {
+    "id": "PLANOS_DETECCION",
+    "nombre_tarea": "Planos detección + CO",
+    "duracion_dias": 5,
+    "fecha_inicio": "2026-01-12",
+    "fecha_fin": "2026-01-16"
+  },
+  {
+    "id": "CABLEADO_SOTANO_3_CANALIZACION",
+    "nombre_tarea": "Canalización sótano -3",
+    "duracion_dias": 6,
+    "fecha_inicio": "2026-01-22",
+    "fecha_fin": "2026-01-29"
+  },
+  {
+    "id": "CABLEADO_SOTANO_3_CABLEADO",
+    "nombre_tarea": "Cableado sótano -3",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-01-30",
+    "fecha_fin": "2026-02-02"
+  },
+  {
+    "id": "CABLEADO_SOTANO_2_CANALIZACION",
+    "nombre_tarea": "Canalización sótano -2",
+    "duracion_dias": 6,
+    "fecha_inicio": "2026-02-02",
+    "fecha_fin": "2026-02-10"
+  },
+  {
+    "id": "CABLEADO_SOTANO_2_CABLEADO",
+    "nombre_tarea": "Cableado sótano -2",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-02-11",
+    "fecha_fin": "2026-02-12"
+  },
+  {
+    "id": "CABLEADO_SOTANO_1_CANALIZACION",
+    "nombre_tarea": "Canalización sótano -1",
+    "duracion_dias": 6,
+    "fecha_inicio": "2026-02-13",
+    "fecha_fin": "2026-02-20"
+  },
+  {
+    "id": "CABLEADO_SOTANO_1_CABLEADO",
+    "nombre_tarea": "Cableado sótano -1",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-02-23",
+    "fecha_fin": "2026-02-24"
+  },
+  {
+    "id": "CABLEADO_P1",
+    "nombre_tarea": "Cableado planta 1",
+    "duracion_dias": 3,
+    "fecha_inicio": "2026-01-22",
+    "fecha_fin": "2026-01-26"
+  },
+  {
+    "id": "CABLEADO_P2",
+    "nombre_tarea": "Cableado planta 2",
+    "duracion_dias": 3,
+    "fecha_inicio": "2026-02-03",
+    "fecha_fin": "2026-02-05"
+  },
+  {
+    "id": "CABLEADO_P3",
+    "nombre_tarea": "Cableado planta 3",
+    "duracion_dias": 3,
+    "fecha_inicio": "2026-02-13",
+    "fecha_fin": "2026-02-17"
+  },
+  {
+    "id": "CABLEADO_P4",
+    "nombre_tarea": "Cableado planta 4",
+    "duracion_dias": 3,
+    "fecha_inicio": "2026-02-24",
+    "fecha_fin": "2026-02-27"
+  },
+  {
+    "id": "CABLEADO_P5",
+    "nombre_tarea": "Cableado planta 5",
+    "duracion_dias": 3,
+    "fecha_inicio": "2026-03-27",
+    "fecha_fin": "2026-04-01"
+  },
+  {
+    "id": "CABLEADO_P6",
+    "nombre_tarea": "Cableado planta 6",
+    "duracion_dias": 3,
+    "fecha_inicio": "2026-04-02",
+    "fecha_fin": "2026-04-06"
+  },
+  {
+    "id": "CABLEADO_P7",
+    "nombre_tarea": "Cableado planta 7",
+    "duracion_dias": 3,
+    "fecha_inicio": "2026-04-07",
+    "fecha_fin": "2026-04-09"
+  },
+  {
+    "id": "CABLEADO_PB",
+    "nombre_tarea": "Cableado planta baja",
+    "duracion_dias": 6,
+    "fecha_inicio": "2026-04-24",
+    "fecha_fin": "2026-04-28"
+  },
+  {
+    "id": "MONTAJE_SOTANO_3",
+    "nombre_tarea": "Montaje equipos sótano -3",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-06-08",
+    "fecha_fin": "2026-06-09"
+  },
+  {
+    "id": "MONTAJE_SOTANO_2",
+    "nombre_tarea": "Montaje equipos sótano -2",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-06-10",
+    "fecha_fin": "2026-06-11"
+  },
+  {
+    "id": "MONTAJE_SOTANO_1",
+    "nombre_tarea": "Montaje equipos sótano -1",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-06-12",
+    "fecha_fin": "2026-06-15"
+  },
+  {
+    "id": "MONTAJE_P1",
+    "nombre_tarea": "Montaje equipos planta 1",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-06-16",
+    "fecha_fin": "2026-06-16"
+  },
+  {
+    "id": "MONTAJE_P2",
+    "nombre_tarea": "Montaje equipos planta 2",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-06-17",
+    "fecha_fin": "2026-06-17"
+  },
+  {
+    "id": "MONTAJE_P3",
+    "nombre_tarea": "Montaje equipos planta 3",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-06-18",
+    "fecha_fin": "2026-06-18"
+  },
+  {
+    "id": "MONTAJE_P4",
+    "nombre_tarea": "Montaje equipos planta 4",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-06-19",
+    "fecha_fin": "2026-06-19"
+  },
+  {
+    "id": "MONTAJE_P5",
+    "nombre_tarea": "Montaje equipos planta 5",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-06-22",
+    "fecha_fin": "2026-06-22"
+  },
+  {
+    "id": "MONTAJE_P6",
+    "nombre_tarea": "Montaje equipos planta 6",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-06-23",
+    "fecha_fin": "2026-06-23"
+  },
+  {
+    "id": "MONTAJE_P7",
+    "nombre_tarea": "Montaje equipos planta 7",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-06-24",
+    "fecha_fin": "2026-06-24"
+  },
+  {
+    "id": "MONTAJE_PB",
+    "nombre_tarea": "Montaje equipos planta baja",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-06-25",
+    "fecha_fin": "2026-06-25"
+  },
+  {
+    "id": "PRUEBA_LAZOS",
+    "nombre_tarea": "Prueba de lazos",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-06-26",
+    "fecha_fin": "2026-06-26"
+  },
+  {
+    "id": "MONTAJE_CENTRAL_PCI",
+    "nombre_tarea": "Montaje central PCI",
+    "duracion_dias": 5,
+    "fecha_inicio": "2026-06-30",
+    "fecha_fin": "2026-07-06"
+  },
+  {
+    "id": "PROGRAMACION_CENTRAL",
+    "nombre_tarea": "Programación central",
+    "duracion_dias": 5,
+    "fecha_inicio": "2026-07-01",
+    "fecha_fin": "2026-07-07"
+  },
+  {
+    "id": "MONTAJE_CENTRAL_CO",
+    "nombre_tarea": "Montaje central CO",
+    "duracion_dias": 3,
+    "fecha_inicio": "2026-07-08",
+    "fecha_fin": "2026-07-10"
+  },
+  {
+    "id": "PRUEBA_SUBSISTEMA",
+    "nombre_tarea": "Prueba subsistema",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-07-09",
+    "fecha_fin": "2026-07-09"
+  }
+]
