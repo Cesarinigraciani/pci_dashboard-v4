@@ -66,6 +66,26 @@ function cargarAños() {
 }
 
 // ===============================
+// BUSCAR TAREA EN PLANNING
+// ===============================
+function buscarTareaPlanning(id) {
+    return planning.find(p => p.id === id);
+}
+
+// ===============================
+// CÁLCULO DE CUMPLIMIENTO
+// ===============================
+function calcularCumplimiento(tareaReal, tareaPlan) {
+    if (!tareaPlan) return "Sin datos de planning";
+    if (!tareaReal.fechaFinal) return "Pendiente";
+
+    const realFin = new Date(tareaReal.fechaFinal);
+    const previstoFin = new Date(tareaPlan.fecha_fin);
+
+    return realFin <= previstoFin ? "Cumplida" : "No cumplida";
+}
+
+// ===============================
 // RENDER KANBAN
 // ===============================
 function renderKanban() {
@@ -94,12 +114,12 @@ function renderKanban() {
         card.id = t.id;
         card.ondragstart = drag;
 
-        const plan = planning.find(p => p.id === t.id_planing);
+        const plan = buscarTareaPlanning(t.id);
 
         const fechaPrevistaInicio = plan ? plan.fecha_inicio : "-";
         const fechaPrevistaFin = plan ? plan.fecha_fin : "-";
 
-        const resultado = calcularPlazo(t, plan);
+        const estadoCumplimiento = calcularCumplimiento(t, plan);
 
         card.innerHTML = `
             <strong>${t.titulo}</strong><br>
@@ -107,11 +127,27 @@ function renderKanban() {
             Responsable: ${t.asignadoA}<br><br>
 
             <strong>Inicio previsto:</strong> ${fechaPrevistaInicio}<br>
+            <strong>Fin previsto:</strong> ${fechaPrevistaFin}<br><br>
+
             <strong>Inicio real:</strong> ${t.fechaInicio || "-"}<br>
             <strong>Fin real:</strong> ${t.fechaFinal || "-"}<br><br>
 
-            ${resultado}
+            <strong>Estado:</strong> ${estadoCumplimiento}
         `;
+
+        // COLORES SEGÚN CUMPLIMIENTO
+        if (estadoCumplimiento === "Cumplida") {
+            card.style.borderLeft = "5px solid #2ecc71"; // verde
+        }
+        else if (estadoCumplimiento === "No cumplida") {
+            card.style.borderLeft = "5px solid #e74c3c"; // rojo
+        }
+        else if (estadoCumplimiento === "Sin datos de planning") {
+            card.style.borderLeft = "5px solid #7f8c8d"; // gris
+        }
+        else {
+            card.style.borderLeft = "5px solid #f1c40f"; // amarillo
+        }
 
         document.getElementById(t.estado).appendChild(card);
         count[t.estado]++;
@@ -121,22 +157,6 @@ function renderKanban() {
     document.getElementById("titulo-proceso").textContent = `🟦 En proceso (${count.proceso})`;
     document.getElementById("titulo-pendiente").textContent = `🟨 Pendientes (${count.pendiente})`;
     document.getElementById("titulo-completada").textContent = `🟩 Completadas (${count.completada})`;
-}
-
-// ===============================
-// CÁLCULO DE PLAZOS
-// ===============================
-function calcularPlazo(t, plan) {
-    if (!plan) return `<span style="color:gray;">⚪ Sin datos</span>`;
-    if (!t.fechaFinal) return `<span style="color:gray;">⚪ Sin datos</span>`;
-
-    const finReal = new Date(t.fechaFinal);
-    const finPrev = new Date(plan.fecha_fin);
-
-    if (finReal > finPrev) {
-        return `<span style="color:red; font-weight:bold;">🔴 Fuera de plazo</span>`;
-    }
-    return `<span style="color:green; font-weight:bold;">🟢 En plazo</span>`;
 }
 
 // ===============================
