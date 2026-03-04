@@ -2,12 +2,19 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Visor de Tareas</title>
+    <title>Visor de Tareas - Planning Acacias</title>
     <link rel="stylesheet" href="styles/style-v2.css">
 
     <style>
-        html body, html body * { color:#000 !important; }
-        body { background:#f4f4f4 !important; }
+        body {
+            background:#f4f4f4 !important;
+            color:#000 !important;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        h1 {
+            color:#0033A0;
+        }
 
         .kanban-container {
             display:grid;
@@ -15,6 +22,7 @@
             gap:20px;
             padding:20px;
         }
+
         .kanban-column {
             background:white;
             padding:15px;
@@ -22,6 +30,7 @@
             box-shadow:0 4px 10px rgba(0,0,0,0.1);
             min-height:400px;
         }
+
         .tarea-card {
             background:#e9e9e9;
             padding:10px;
@@ -30,6 +39,7 @@
             border-left:5px solid #0078d4;
             cursor:grab;
         }
+
         .volver-btn {
             margin:20px auto;
             display:block;
@@ -40,6 +50,13 @@
             border:none;
             border-radius:6px;
             cursor:pointer;
+        }
+
+        select {
+            padding:6px;
+            border-radius:6px;
+            border:1px solid #aaa;
+            margin-left:6px;
         }
     </style>
 </head>
@@ -100,7 +117,122 @@
 
 <button class="volver-btn" onclick="window.location.href='dashboard.html'">⬅️ Volver</button>
 
-<script src="visor_tareas_planning.js"></script>
+<script>
+// ===============================
+//  VISOR TAREAS PLANNING
+// ===============================
+
+document.addEventListener("DOMContentLoaded", () => {
+    cargarAnios();
+    cargarObras();
+    cargarUsuarios();
+    renderKanban();
+});
+
+// Cargar selector de años
+function cargarAnios() {
+    const sel = document.getElementById("filtroAño");
+    sel.innerHTML = "";
+    const añoActual = new Date().getFullYear();
+
+    for (let y = añoActual - 2; y <= añoActual + 4; y++) {
+        const opt = document.createElement("option");
+        opt.value = y;
+        opt.textContent = y;
+        if (y === añoActual) opt.selected = true;
+        sel.appendChild(opt);
+    }
+}
+
+// Cargar obras
+function cargarObras() {
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+    const sel = document.getElementById("filtroObra");
+
+    obras.forEach(o => {
+        const opt = document.createElement("option");
+        opt.value = o.nombre;
+        opt.textContent = o.nombre;
+        sel.appendChild(opt);
+    });
+}
+
+// Cargar usuarios
+function cargarUsuarios() {
+    const usuarios = JSON.parse(localStorage.getItem("usuariosPCI")) || [];
+    const sel = document.getElementById("filtroUsuario");
+
+    usuarios.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.nombre;
+        opt.textContent = u.nombre;
+        sel.appendChild(opt);
+    });
+}
+
+// Renderizar Kanban
+function renderKanban() {
+    const mes = parseInt(document.getElementById("filtroMes").value);
+    const año = parseInt(document.getElementById("filtroAño").value);
+    const obraFiltro = document.getElementById("filtroObra").value;
+    const usuarioFiltro = document.getElementById("filtroUsuario").value;
+
+    const tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+
+    ["bloqueada", "proceso", "pendiente", "completada"].forEach(id => {
+        document.getElementById(id).innerHTML = `<h2 id="titulo-${id}">${document.getElementById(`titulo-${id}`).textContent}</h2>`;
+    });
+
+    let cont = { bloqueada:0, proceso:0, pendiente:0, completada:0 };
+
+    tareas.forEach(t => {
+        const fecha = new Date(t.fechaInicio);
+        if (fecha.getMonth() !== mes || fecha.getFullYear() !== año) return;
+
+        if (obraFiltro !== "todas" && t.obra !== obraFiltro) return;
+        if (usuarioFiltro !== "todos" && t.asignada !== usuarioFiltro) return;
+
+        const card = document.createElement("div");
+        card.className = "tarea-card";
+        card.draggable = true;
+        card.id = t.id;
+        card.ondragstart = e => e.dataTransfer.setData("text", t.id);
+
+        card.innerHTML = `
+            <strong>${t.titulo}</strong><br>
+            Obra: ${t.obra || "-"}<br>
+            Asignada a: ${t.asignada}<br>
+            Inicio: ${t.fechaInicio}
+        `;
+
+        const estado = t.estado || "pendiente";
+        document.getElementById(estado).appendChild(card);
+        cont[estado]++;
+    });
+
+    document.getElementById("titulo-bloqueada").textContent = `🟥 Bloqueadas (${cont.bloqueada})`;
+    document.getElementById("titulo-proceso").textContent = `🟦 En proceso (${cont.proceso})`;
+    document.getElementById("titulo-pendiente").textContent = `🟨 Pendientes (${cont.pendiente})`;
+    document.getElementById("titulo-completada").textContent = `🟩 Completadas (${cont.completada})`;
+}
+
+// Drag & Drop
+function allowDrop(ev) { ev.preventDefault(); }
+
+function drop(ev, estadoNuevo) {
+    ev.preventDefault();
+    const id = ev.dataTransfer.getData("text");
+
+    let tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+    const tarea = tareas.find(t => t.id === id);
+    if (!tarea) return;
+
+    tarea.estado = estadoNuevo;
+    localStorage.setItem("tareasPCI", JSON.stringify(tareas));
+
+    renderKanban();
+}
+</script>
 
 </body>
 </html>
