@@ -84,7 +84,7 @@ function cargarDashboard(usuario) {
                         <strong>${t.titulo}</strong><br>
                         Estado: <span>${t.estado}</span><br>
                         Fecha inicio: ${t.fechaInicio}<br>
-                        ${t.fechaFinal ? `Fecha final: ${t.fechaFinal}` : ""}
+                        ${t.fechaFin ? `Fecha final: ${t.fechaFin}` : ""}
                         <br>
                         ${
                             usuario.permisos.includes("completarTareas") 
@@ -185,3 +185,4 @@ function logout() {
 
 </body>
 </html>
+
