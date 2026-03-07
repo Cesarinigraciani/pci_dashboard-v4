@@ -1,34 +1,37 @@
 // ===============================
-//  SISTEMA DE TAREAS PCI (VERSIÓN FINAL CON FECHAS)
+//  SISTEMA DE TAREAS PCI (UNIFICADO)
 // ===============================
 
 let tareasData = [];
 
-
 // ===============================
 //  CARGAR TAREAS
 // ===============================
-
 function cargarTareas() {
     const data = localStorage.getItem("tareasPCI");
     tareasData = data ? JSON.parse(data) : [];
+
+    // Compatibilidad con tareas antiguas (fechaFinal → fechaFin)
+    tareasData.forEach(t => {
+        if (t.fechaFinal && !t.fechaFin) {
+            t.fechaFin = t.fechaFinal;
+        }
+    });
+
+    guardarTareas();
     return tareasData;
 }
-
 
 // ===============================
 //  GUARDAR TAREAS
 // ===============================
-
 function guardarTareas() {
     localStorage.setItem("tareasPCI", JSON.stringify(tareasData));
 }
 
-
 // ===============================
 //  CREAR TAREA
 // ===============================
-
 function crearTarea(datos) {
     const nuevaTarea = {
         id: "t" + Date.now(),
@@ -43,7 +46,9 @@ function crearTarea(datos) {
         creadoPor: datos.creadoPor,
         estado: datos.estado || "pendiente",
         fechaInicio: datos.fechaInicio || new Date().toISOString().split("T")[0],
-        fechaFinal: null,
+        fechaFin: null,               // ← unificado
+        resultado_plazo: null,        // ← para planning
+        id_planning: datos.id_planning || null, // ← si existe
         fechaCreacion: new Date().toISOString()
     };
 
@@ -52,12 +57,9 @@ function crearTarea(datos) {
     return nuevaTarea;
 }
 
-
-
 // ===============================
 //  EDITAR TAREA
 // ===============================
-
 function editarTarea(id, datos) {
     const tarea = tareasData.find(t => t.id === id);
     if (!tarea) return;
@@ -69,29 +71,29 @@ function editarTarea(id, datos) {
     tarea.estado = datos.estado ?? tarea.estado;
     tarea.fechaInicio = datos.fechaInicio ?? tarea.fechaInicio;
 
+    if (datos.id_planning !== undefined) {
+        tarea.id_planning = datos.id_planning;
+    }
+
     // Si se marca como completada → poner fecha final
     if (datos.estado === "completada") {
-        tarea.fechaFinal = new Date().toISOString().split("T")[0];
+        tarea.fechaFin = new Date().toISOString().split("T")[0];
     }
 
     guardarTareas();
 }
 
-
 // ===============================
 //  ELIMINAR TAREA
 // ===============================
-
 function eliminarTarea(id) {
     tareasData = tareasData.filter(t => t.id !== id);
     guardarTareas();
 }
 
-
 // ===============================
 //  CAMBIAR ESTADO DE TAREA
 // ===============================
-
 function cambiarEstadoTarea(id, nuevoEstado) {
     const tarea = tareasData.find(t => t.id === id);
     if (!tarea) return;
@@ -99,37 +101,32 @@ function cambiarEstadoTarea(id, nuevoEstado) {
     tarea.estado = nuevoEstado;
 
     if (nuevoEstado === "completada") {
-        tarea.fechaFinal = new Date().toISOString().split("T")[0];
+        tarea.fechaFin = new Date().toISOString().split("T")[0];
     } else {
-        tarea.fechaFinal = null;
+        tarea.fechaFin = null;
+        tarea.resultado_plazo = null;
     }
 
     guardarTareas();
 }
 
-
 // ===============================
 //  OBTENER TAREAS POR USUARIO
 // ===============================
-
 function obtenerTareasDeUsuario(idUsuario) {
     return tareasData.filter(t => t.asignadoA === idUsuario);
 }
 
-
 // ===============================
 //  OBTENER TAREAS POR OBRA
 // ===============================
-
 function obtenerTareasPorObra(obraId) {
     return tareasData.filter(t => t.obraId === obraId);
 }
 
-
 // ===============================
 //  INICIALIZACIÓN
 // ===============================
-
 document.addEventListener("DOMContentLoaded", () => {
     cargarTareas();
 });
