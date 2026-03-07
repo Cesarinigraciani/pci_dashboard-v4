@@ -109,6 +109,21 @@ function cambiarEstadoTarea(id, nuevoEstado) {
 
     guardarTareas();
 }
+// ===============================
+//  CALCULAR CUMPLIMIENTO DEL PLANNING
+// ===============================
+function calcularCumplimientoPlanning(tarea) {
+    if (!tarea.id_planning) return null;
+
+    const planning = JSON.parse(localStorage.getItem("planningPCI")) || [];
+    const plan = planning.find(p => p.id === tarea.id_planning);
+    if (!plan) return null;
+
+    const fechaFinReal = new Date(tarea.fechaFin);
+    const fechaFinPlan = new Date(plan.fecha_fin);
+
+    return fechaFinReal <= fechaFinPlan ? "en_plazo" : "fuera_de_plazo";
+}
 
 // ===============================
 //  OBTENER TAREAS POR USUARIO
@@ -130,3 +145,4 @@ function obtenerTareasPorObra(obraId) {
 document.addEventListener("DOMContentLoaded", () => {
     cargarTareas();
 });
+
