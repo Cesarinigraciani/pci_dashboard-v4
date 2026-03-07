@@ -78,6 +78,12 @@
 <div class="form-card">
     <h2>Crear Nueva Tarea</h2>
 
+    <!-- SELECTOR DE TAREA DEL PLANNING -->
+    <label>Tarea del planning (opcional)</label>
+    <select id="selectPlanning" onchange="cargarDatosPlanning()">
+        <option value="">-- Crear tarea manual --</option>
+    </select>
+
     <label>Título de la tarea</label>
     <input type="text" id="tituloTarea">
 
@@ -108,12 +114,13 @@
         <option value="bloqueada">Bloqueada</option>
         <option value="completada">Completada</option>
     </select>
+
     <label>Prioridad</label>
     <select id="prioridadTarea">
-    <option value="alta">Alta</option>
-    <option value="media">Media</option>
-    <option value="baja" selected>Baja</option>
-</select>
+        <option value="alta">Alta</option>
+        <option value="media">Media</option>
+        <option value="baja" selected>Baja</option>
+    </select>
 
     <button class="btn-guardar" onclick="guardarTarea()">Guardar Tarea</button>
     <button class="btn-volver" onclick="window.location.href='dashboard.html'">⬅️ Volver</button>
@@ -131,6 +138,46 @@
 <script>
 let posX = null;
 let posY = null;
+let idPlanningSeleccionado = null;
+
+/* ============================================================
+   CARGAR TAREAS DEL PLANNING
+============================================================ */
+function cargarPlanningEnFormulario() {
+    const planning = JSON.parse(localStorage.getItem("planningPCI")) || [];
+    const select = document.getElementById("selectPlanning");
+
+    planning.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.id} – ${p.nombre_tarea}`;
+        select.appendChild(opt);
+    });
+}
+
+/* ============================================================
+   AUTOCOMPLETAR DESDE PLANNING
+============================================================ */
+function cargarDatosPlanning() {
+    const id = document.getElementById("selectPlanning").value;
+    if (!id) {
+        idPlanningSeleccionado = null;
+        return;
+    }
+
+    const planning = JSON.parse(localStorage.getItem("planningPCI")) || [];
+    const p = planning.find(x => x.id === id);
+    if (!p) return;
+
+    idPlanningSeleccionado = p.id;
+
+    document.getElementById("tituloTarea").value = p.nombre_tarea;
+    document.getElementById("fechaInicioTarea").value = p.fecha_inicio;
+
+    if (!document.getElementById("descripcionTarea").value.trim()) {
+        document.getElementById("descripcionTarea").value = `Tarea basada en planning: ${p.nombre_tarea}`;
+    }
+}
 
 /* ============================================================
    CARGAR OBRAS
@@ -291,9 +338,10 @@ function guardarTarea() {
         posY,
         asignadoA,
         estado,
-        prioridad, // ← AQUI
+        prioridad,
         creadoPor: creador.id,
-        fechaInicio
+        fechaInicio,
+        id_planning: idPlanningSeleccionado
     });
 
     alert("Tarea creada correctamente.");
@@ -304,6 +352,7 @@ function guardarTarea() {
    INICIALIZACIÓN
 ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
+    cargarPlanningEnFormulario();
     cargarObras();
     cargarUsuariosAsignables();
 
@@ -314,13 +363,11 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("selectObra").value = obraId;
         cargarPlantas();
 
-        // Seleccionar automáticamente la primera planta
         const plantas = document.getElementById("selectPlanta");
         if (plantas.options.length > 0) {
             plantas.selectedIndex = 0;
             cargarPlanos();
 
-            // Seleccionar automáticamente el primer plano
             const planos = document.getElementById("selectPlano");
             if (planos.options.length > 0) {
                 planos.selectedIndex = 0;
@@ -331,7 +378,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("selectObra").addEventListener("change", cargarPlantas);
     document.getElementById("selectPlanta").addEventListener("change", cargarPlanos);
 });
-
 </script>
 
 </body>
