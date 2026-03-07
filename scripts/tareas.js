@@ -77,7 +77,10 @@ function editarTarea(id, datos) {
 
     // Si se marca como completada → poner fecha final
     if (datos.estado === "completada") {
-        tarea.fechaFin = new Date().toISOString().split("T")[0];
+    tarea.fechaFin = new Date().toISOString().split("T")[0];
+    tarea.resultado_plazo = calcularCumplimientoPlanning(tarea);
+}
+
     }
 
     guardarTareas();
@@ -100,12 +103,13 @@ function cambiarEstadoTarea(id, nuevoEstado) {
 
     tarea.estado = nuevoEstado;
 
-    if (nuevoEstado === "completada") {
-        tarea.fechaFin = new Date().toISOString().split("T")[0];
-    } else {
-        tarea.fechaFin = null;
-        tarea.resultado_plazo = null;
-    }
+   if (nuevoEstado === "completada") {
+    tarea.fechaFin = new Date().toISOString().split("T")[0];
+    tarea.resultado_plazo = calcularCumplimientoPlanning(tarea);
+} else {
+    tarea.fechaFin = null;
+    tarea.resultado_plazo = null;
+}
 
     guardarTareas();
 }
@@ -145,4 +149,5 @@ function obtenerTareasPorObra(obraId) {
 document.addEventListener("DOMContentLoaded", () => {
     cargarTareas();
 });
+
 
