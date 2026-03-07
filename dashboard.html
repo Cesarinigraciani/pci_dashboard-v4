@@ -18,7 +18,7 @@
 
 <div class="panel-admin" id="panel-dashboard"></div>
 
-<!-- RUTAS CORREGIDAS -->
+<!-- RUTAS -->
 <script src="scripts/usuarios.js"></script>
 <script src="scripts/tareas.js"></script>
 <script src="scripts/obras.js"></script>
@@ -55,11 +55,12 @@ document.addEventListener("DOMContentLoaded", () => {
 function cargarDashboard(usuario) {
     const panel = document.getElementById("panel-dashboard");
 
-    // OBRAS ASIGNADAS → AHORA USAMOS obrasPCI
+    // Obras asignadas
     const obras = (usuario.obrasAsignadas || [])
         .map(id => getObraById(id))
         .filter(o => o !== null && o !== undefined);
 
+    // Tareas asignadas
     const tareas = obtenerTareasDeUsuario(usuario.id);
 
     panel.innerHTML = `
@@ -84,12 +85,24 @@ function cargarDashboard(usuario) {
                         <strong>${t.titulo}</strong><br>
                         Estado: <span>${t.estado}</span><br>
                         Fecha inicio: ${t.fechaInicio}<br>
-                        ${t.fechaFin ? `Fecha final: ${t.fechaFin}` : ""}
-                        <br>
+
+                        <!-- FECHA FINAL -->
+                        ${t.fechaFin ? `Fecha final: ${t.fechaFin}<br>` : ""}
+
+                        <!-- CUMPLIMIENTO DEL PLANNING -->
+                        ${
+                            t.resultado_plazo === "en_plazo"
+                            ? `<span style="color:green;font-weight:bold;">🟢 En plazo</span><br>`
+                            : t.resultado_plazo === "fuera_de_plazo"
+                            ? `<span style="color:red;font-weight:bold;">🔴 Fuera de plazo</span><br>`
+                            : ""
+                        }
+
+                        <!-- CAMBIO DE ESTADO -->
                         ${
                             usuario.permisos.includes("completarTareas") 
                             ? `
-                                <select onchange="cambiarEstadoTarea('${t.id}', this.value)">
+                                <select onchange="cambiarEstadoDashboard('${t.id}', this.value)">
                                     <option value="pendiente" ${t.estado === "pendiente" ? "selected" : ""}>Pendiente</option>
                                     <option value="proceso" ${t.estado === "proceso" ? "selected" : ""}>En proceso</option>
                                     <option value="completada" ${t.estado === "completada" ? "selected" : ""}>Completada</option>
@@ -105,7 +118,6 @@ function cargarDashboard(usuario) {
         <div class="card">
             <h2>Acciones</h2>
 
-            <!-- BOTÓN DE RECURSOS -->
             <button class="boton-seccion" onclick="window.location.href='recursos.html'">
                 📦 Recursos de Obra
             </button>
@@ -149,7 +161,16 @@ function cargarDashboard(usuario) {
 
 
 // ===============================
-//  CARGAR PANEL DE USUARIOS
+//  CAMBIAR ESTADO DESDE DASHBOARD
+// ===============================
+function cambiarEstadoDashboard(id, nuevoEstado) {
+    cambiarEstadoTarea(id, nuevoEstado); // usa tareas.js
+    location.reload(); // refresca para mostrar fecha final y cumplimiento
+}
+
+
+// ===============================
+//  PANEL DE USUARIOS
 // ===============================
 function cargarPanelUsuarios() {
     const panel = document.getElementById("panel-dashboard");
@@ -185,4 +206,3 @@ function logout() {
 
 </body>
 </html>
-
