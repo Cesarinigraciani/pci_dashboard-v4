@@ -119,7 +119,7 @@
 
 <script>
 // ===============================
-//  VISOR TAREAS PLANNING
+//  VISOR TAREAS PLANNING (LOCALSTORAGE)
 // ===============================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -151,7 +151,7 @@ function cargarObras() {
 
     obras.forEach(o => {
         const opt = document.createElement("option");
-        opt.value = o.nombre;
+        opt.value = o.id;
         opt.textContent = o.nombre;
         sel.appendChild(opt);
     });
@@ -164,7 +164,7 @@ function cargarUsuarios() {
 
     usuarios.forEach(u => {
         const opt = document.createElement("option");
-        opt.value = u.nombre;
+        opt.value = u.id;
         opt.textContent = u.nombre;
         sel.appendChild(opt);
     });
@@ -178,6 +178,7 @@ function renderKanban() {
     const usuarioFiltro = document.getElementById("filtroUsuario").value;
 
     const tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+    const planning = JSON.parse(localStorage.getItem("planningPCI")) || [];
 
     ["bloqueada", "proceso", "pendiente", "completada"].forEach(id => {
         document.getElementById(id).innerHTML = `<h2 id="titulo-${id}">${document.getElementById(`titulo-${id}`).textContent}</h2>`;
@@ -189,8 +190,8 @@ function renderKanban() {
         const fecha = new Date(t.fechaInicio);
         if (fecha.getMonth() !== mes || fecha.getFullYear() !== año) return;
 
-        if (obraFiltro !== "todas" && t.obra !== obraFiltro) return;
-        if (usuarioFiltro !== "todos" && t.asignada !== usuarioFiltro) return;
+        if (obraFiltro !== "todas" && t.obraId !== obraFiltro) return;
+        if (usuarioFiltro !== "todos" && t.asignadoA !== usuarioFiltro) return;
 
         const card = document.createElement("div");
         card.className = "tarea-card";
@@ -198,11 +199,20 @@ function renderKanban() {
         card.id = t.id;
         card.ondragstart = e => e.dataTransfer.setData("text", t.id);
 
+        // Buscar planning asociado
+        const plan = planning.find(p => p.id === t.id_planning);
+
+        let estadoPlazo = "";
+        if (t.resultado_plazo === "en_plazo") estadoPlazo = `<span style="color:green;font-weight:bold;">🟢 En plazo</span>`;
+        if (t.resultado_plazo === "fuera_de_plazo") estadoPlazo = `<span style="color:red;font-weight:bold;">🔴 Fuera de plazo</span>`;
+
         card.innerHTML = `
             <strong>${t.titulo}</strong><br>
-            Obra: ${t.obra || "-"}<br>
-            Asignada a: ${t.asignada}<br>
-            Inicio: ${t.fechaInicio}
+            Obra: ${t.obraId}<br>
+            Asignada a: ${t.asignadoA}<br>
+            Inicio: ${t.fechaInicio}<br>
+            Fin real: ${t.fechaFin || "-"}<br>
+            ${estadoPlazo}
         `;
 
         const estado = t.estado || "pendiente";
@@ -224,16 +234,39 @@ function drop(ev, estadoNuevo) {
     const id = ev.dataTransfer.getData("text");
 
     let tareas = JSON.parse(localStorage.getItem("tareasPCI")) || [];
+    let planning = JSON.parse(localStorage.getItem("planningPCI")) || [];
+
     const tarea = tareas.find(t => t.id === id);
     if (!tarea) return;
 
-    tarea.estado = estadoNuevo;
-    localStorage.setItem("tareasPCI", JSON.stringify(tareas));
+    // Guardar fecha final si se completa
+    let fechaFin = null;
+    if (estadoNuevo === "completada") {
+        fechaFin = new Date().toISOString().split("T")[0];
+        tarea.fechaFin = fechaFin;
+    }
 
+    // Comparar con planning
+    const plan = planning.find(p => p.id === tarea.id_planning);
+    if (plan && fechaFin) {
+        const inicioPlan = new Date(plan.fecha_inicio);
+        const finPlan = new Date(plan.fecha_fin);
+        const inicioReal = new Date(tarea.fechaInicio);
+        const finReal = new Date(fechaFin);
+
+        if (inicioReal > inicioPlan || finReal > finPlan) {
+            tarea.resultado_plazo = "fuera_de_plazo";
+        } else {
+            tarea.resultado_plazo = "en_plazo";
+        }
+    }
+
+    tarea.estado = estadoNuevo;
+
+    localStorage.setItem("tareasPCI", JSON.stringify(tareas));
     renderKanban();
 }
 </script>
 
 </body>
 </html>
-
