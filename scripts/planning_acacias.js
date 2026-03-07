@@ -2,21 +2,22 @@
    MODO DE TRABAJO: "local" o "firebase"
 ============================================================ */
 const modo = "local"; 
-// Cambia a "firebase" cuando quieras trabajar conectado a Firestore
-
 let planning = [];
 
 /* ============================================================
-   CARGAR PLANNING (HÍBRIDO)
+   CARGAR PLANNING (LOCAL + GUARDAR EN LOCALSTORAGE)
 ============================================================ */
 async function cargarPlanning() {
 
     if (modo === "local") {
-        // Cargar desde JSON local
         fetch("data/planning_acacias.json")
             .then(r => r.json())
             .then(data => {
                 planning = data;
+
+                // 🔥 Guardar en localStorage para que los visores puedan usarlo
+                localStorage.setItem("planningPCI", JSON.stringify(planning));
+
                 renderTabla();
             })
             .catch(err => console.error("Error cargando JSON del planning:", err));
@@ -24,9 +25,12 @@ async function cargarPlanning() {
     }
 
     if (modo === "firebase") {
-        // Cargar desde Firestore
         const snap = await db.collection("planning_acacias").get();
         planning = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // 🔥 Guardar también en localStorage
+        localStorage.setItem("planningPCI", JSON.stringify(planning));
+
         renderTabla();
     }
 }
@@ -54,7 +58,6 @@ async function guardarPlanning() {
         fecha_fin: fin
     };
 
-    // Guardar en local (solo actualiza la tabla)
     if (modo === "local") {
         const index = planning.findIndex(p => p.id === id);
 
@@ -64,15 +67,21 @@ async function guardarPlanning() {
             planning.push(nuevaTarea);
         }
 
+        // 🔥 Guardar en localStorage
+        localStorage.setItem("planningPCI", JSON.stringify(planning));
+
         renderTabla();
-        alert("Guardado en modo LOCAL (no subido a Firebase).");
+        alert("Guardado en modo LOCAL.");
         return;
     }
 
-    // Guardar en Firebase
     if (modo === "firebase") {
         await db.collection("planning_acacias").doc(id).set(nuevaTarea);
-        alert("Tarea guardada correctamente en Firebase.");
+
+        // 🔥 Guardar en localStorage
+        localStorage.setItem("planningPCI", JSON.stringify(planning));
+
+        alert("Guardado en Firebase.");
         cargarPlanning();
     }
 }
@@ -98,6 +107,10 @@ async function eliminarPlanning(id) {
 
     if (modo === "local") {
         planning = planning.filter(p => p.id !== id);
+
+        // 🔥 Guardar en localStorage
+        localStorage.setItem("planningPCI", JSON.stringify(planning));
+
         renderTabla();
         alert("Eliminado en modo LOCAL.");
         return;
