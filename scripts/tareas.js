@@ -77,14 +77,13 @@ function editarTarea(id, datos) {
 
     // Si se marca como completada → poner fecha final
     if (datos.estado === "completada") {
-    tarea.fechaFin = new Date().toISOString().split("T")[0];
-    tarea.resultado_plazo = calcularCumplimientoPlanning(tarea);
-}
-
+        tarea.fechaFin = new Date().toISOString().split("T")[0];
+        tarea.resultado_plazo = calcularCumplimientoPlanning(tarea);
     }
 
     guardarTareas();
 }
+
 
 // ===============================
 //  ELIMINAR TAREA
