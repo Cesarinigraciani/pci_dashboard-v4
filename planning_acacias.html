@@ -54,21 +54,30 @@
         label { color: black !important; }
         input, select { color: black !important; background-color: white !important; }
         input::placeholder { color: #444 !important; }
-           /* Fondo oscuro + texto blanco para la tabla del planning */
-        .planning-container, 
-        .planning-container table, 
-        .planning-container th, 
-        .planning-container td {
-        color: white !important;
+          /* Fondo oscuro + texto blanco SOLO para el planning */
+.planning-container {
+    color: white !important;
 }
 
-        .planning-container th {
-    background-color: rgba(255,255,255,0.1) !important;
+.planning-container h2,
+.planning-container label,
+.planning-container input,
+.planning-container select,
+.planning-container table,
+.planning-container th,
+.planning-container td {
+    color: white !important;
 }
 
-        .planning-container td {
+/* Ajustar fondo de celdas para que no queden negras */
+.planning-container th {
+    background-color: rgba(255,255,255,0.15) !important;
+}
+
+.planning-container td {
     background-color: rgba(255,255,255,0.05) !important;
 }
+
 
     
     </style>
@@ -76,8 +85,12 @@
 
 <body>
 
-<div class="container">
-    <h2>Planning – Obra Acacias</h2>
+<div class="planning-container">
+    <div class="container">
+        <h2>Planning – Obra Acacias</h2>
+        ...
+    </div>
+</div>
 
     <h3>Crear nueva tarea del planning</h3>
 
@@ -124,4 +137,5 @@
 
 </body>
 </html>
+
 
