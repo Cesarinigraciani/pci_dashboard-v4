@@ -6,11 +6,19 @@
     <link rel="stylesheet" href="styles/style-v2.css">
 
     <style>
+
+        /* ============================
+           FONDO GENERAL OSCURO
+        ============================ */
         body { 
             background: #000000; 
             color: white;
+            font-family: Arial, sans-serif;
         }
 
+        /* ============================
+           CONTENEDOR BLANCO (FORMULARIO)
+        ============================ */
         .container {
             max-width: 900px;
             margin: 30px auto;
@@ -18,26 +26,62 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            color: black;
+            color: black; /* Texto negro sobre fondo blanco */
         }
 
-        table {
+        /* ============================
+           CONTENEDOR OSCURO (PLANNING)
+        ============================ */
+        .planning-container {
+            max-width: 900px;
+            margin: 30px auto;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            color: white; /* Texto blanco sobre fondo oscuro */
+        }
+
+        .planning-container h2,
+        .planning-container h3,
+        .planning-container label {
+            color: white;
+        }
+
+        .planning-container input,
+        .planning-container select {
+            background-color: #2c2c2c;
+            color: white;
+            border: 1px solid #555;
+        }
+
+        /* ============================
+           TABLA DEL PLANNING
+        ============================ */
+        .planning-container table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
 
-        table th, table td {
-            border: 1px solid #ccc;
+        .planning-container th,
+        .planning-container td {
             padding: 10px;
             text-align: center;
-        }
-
-        table th {
-            background: #0078d4;
+            border: 1px solid #444;
             color: white;
         }
 
+        .planning-container th {
+            background-color: #333;
+        }
+
+        .planning-container td {
+            background-color: #2a2a2a;
+        }
+
+        /* ============================
+           BOTONES
+        ============================ */
         .btn {
             padding: 10px;
             border: none;
@@ -47,50 +91,20 @@
         }
 
         .btn-add { background: #28a745; color: white; }
-        .btn-edit { background: #ffc107; }
+        .btn-edit { background: #ffc107; color: black; }
         .btn-delete { background: #dc3545; color: white; }
         .btn-back { background: #0078d4; color: white; width: 100%; margin-top: 20px; }
 
-        label { color: black !important; }
-        input, select { color: black !important; background-color: white !important; }
-        input::placeholder { color: #444 !important; }
-          /* Fondo oscuro + texto blanco SOLO para el planning */
-.planning-container {
-    color: white !important;
-}
-
-.planning-container h2,
-.planning-container label,
-.planning-container input,
-.planning-container select,
-.planning-container table,
-.planning-container th,
-.planning-container td {
-    color: white !important;
-}
-
-/* Ajustar fondo de celdas para que no queden negras */
-.planning-container th {
-    background-color: rgba(255,255,255,0.15) !important;
-}
-
-.planning-container td {
-    background-color: rgba(255,255,255,0.05) !important;
-}
-
-
-    
     </style>
 </head>
 
 <body>
 
+<!-- ============================
+     BLOQUE OSCURO DEL PLANNING
+============================ -->
 <div class="planning-container">
-    <div class="container">
-        <h2>Planning – Obra Acacias</h2>
-        ...
-    </div>
-</div>
+    <h2>Planning – Obra Acacias</h2>
 
     <h3>Crear nueva tarea del planning</h3>
 
@@ -137,5 +151,3 @@
 
 </body>
 </html>
-
-
