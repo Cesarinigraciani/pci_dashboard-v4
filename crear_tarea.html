@@ -70,6 +70,24 @@
             border-radius: 10px;
             cursor: crosshair;
         }
+
+        /* SUBTAREAS */
+        .subtarea-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            gap: 10px;
+        }
+        .subtarea-row label {
+            margin-left: 5px;
+        }
+        .subtareas-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7f7f7;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
     </style>
 </head>
 
@@ -137,6 +155,13 @@
         <option value="baja" selected>Baja</option>
     </select>
 
+    <!-- SUBTAREAS -->
+    <div class="subtareas-container">
+        <h3>Subtareas</h3>
+        <p>Marca qué subtareas aplican a esta tarea.</p>
+        <div id="listaSubtareas"></div>
+    </div>
+
     <button class="btn-guardar" onclick="guardarTarea()">Guardar Tarea</button>
     <button class="btn-volver" onclick="window.location.href='dashboard.html'">⬅️ Volver</button>
 </div>
@@ -154,6 +179,97 @@
 let posX = null;
 let posY = null;
 let idPlanningSeleccionado = null;
+
+/* ============================================================
+   LISTA GENERAL DE SUBTAREAS
+============================================================ */
+const subtareasGenerales = [
+  { nombre: "Instalación de tubo" },
+  { nombre: "Fijación y soportes" },
+  { nombre: "Sellado de pasos" },
+  { nombre: "Revisión de canalización" },
+
+  { nombre: "Pasar cable" },
+  { nombre: "Etiquetado de cable" },
+  { nombre: "Medición de continuidad" },
+  { nombre: "Medición de aislamiento" },
+
+  { nombre: "Instalación de cajas" },
+  { nombre: "Nivelación de cajas" },
+  { nombre: "Preparación para módulos" },
+
+  { nombre: "Montaje de base" },
+  { nombre: "Montaje de módulo/detector" },
+  { nombre: "Tornillería" },
+  { nombre: "Etiquetado de módulo" },
+
+  { nombre: "Cableado a compuertas cortafuegos" },
+  { nombre: "Cableado a retenedores" },
+  { nombre: "Cableado a relés" },
+  { nombre: "Cableado a central" },
+
+  { nombre: "Cableado 24V positivo" },
+  { nombre: "Cableado 24V negativo" },
+  { nombre: "Protección 24V" },
+  { nombre: "Etiquetado 24V" },
+
+  { nombre: "Cableado a retenedor" },
+  { nombre: "Conexión de retenedor" },
+  { nombre: "Prueba de retención" },
+
+  { nombre: "Empalmes" },
+  { nombre: "Bornes" },
+  { nombre: "Prueba de tensión" },
+  { nombre: "Prueba de continuidad" },
+
+  { nombre: "Prueba de lazo" },
+  { nombre: "Prueba de módulo" },
+  { nombre: "Prueba de señal técnica" },
+  { nombre: "Prueba de compuerta" }
+];
+
+/* ============================================================
+   CARGAR SUBTAREAS EN FORMULARIO
+============================================================ */
+function cargarSubtareas() {
+    const cont = document.getElementById("listaSubtareas");
+    cont.innerHTML = "";
+
+    subtareasGenerales.forEach((sub, i) => {
+        const row = document.createElement("div");
+        row.className = "subtarea-row";
+
+        row.innerHTML = `
+            <input type="checkbox" class="aplica" data-index="${i}">
+            <input type="checkbox" class="completado" data-index="${i}" disabled>
+            <label>${sub.nombre}</label>
+        `;
+
+        cont.appendChild(row);
+    });
+
+    activarLogicaCheckbox();
+}
+
+/* ============================================================
+   LÓGICA APLICA / COMPLETADO
+============================================================ */
+function activarLogicaCheckbox() {
+    const aplica = document.querySelectorAll(".aplica");
+    const completado = document.querySelectorAll(".completado");
+
+    aplica.forEach((chk, i) => {
+        chk.addEventListener("change", () => {
+            const comp = completado[i];
+            if (chk.checked) {
+                comp.disabled = false;
+            } else {
+                comp.checked = false;
+                comp.disabled = true;
+            }
+        });
+    });
+}
 
 /* ============================================================
    CARGAR TAREAS DEL PLANNING
@@ -212,7 +328,7 @@ function cargarObras() {
 }
 
 /* ============================================================
-   CARGAR PLANTAS SEGÚN OBRA
+   CARGAR PLANTAS
 ============================================================ */
 function cargarPlantas() {
     const obraId = document.getElementById("selectObra").value;
@@ -235,7 +351,7 @@ function cargarPlantas() {
 }
 
 /* ============================================================
-   CARGAR PLANOS SEGÚN PLANTA
+   CARGAR PLANOS
 ============================================================ */
 function cargarPlanos() {
     const obraId = document.getElementById("selectObra").value;
@@ -259,7 +375,7 @@ function cargarPlanos() {
 }
 
 /* ============================================================
-   ABRIR MODAL PARA SELECCIONAR POSICIÓN
+   MODAL PLANO
 ============================================================ */
 function abrirModalPlano() {
     const obraId = document.getElementById("selectObra").value;
@@ -341,6 +457,16 @@ function guardarTarea() {
         return;
     }
 
+    /* CAPTURAR SUBTAREAS */
+    const aplica = document.querySelectorAll(".aplica");
+    const completado = document.querySelectorAll(".completado");
+
+    const subtareasFinal = subtareasGenerales.map((sub, i) => ({
+        nombre: sub.nombre,
+        aplica: aplica[i].checked,
+        completado: completado[i].checked
+    }));
+
     const creador = getUsuarioActual();
 
     crearTarea({
@@ -356,7 +482,8 @@ function guardarTarea() {
         prioridad,
         creadoPor: creador.id,
         fechaInicio,
-        id_planning: idPlanningSeleccionado
+        id_planning: idPlanningSeleccionado,
+        subtareas: subtareasFinal
     });
 
     alert("Tarea creada correctamente.");
@@ -370,6 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarPlanningEnFormulario();
     cargarObras();
     cargarUsuariosAsignables();
+    cargarSubtareas();
 
     const params = new URLSearchParams(window.location.search);
     const obraId = params.get("obra");
@@ -397,5 +525,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
-
-
