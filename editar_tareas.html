@@ -74,6 +74,39 @@ button {
     border-radius: 10px;
     cursor: crosshair;
 }
+
+/* SUBTAREAS (modo oscuro profesional) */
+.subtareas-container {
+    margin-top: 20px;
+    padding: 12px 15px;
+    background: #1f1f1f;
+    border-radius: 8px;
+    border: 1px solid #444;
+}
+
+.subtarea-row {
+    display: grid;
+    grid-template-columns: 22px 22px auto;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    border-bottom: 1px solid #333;
+}
+
+.subtarea-row:last-child {
+    border-bottom: none;
+}
+
+.subtarea-row input[type="checkbox"] {
+    transform: scale(0.9);
+    cursor: pointer;
+}
+
+.subtarea-row label {
+    font-size: 14px;
+    cursor: pointer;
+    margin: 0;
+}
 </style>
 </head>
 
@@ -97,7 +130,6 @@ button {
     <label>Planta</label>
     <input type="text" id="plantaNombre" disabled>
 
-    <!-- Selector de plano -->
     <label>Plano</label>
     <select id="planoSelect"></select>
 
@@ -122,11 +154,18 @@ button {
     <label>Observaciones</label>
     <textarea id="observaciones" rows="3"></textarea>
 
+    <!-- SUBTAREAS -->
+    <div class="subtareas-container">
+        <h3>Subtareas</h3>
+        <p style="font-size:13px; opacity:0.8;">Editar subtareas aplicables y completadas.</p>
+        <div id="listaSubtareas"></div>
+    </div>
+
     <button class="btn-verde" onclick="guardarCambios()">💾 Guardar Cambios</button>
     <button class="btn-rojo" onclick="history.back()">⬅️ Volver</button>
 </div>
 
-<!-- MODAL PARA SELECCIONAR POSICIÓN -->
+<!-- MODAL -->
 <div id="modalPlano">
     <img id="imgPlanoSeleccion" src="">
 </div>
@@ -179,6 +218,57 @@ function cargarTarea() {
     }
 
     document.getElementById("observaciones").value = tarea.observaciones || "";
+
+    /* CARGAR SUBTAREAS */
+    cargarSubtareasEnEdicion();
+}
+
+/* ============================================================
+   CARGAR SUBTAREAS EN EDICIÓN
+============================================================ */
+function cargarSubtareasEnEdicion() {
+    const cont = document.getElementById("listaSubtareas");
+    cont.innerHTML = "";
+
+    if (!tarea.subtareas) {
+        cont.innerHTML = "<p style='opacity:0.6;'>Esta tarea no tiene subtareas.</p>";
+        return;
+    }
+
+    tarea.subtareas.forEach((sub, i) => {
+        const row = document.createElement("div");
+        row.className = "subtarea-row";
+
+        row.innerHTML = `
+            <input type="checkbox" class="aplica" data-index="${i}" ${sub.aplica ? "checked" : ""}>
+            <input type="checkbox" class="completado" data-index="${i}" ${sub.completado ? "checked" : ""} ${sub.aplica ? "" : "disabled"}>
+            <label>${sub.nombre}</label>
+        `;
+
+        cont.appendChild(row);
+    });
+
+    activarLogicaCheckboxEdicion();
+}
+
+/* ============================================================
+   LÓGICA APLICA / COMPLETADO EN EDICIÓN
+============================================================ */
+function activarLogicaCheckboxEdicion() {
+    const aplica = document.querySelectorAll(".aplica");
+    const completado = document.querySelectorAll(".completado");
+
+    aplica.forEach((chk, i) => {
+        chk.addEventListener("change", () => {
+            const comp = completado[i];
+            if (chk.checked) {
+                comp.disabled = false;
+            } else {
+                comp.checked = false;
+                comp.disabled = true;
+            }
+        });
+    });
 }
 
 /* ============================================================
@@ -219,30 +309,6 @@ function cargarResponsables() {
 }
 
 /* ============================================================
-   CAMBIAR UBICACIÓN EN PLANO
-============================================================ */
-function abrirModalPlano() {
-    const obra = getObraById(tarea.obraId);
-    const planta = obra.plantas.find(p => p.id === tarea.plantaId);
-    const plano = planta.planos.find(pl => pl.id === document.getElementById("planoSelect").value);
-
-    const modal = document.getElementById("modalPlano");
-    const img = document.getElementById("imgPlanoSeleccion");
-
-    img.src = plano.imagen;
-    modal.style.display = "flex";
-
-    img.onclick = function(e) {
-        const rect = img.getBoundingClientRect();
-        posX = (e.clientX - rect.left) / rect.width;
-        posY = (e.clientY - rect.top) / rect.height;
-
-        alert("Nueva ubicación seleccionada.");
-        modal.style.display = "none";
-    };
-}
-
-/* ============================================================
    GUARDAR CAMBIOS
 ============================================================ */
 function guardarCambios() {
@@ -255,7 +321,6 @@ function guardarCambios() {
     t.asignadoA = document.getElementById("responsable").value;
     t.estado = document.getElementById("estado").value;
     t.observaciones = document.getElementById("observaciones").value.trim();
-
     t.planoId = document.getElementById("planoSelect").value;
 
     if (t.estado === "bloqueada") {
@@ -267,6 +332,18 @@ function guardarCambios() {
     t.posX = posX;
     t.posY = posY;
 
+    /* GUARDAR SUBTAREAS */
+    if (t.subtareas) {
+        const aplica = document.querySelectorAll(".aplica");
+        const completado = document.querySelectorAll(".completado");
+
+        t.subtareas = t.subtareas.map((sub, i) => ({
+            nombre: sub.nombre,
+            aplica: aplica[i].checked,
+            completado: completado[i].checked
+        }));
+    }
+
     localStorage.setItem("tareasPCI", JSON.stringify(tareas));
 
     alert("Cambios guardados correctamente.");
@@ -277,11 +354,8 @@ function guardarCambios() {
    MOSTRAR/OCULTAR MOTIVO BLOQUEO
 ============================================================ */
 document.getElementById("estado").addEventListener("change", function() {
-    if (this.value === "bloqueada") {
-        document.getElementById("bloqueoBox").style.display = "block";
-    } else {
-        document.getElementById("bloqueoBox").style.display = "none";
-    }
+    document.getElementById("bloqueoBox").style.display =
+        this.value === "bloqueada" ? "block" : "none";
 });
 
 /* ============================================================
