@@ -230,10 +230,15 @@ function cargarSubtareasEnEdicion() {
     const cont = document.getElementById("listaSubtareas");
     cont.innerHTML = "";
 
-    if (!tarea.subtareas) {
-        cont.innerHTML = "<p style='opacity:0.6;'>Esta tarea no tiene subtareas.</p>";
-        return;
-    }
+    // Si la tarea NO tiene subtareas, se las creamos automáticamente
+if (!tarea.subtareas) {
+    tarea.subtareas = subtareasGenerales.map(sub => ({
+        nombre: sub.nombre,
+        aplica: false,
+        completado: false
+    }));
+}
+
 
     tarea.subtareas.forEach((sub, i) => {
         const row = document.createElement("div");
