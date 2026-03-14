@@ -71,31 +71,38 @@
             cursor: crosshair;
         }
 
-       .subtarea-row {
-    display: flex;
+     .subtareas-container {
+    margin-top: 20px;
+    padding: 12px 15px;
+    background: #f4f4f4;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.subtarea-row {
+    display: grid;
+    grid-template-columns: 22px 22px auto; /* checkbox aplica, checkbox completado, texto */
     align-items: center;
-    gap: 6px;              /* Reduce separación entre checkboxes */
-    margin-bottom: 4px;    /* Reduce espacio vertical */
+    gap: 6px;
+    padding: 4px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.subtarea-row:last-child {
+    border-bottom: none;
 }
 
 .subtarea-row input[type="checkbox"] {
-    transform: scale(0.9); /* Hace los checkboxes un poco más pequeños */
+    transform: scale(0.9);
+    cursor: pointer;
 }
 
 .subtarea-row label {
-    margin-left: 2px;      /* Acerca el texto al checkbox */
-    font-size: 14px;       /* Texto ligeramente más compacto */
+    font-size: 14px;
+    cursor: pointer;
+    margin: 0;
 }
-
-.subtareas-container {
-    margin-top: 20px;
-    padding: 12px;
-    background: #f7f7f7;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-}
-
-    </style>
+     </style>
 </head>
 
 <body>
