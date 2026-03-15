@@ -46,16 +46,20 @@ function crearTarea(datos) {
         creadoPor: datos.creadoPor,
         estado: datos.estado || "pendiente",
         fechaInicio: datos.fechaInicio || new Date().toISOString().split("T")[0],
-        fechaFin: null,               // ← unificado
-        resultado_plazo: null,        // ← para planning
-        id_planning: datos.id_planning || null, // ← si existe
-        fechaCreacion: new Date().toISOString()
+        fechaFin: null,
+        resultado_plazo: null,
+        id_planning: datos.id_planning || null,
+        fechaCreacion: new Date().toISOString(),
+
+        // 🔥 AÑADIR ESTO 🔥
+        subtareas: datos.subtareas || []
     };
 
     tareasData.push(nuevaTarea);
     guardarTareas();
     return nuevaTarea;
 }
+
 
 // ===============================
 //  EDITAR TAREA
