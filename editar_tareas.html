@@ -175,6 +175,54 @@ button {
 <script src="scripts/tareas.js"></script>
 
 <script>
+/* ============================================================
+   LISTA GENERAL DE SUBTAREAS (MISMA QUE EN CREAR TAREA)
+============================================================ */
+const subtareasGenerales = [
+  { nombre: "Instalación de tubo" },
+  { nombre: "Fijación y soportes" },
+  { nombre: "Sellado de pasos" },
+  { nombre: "Revisión de canalización" },
+
+  { nombre: "Pasar cable" },
+  { nombre: "Etiquetado de cable" },
+  { nombre: "Medición de continuidad" },
+  { nombre: "Medición de aislamiento" },
+
+  { nombre: "Instalación de cajas" },
+  { nombre: "Nivelación de cajas" },
+  { nombre: "Preparación para módulos" },
+
+  { nombre: "Montaje de base" },
+  { nombre: "Montaje de módulo/detector" },
+  { nombre: "Tornillería" },
+  { nombre: "Etiquetado de módulo" },
+
+  { nombre: "Cableado a compuertas cortafuegos" },
+  { nombre: "Cableado a retenedores" },
+  { nombre: "Cableado a relés" },
+  { nombre: "Cableado a central" },
+
+  { nombre: "Cableado 24V positivo" },
+  { nombre: "Cableado 24V negativo" },
+  { nombre: "Protección 24V" },
+  { nombre: "Etiquetado 24V" },
+
+  { nombre: "Cableado a retenedor" },
+  { nombre: "Conexión de retenedor" },
+  { nombre: "Prueba de retención" },
+
+  { nombre: "Empalmes" },
+  { nombre: "Bornes" },
+  { nombre: "Prueba de tensión" },
+  { nombre: "Prueba de continuidad" },
+
+  { nombre: "Prueba de lazo" },
+  { nombre: "Prueba de módulo" },
+  { nombre: "Prueba de señal técnica" },
+  { nombre: "Prueba de compuerta" }
+];
+    
 let tareaId = new URLSearchParams(window.location.search).get("id");
 let tarea = null;
 let posX = null;
