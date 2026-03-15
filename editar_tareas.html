@@ -278,16 +278,16 @@ function cargarSubtareasEnEdicion() {
     const cont = document.getElementById("listaSubtareas");
     cont.innerHTML = "";
 
-    // Si la tarea NO tiene subtareas, se las creamos automáticamente
-if (!tarea.subtareas) {
-    tarea.subtareas = subtareasGenerales.map(sub => ({
-        nombre: sub.nombre,
-        aplica: false,
-        completado: false
-    }));
-}
+    // Asegurar que subtareas existe y está bien formada
+    if (!Array.isArray(tarea.subtareas)) {
+        tarea.subtareas = subtareasGenerales.map(sub => ({
+            nombre: sub.nombre,
+            aplica: false,
+            completado: false
+        }));
+    }
 
-
+    // Mostrar TODAS las subtareas, pero respetando lo guardado
     tarea.subtareas.forEach((sub, i) => {
         const row = document.createElement("div");
         row.className = "subtarea-row";
