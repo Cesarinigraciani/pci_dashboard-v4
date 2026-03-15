@@ -162,6 +162,9 @@ function renderKanban() {
 // ===============================
 // DRAG & DROP
 // ===============================
+// ===============================
+// DRAG & DROP
+// ===============================
 function drag(event) {
     event.dataTransfer.setData("text", event.target.id);
 }
@@ -180,26 +183,43 @@ function drop(event, nuevoEstado) {
     if (!t) return;
 
     // ==========================================
+    // NORMALIZAR SUBTAREAS
+    // ==========================================
+    if (typeof t.subtareas === "string") {
+        try {
+            t.subtareas = JSON.parse(t.subtareas);
+        } catch {
+            t.subtareas = [];
+        }
+    }
+
+    if (!Array.isArray(t.subtareas)) {
+        t.subtareas = [];
+    }
+
+    // ==========================================
     // VALIDAR SUBTAREAS ANTES DE COMPLETAR
     // ==========================================
     if (nuevoEstado === "completada") {
 
-        // Si la tarea tiene subtareas guardadas
-        if (Array.isArray(t.subtareas)) {
+        const pendientes = t.subtareas.some(s => s.aplica && !s.completado);
 
-            // Buscar subtareas aplicables NO completadas
-            const pendientes = t.subtareas.some(s => s.aplica && !s.completado);
-
-            if (pendientes) {
-                alert("No puedes completar esta tarea porque tiene subtareas pendientes.");
-                return; // ❌ Bloquea el movimiento
-            }
+        if (pendientes) {
+            alert("No puedes completar esta tarea porque tiene subtareas pendientes.");
+            return; // ❌ Bloquea el movimiento
         }
 
         // Si no hay subtareas pendientes → permitir completar
         if (!t.fechaFinal) {
             t.fechaFinal = new Date().toISOString().split("T")[0];
         }
+    }
+
+    // ==========================================
+    // SI SE MUEVE A PENDIENTE O PROCESO → BORRAR FECHA FINAL
+    // ==========================================
+    if (nuevoEstado === "pendiente" || nuevoEstado === "proceso") {
+        t.fechaFinal = null;
     }
 
     // ==========================================
