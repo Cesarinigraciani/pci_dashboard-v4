@@ -179,12 +179,35 @@ function drop(event, nuevoEstado) {
 
     if (!t) return;
 
-    t.estado = nuevoEstado;
+    // ==========================================
+    // VALIDAR SUBTAREAS ANTES DE COMPLETAR
+    // ==========================================
+    if (nuevoEstado === "completada") {
 
-    if (nuevoEstado === "completada" && !t.fechaFinal) {
-        t.fechaFinal = new Date().toISOString().split("T")[0];
+        // Si la tarea tiene subtareas guardadas
+        if (Array.isArray(t.subtareas)) {
+
+            // Buscar subtareas aplicables NO completadas
+            const pendientes = t.subtareas.some(s => s.aplica && !s.completado);
+
+            if (pendientes) {
+                alert("No puedes completar esta tarea porque tiene subtareas pendientes.");
+                return; // ❌ Bloquea el movimiento
+            }
+        }
+
+        // Si no hay subtareas pendientes → permitir completar
+        if (!t.fechaFinal) {
+            t.fechaFinal = new Date().toISOString().split("T")[0];
+        }
     }
 
+    // ==========================================
+    // CAMBIAR ESTADO SI PASA VALIDACIÓN
+    // ==========================================
+    t.estado = nuevoEstado;
+
+    // Guardar cambios
     localStorage.setItem("tareasPCI", JSON.stringify(lista));
 
     cargarLocalStorage();
