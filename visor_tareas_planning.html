@@ -226,12 +226,12 @@ try {
          s.completada === true || s.completada === "true")
     );
 
-    if (completadas.length > 0) {
-        subtareasHTML = "<br><strong>Subtareas completadas:</strong><br>";
-        completadas.forEach(s => {
-           subtareasHTML += `✔ ${s.subtarea}<br>`;
-        });
-    }
+   if (completadas.length > 0) {
+    subtareasHTML = "<br><strong>Subtareas completadas:</strong><br>";
+    completadas.forEach(s => {
+        subtareasHTML += `✔ ${s.nombre}<br>`;
+    });
+}
 
 } catch (e) {
     console.warn("Error procesando subtareas:", e);
