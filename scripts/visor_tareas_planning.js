@@ -182,20 +182,18 @@ function drop(event, nuevoEstado) {
 
     if (!t) return;
 
-    // ==========================================
-    // NORMALIZAR SUBTAREAS
-    // ==========================================
-    if (typeof t.subtareas === "string") {
-        try {
-            t.subtareas = JSON.parse(t.subtareas);
-        } catch {
-            t.subtareas = [];
-        }
-    }
-
-    if (!Array.isArray(t.subtareas)) {
+    // Normalizar subtareas SIEMPRE
+try {
+    if (!t.subtareas) {
         t.subtareas = [];
+    } else if (typeof t.subtareas === "string") {
+        t.subtareas = JSON.parse(t.subtareas);
+    } else if (!Array.isArray(t.subtareas)) {
+        t.subtareas = JSON.parse(JSON.stringify(t.subtareas));
     }
+} catch {
+    t.subtareas = [];
+}
 
     // ==========================================
     // VALIDAR SUBTAREAS ANTES DE COMPLETAR
