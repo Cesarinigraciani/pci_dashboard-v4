@@ -199,32 +199,69 @@ function renderKanban() {
         card.id = t.id;
         card.ondragstart = e => e.dataTransfer.setData("text", t.id);
 
-        // Buscar planning asociado
-        const plan = planning.find(p => p.id === t.id_planning);
+     // Buscar planning asociado
+const plan = planning.find(p => p.id === t.id_planning);
 
-        let estadoPlazo = "";
-        if (t.resultado_plazo === "en_plazo") estadoPlazo = `<span style="color:green;font-weight:bold;">🟢 En plazo</span>`;
-        if (t.resultado_plazo === "fuera_de_plazo") estadoPlazo = `<span style="color:red;font-weight:bold;">🔴 Fuera de plazo</span>`;
+// ===============================
+// SUBTAREAS COMPLETADAS (solo las que aplican)
+// ===============================
+let subtareasHTML = "";
 
-        card.innerHTML = `
-            <strong>${t.titulo}</strong><br>
-            Obra: ${t.obraId}<br>
-            Asignada a: ${t.asignadoA}<br>
-            Inicio: ${t.fechaInicio}<br>
-            Fin real: ${t.fechaFin || "-"}<br>
-            ${estadoPlazo}
-        `;
+try {
+    let subs = t.subtareas;
 
-        const estado = t.estado || "pendiente";
-        document.getElementById(estado).appendChild(card);
-        cont[estado]++;
-    });
+    if (typeof subs === "string") subs = JSON.parse(subs);
+    if (!Array.isArray(subs)) subs = [];
 
-    document.getElementById("titulo-bloqueada").textContent = `🟥 Bloqueadas (${cont.bloqueada})`;
-    document.getElementById("titulo-proceso").textContent = `🟦 En proceso (${cont.proceso})`;
-    document.getElementById("titulo-pendiente").textContent = `🟨 Pendientes (${cont.pendiente})`;
-    document.getElementById("titulo-completada").textContent = `🟩 Completadas (${cont.completada})`;
+    const completadas = subs.filter(s =>
+        (s.aplica === true || s.aplica === "true") &&
+        (s.completado === true || s.completado === "true" || 
+         s.completada === true || s.completada === "true")
+    );
+
+    if (completadas.length > 0) {
+        subtareasHTML = "<br><strong>Subtareas completadas:</strong><br>";
+        completadas.forEach(s => {
+            subtareasHTML += `✔ ${s.titulo}<br>`;
+        });
+    }
+
+} catch (e) {
+    console.warn("Error procesando subtareas:", e);
 }
+
+// ===============================
+// ESTADO PLAZO
+// ===============================
+let estadoPlazo = "";
+if (t.resultado_plazo === "en_plazo") estadoPlazo = `<span style="color:green;font-weight:bold;">🟢 En plazo</span>`;
+if (t.resultado_plazo === "fuera_de_plazo") estadoPlazo = `<span style="color:red;font-weight:bold;">🔴 Fuera de plazo</span>`;
+
+// ===============================
+// TARJETA KANBAN
+// ===============================
+card.innerHTML = `
+    <strong>${t.titulo}</strong><br>
+    Obra: ${t.obraId}<br>
+    Asignada a: ${t.asignadoA}<br>
+    Inicio: ${t.fechaInicio}<br>
+    Fin real: ${t.fechaFin || "-"}<br>
+    ${estadoPlazo}
+    ${subtareasHTML}
+`;
+
+const estado = t.estado || "pendiente";
+document.getElementById(estado).appendChild(card);
+cont[estado]++;
+});
+
+// Contadores
+document.getElementById("titulo-bloqueada").textContent = `🟥 Bloqueadas (${cont.bloqueada})`;
+document.getElementById("titulo-proceso").textContent = `🟦 En proceso (${cont.proceso})`;
+document.getElementById("titulo-pendiente").textContent = `🟨 Pendientes (${cont.pendiente})`;
+document.getElementById("titulo-completada").textContent = `🟩 Completadas (${cont.completada})`;
+}
+
 
 // Drag & Drop
 function allowDrop(ev) { ev.preventDefault(); }
