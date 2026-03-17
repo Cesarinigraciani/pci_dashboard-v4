@@ -239,6 +239,37 @@ function drop(ev, estadoNuevo) {
     const tarea = tareas.find(t => t.id === id);
     if (!tarea) return;
 
+    // ============================
+    // NORMALIZAR SUBTAREAS
+    // ============================
+    try {
+        if (!tarea.subtareas) {
+            tarea.subtareas = [];
+        } else if (typeof tarea.subtareas === "string") {
+            tarea.subtareas = JSON.parse(tarea.subtareas);
+        } else if (!Array.isArray(tarea.subtareas)) {
+            tarea.subtareas = JSON.parse(JSON.stringify(tarea.subtareas));
+        }
+    } catch {
+        tarea.subtareas = [];
+    }
+
+    // ============================
+    // VALIDAR SUBTAREAS ANTES DE COMPLETAR
+    // ============================
+    if (estadoNuevo === "completada") {
+        const pendientes = Array.isArray(tarea.subtareas) &&
+            tarea.subtareas.some(s =>
+                (s.aplica === true || s.aplica === "true") &&
+                !(s.completado === true || s.completado === "true" || s.completada === true || s.completada === "true")
+            );
+
+        if (pendientes) {
+            alert("No puedes completar esta tarea porque tiene subtareas pendientes.");
+            return;
+        }
+    }
+
     // Guardar fecha final si se completa
     let fechaFin = null;
     if (estadoNuevo === "completada") {
