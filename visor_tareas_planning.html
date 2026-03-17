@@ -199,8 +199,15 @@ function renderKanban() {
         card.id = t.id;
         card.ondragstart = e => e.dataTransfer.setData("text", t.id);
 
-     // Buscar planning asociado
+    // Buscar planning asociado
 const plan = planning.find(p => p.id === t.id_planning);
+
+// ===============================
+// ASEGURAR SUBTAREAS
+// ===============================
+if (!t.subtareas) {
+    t.subtareas = [];
+}
 
 // ===============================
 // SUBTAREAS COMPLETADAS (solo las que aplican)
@@ -215,7 +222,7 @@ try {
 
     const completadas = subs.filter(s =>
         (s.aplica === true || s.aplica === "true") &&
-        (s.completado === true || s.completado === "true" || 
+        (s.completado === true || s.completado === "true" ||
          s.completada === true || s.completada === "true")
     );
 
@@ -253,6 +260,7 @@ card.innerHTML = `
 const estado = t.estado || "pendiente";
 document.getElementById(estado).appendChild(card);
 cont[estado]++;
+
 });
 
 // Contadores
