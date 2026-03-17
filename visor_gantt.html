@@ -246,28 +246,68 @@ function renderGantt(lista) {
 
     const totalDias = Math.ceil((maxFecha - minFecha) / (1000 * 60 * 60 * 24));
 
-    // ===============================
-    // CABECERA DE DÍAS (NUEVO)
-    // ===============================
-    const header = document.createElement("div");
-    header.style.display = "flex";
-    header.style.marginLeft = "200px"; // espacio para etiquetas
-    header.style.marginBottom = "10px";
+   // ===============================
+// CABECERA DE MESES + DÍAS
+// ===============================
+const headerMeses = document.createElement("div");
+headerMeses.style.display = "flex";
+headerMeses.style.marginLeft = "200px";
+headerMeses.style.fontWeight = "bold";
+headerMeses.style.marginBottom = "4px";
 
-    for (let i = 0; i < totalDias; i++) {
-        const dia = new Date(minFecha);
-        dia.setDate(minFecha.getDate() + i);
+const headerDias = document.createElement("div");
+headerDias.style.display = "flex";
+headerDias.style.marginLeft = "200px";
+headerDias.style.marginBottom = "10px";
 
-        const celda = document.createElement("div");
-        celda.style.width = escala + "px";
-        celda.style.fontSize = "10px";
-        celda.style.textAlign = "center";
-        celda.textContent = dia.getDate(); // número del día
+let mesActual = -1;
+let diasEnMes = 0;
+let nombreMes = "";
 
-        header.appendChild(celda);
+for (let i = 0; i < totalDias; i++) {
+    const fecha = new Date(minFecha);
+    fecha.setDate(minFecha.getDate() + i);
+
+    const dia = fecha.getDate();
+    const mes = fecha.getMonth();
+
+    // Detectar cambio de mes
+    if (mes !== mesActual) {
+        if (diasEnMes > 0) {
+            const celdaMes = document.createElement("div");
+            celdaMes.style.width = (diasEnMes * escala) + "px";
+            celdaMes.style.textAlign = "center";
+            celdaMes.textContent = nombreMes.toUpperCase();
+            headerMeses.appendChild(celdaMes);
+        }
+
+        mesActual = mes;
+        diasEnMes = 0;
+        nombreMes = fecha.toLocaleString("es-ES", { month: "long" });
     }
 
-    cont.appendChild(header);
+    diasEnMes++;
+
+    // Pintar día
+    const celdaDia = document.createElement("div");
+    celdaDia.style.width = escala + "px";
+    celdaDia.style.fontSize = "10px";
+    celdaDia.style.textAlign = "center";
+    celdaDia.textContent = dia;
+    headerDias.appendChild(celdaDia);
+}
+
+// Último mes
+const celdaMesFinal = document.createElement("div");
+celdaMesFinal.style.width = (diasEnMes * escala) + "px";
+celdaMesFinal.style.textAlign = "center";
+celdaMesFinal.textContent = nombreMes.toUpperCase();
+headerMeses.appendChild(celdaMesFinal);
+
+// Insertar en el contenedor
+cont.appendChild(headerMeses);
+cont.appendChild(headerDias);
+
 // ===============================
 // LÍNEAS VERTICALES DEL GRID
 // ===============================
