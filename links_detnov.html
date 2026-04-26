@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Links Detnov</title>
+
+    <link rel="stylesheet" href="styles/style.css">
+
+    <style>
+        .contenedor-links {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .link-item {
+            display: block;
+            width: 100%;
+            margin: 8px 0;
+            padding: 12px;
+            background: #d9e8ff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+
+        .link-item:hover {
+            background: #bcd4ff;
+        }
+
+        .btn-volver {
+            margin-top: 25px;
+            padding: 12px 20px;
+            background: #444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-volver:hover {
+            background: #222;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="contenedor-links">
+        <h1>🔗 Enlaces Oficiales Detnov</h1>
+
+        <div id="listaLinksDetnov">
+            <p>Cargando enlaces...</p>
+        </div>
+
+        <button class="btn-volver" onclick="window.location.href='index.html'">
+            ⬅ Volver al Dashboard
+        </button>
+    </div>
+
+    <script>
+        async function cargarLinksDetnov() {
+            try {
+                const response = await fetch("data/links_detnov.json");
+                const data = await response.json();
+
+                const contenedor = document.getElementById("listaLinksDetnov");
+                contenedor.innerHTML = "";
+
+                data.links.forEach(item => {
+                    const btn = document.createElement("button");
+                    btn.className = "link-item";
+                    btn.textContent = item.categoria;
+
+                    btn.onclick = () => {
+                        window.open(item.url, "_blank");
+                    };
+
+                    contenedor.appendChild(btn);
+                });
+
+            } catch (error) {
+                document.getElementById("listaLinksDetnov").innerHTML =
+                    "<p style='color:red;'>Error cargando los enlaces.</p>";
+            }
+        }
+
+        cargarLinksDetnov();
+    </script>
+
+</body>
+</html>
