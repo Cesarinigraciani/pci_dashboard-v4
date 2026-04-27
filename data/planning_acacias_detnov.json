@@ -1,0 +1,135 @@
+[
+  {
+    "id": "FORMACION_SOFTWARE_DETNOV",
+    "nombre_tarea": "Formación software Detnov",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-04-13",
+    "fecha_fin": "2026-04-14"
+  },
+  {
+    "id": "PREPARACION_DIRECCIONAMIENTO_DIP",
+    "nombre_tarea": "Preparación direccionamiento DIP",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-04-15",
+    "fecha_fin": "2026-04-15"
+  },
+  {
+    "id": "INSTALACION_MODULOS_DETNOV",
+    "nombre_tarea": "Instalación módulos Detnov",
+    "duracion_dias": 3,
+    "fecha_inicio": "2026-04-16",
+    "fecha_fin": "2026-04-20"
+  },
+  {
+    "id": "INSTALACION_ZOCALOS_DETNOV",
+    "nombre_tarea": "Instalación zócalos Detnov",
+    "duracion_dias": 8,
+    "fecha_inicio": "2026-04-21",
+    "fecha_fin": "2026-04-30"
+  },
+  {
+    "id": "INSTALACION_DETECTORES_DETNOV",
+    "nombre_tarea": "Instalación detectores Detnov",
+    "duracion_dias": 3,
+    "fecha_inicio": "2026-05-01",
+    "fecha_fin": "2026-05-05"
+  },
+  {
+    "id": "MONTAJE_CENTRAL_PCI_DETNOV",
+    "nombre_tarea": "Montaje central PCI Detnov",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-05-06",
+    "fecha_fin": "2026-05-07"
+  },
+  {
+    "id": "MONTAJE_CENTRAL_CO_DETNOV",
+    "nombre_tarea": "Montaje central CO Detnov",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-05-08",
+    "fecha_fin": "2026-05-11"
+  },
+  {
+    "id": "CONEXIONES_COMPUERTAS",
+    "nombre_tarea": "Conexiones compuertas cortafuegos",
+    "duracion_dias": 3,
+    "fecha_inicio": "2026-05-12",
+    "fecha_fin": "2026-05-14"
+  },
+  {
+    "id": "CONEXIONES_RETENEDORES",
+    "nombre_tarea": "Conexiones retenedores de puertas",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-05-15",
+    "fecha_fin": "2026-05-18"
+  },
+  {
+    "id": "CONEXIONES_ASCENSORES",
+    "nombre_tarea": "Conexiones ascensores",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-05-19",
+    "fecha_fin": "2026-05-20"
+  },
+  {
+    "id": "CONEXIONES_MODULOS_MASTER",
+    "nombre_tarea": "Conexiones módulos master (detectores convencionales)",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-05-21",
+    "fecha_fin": "2026-05-22"
+  },
+  {
+    "id": "VERIFICACION_DIRECCIONAMIENTO_DIP",
+    "nombre_tarea": "Direccionamiento DIP (verificación final)",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-05-25",
+    "fecha_fin": "2026-05-25"
+  },
+  {
+    "id": "PROGRAMACION_CENTRAL_PCI",
+    "nombre_tarea": "Programación central PCI Detnov",
+    "duracion_dias": 3,
+    "fecha_inicio": "2026-05-26",
+    "fecha_fin": "2026-05-28"
+  },
+  {
+    "id": "PROGRAMACION_CENTRAL_CO",
+    "nombre_tarea": "Programación central CO Detnov",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-05-29",
+    "fecha_fin": "2026-06-01"
+  },
+  {
+    "id": "PRUEBAS_LAZOS",
+    "nombre_tarea": "Pruebas de lazos",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-06-02",
+    "fecha_fin": "2026-06-02"
+  },
+  {
+    "id": "PRUEBAS_ZONAS",
+    "nombre_tarea": "Pruebas de zonas",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-06-03",
+    "fecha_fin": "2026-06-03"
+  },
+  {
+    "id": "PRUEBAS_SALIDAS",
+    "nombre_tarea": "Pruebas de salidas",
+    "duracion_dias": 1,
+    "fecha_inicio": "2026-06-04",
+    "fecha_fin": "2026-06-04"
+  },
+  {
+    "id": "PRUEBAS_INTEGRACION",
+    "nombre_tarea": "Pruebas de integración (compuertas, ascensores, retenedores)",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-06-05",
+    "fecha_fin": "2026-06-08"
+  },
+  {
+    "id": "PRUEBAS_FINALES",
+    "nombre_tarea": "Pruebas finales y documentación",
+    "duracion_dias": 2,
+    "fecha_inicio": "2026-06-09",
+    "fecha_fin": "2026-06-10"
+  }
+]
