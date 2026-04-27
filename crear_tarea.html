@@ -285,6 +285,27 @@ function activarLogicaCheckbox() {
         });
     });
 }
+/* ============================================================
+   CARGAR PLANNING DESDE ARCHIVOS JSON (ACACIAS + DETNOV)
+   Y GUARDARLOS EN LOCALSTORAGE COMO planningPCI
+============================================================ */
+async function cargarPlanningDesdeArchivos() {
+    try {
+        const acacias = await fetch("./data/planning_acacias.json").then(r => r.json());
+        const detnov = await fetch("./data/planning_acacias_detnov.json").then(r => r.json());
+
+        // Unir ambos plannings
+        const planningUnificado = [...acacias, ...detnov];
+
+        // Guardar en localStorage para que tu código actual funcione igual
+        localStorage.setItem("planningPCI", JSON.stringify(planningUnificado));
+
+        console.log("Planning cargado y guardado en localStorage:", planningUnificado);
+
+    } catch (err) {
+        console.error("Error cargando plannings:", err);
+    }
+}
 
 /* ============================================================
    CARGAR TAREAS DEL PLANNING
@@ -509,7 +530,6 @@ function guardarTarea() {
    INICIALIZACIÓN
 ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-    cargarPlanningEnFormulario();
     cargarObras();
     cargarUsuariosAsignables();
     cargarSubtareas();
@@ -536,6 +556,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("selectObra").addEventListener("change", cargarPlantas);
     document.getElementById("selectPlanta").addEventListener("change", cargarPlanos);
 });
+cargarPlanningDesdeArchivos().then(() => {
+    cargarPlanningEnFormulario();
+});
+
 </script>
 
 </body>
