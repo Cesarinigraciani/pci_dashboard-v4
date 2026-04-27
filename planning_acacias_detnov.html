@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planning Acacias Detnov</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1e88e5;
+        }
+
+        .boton-volver {
+            background-color: #444;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+
+        .boton-volver:hover {
+            background-color: #222;
+        }
+
+        .formulario {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .btn-guardar {
+            background-color: #1e88e5;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            margin-top: 10px;
+        }
+
+        .btn-guardar:hover {
+            background-color: #1565c0;
+        }
+
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #1e88e5;
+            color: white;
+        }
+
+        .btn-editar {
+            background-color: #fbc02d;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-eliminar {
+            background-color: #e53935;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="boton-volver" onclick="window.location.href='index.html'">⬅ Volver</button>
+
+    <h1>📅 Planning Acacias Detnov</h1>
+
+    <!-- FORMULARIO -->
+    <div class="formulario">
+        <label>ID</label>
+        <input type="text" id="id">
+
+        <label>Nombre de la tarea</label>
+        <input type="text" id="nombre">
+
+        <label>Duración (días)</label>
+        <input type="number" id="duracion">
+
+        <label>Fecha inicio</label>
+        <input type="date" id="inicio">
+
+        <label>Fecha fin</label>
+        <input type="date" id="fin">
+
+        <button class="btn-guardar" onclick="guardarTarea()">Guardar tarea</button>
+    </div>
+
+    <!-- TABLA -->
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tarea</th>
+                <th>Duración</th>
+                <th>Inicio</th>
+                <th>Fin</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-tareas"></tbody>
+    </table>
+
+    <script>
+        let tareas = [];
+        let editando = null;
+
+        async function cargarPlanning() {
+            const respuesta = await fetch("data/planning_acacias_detnov.json");
+            tareas = await respuesta.json();
+
+            // Si existe una versión editada en localStorage, usarla
+            const guardado = localStorage.getItem("planning_acacias_detnov");
+            if (guardado) {
+                tareas = JSON.parse(guardado);
+            }
+
+            mostrarTareas();
+        }
+
+        function mostrarTareas() {
+            const tabla = document.getElementById("tabla-tareas");
+            tabla.innerHTML = "";
+
+            tareas.forEach((t, index) => {
+                tabla.innerHTML += `
+                    <tr>
+                        <td>${t.id}</td>
+                        <td>${t.nombre_tarea}</td>
+                        <td>${t.duracion_dias}</td>
+                        <td>${t.fecha_inicio}</td>
+                        <td>${t.fecha_fin}</td>
+                        <td>
+                            <button class="btn-editar" onclick="editar(${index})">Editar</button>
+                            <button class="btn-eliminar" onclick="eliminar(${index})">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function editar(i) {
+            const t = tareas[i];
+            editando = i;
+
+            document.getElementById("id").value = t.id;
+            document.getElementById("nombre").value = t.nombre_tarea;
+            document.getElementById("duracion").value = t.duracion_dias;
+            document.getElementById("inicio").value = t.fecha_inicio;
+            document.getElementById("fin").value = t.fecha_fin;
+        }
+
+        function eliminar(i) {
+            tareas.splice(i, 1);
+            localStorage.setItem("planning_acacias_detnov", JSON.stringify(tareas));
+            mostrarTareas();
+        }
+
+        function guardarTarea() {
+            const nueva = {
+                id: document.getElementById("id").value,
+                nombre_tarea: document.getElementById("nombre").value,
+                duracion_dias: document.getElementById("duracion").value,
+                fecha_inicio: document.getElementById("inicio").value,
+                fecha_fin: document.getElementById("fin").value
+            };
+
+            // Si estamos editando
+            if (editando !== null) {
+                tareas[editando] = nueva;
+                editando = null;
+            } else {
+                tareas.push(nueva);
+            }
+
+            // Guardar planning Detnov en localStorage
+            localStorage.setItem("planning_acacias_detnov", JSON.stringify(tareas));
+
+            // 🔵 INTEGRACIÓN CON EL PLANNING GENERAL
+            let planningGeneral = JSON.parse(localStorage.getItem("planning_acacias")) || [];
+
+            planningGeneral.push({
+                id: nueva.id,
+                nombre_tarea: nueva.nombre_tarea,
+                duracion_dias: nueva.duracion_dias,
+                fecha_inicio: nueva.fecha_inicio,
+                fecha_fin: nueva.fecha_fin,
+                estado: "pendiente"
+            });
+
+            localStorage.setItem("planning_acacias", JSON.stringify(planningGeneral));
+
+            mostrarTareas();
+            limpiarFormulario();
+        }
+
+        function limpiarFormulario() {
+            document.getElementById("id").value = "";
+            document.getElementById("nombre").value = "";
+            document.getElementById("duracion").value = "";
+            document.getElementById("inicio").value = "";
+            document.getElementById("fin").value = "";
+        }
+
+        cargarPlanning();
+    </script>
+
+</body>
+</html>
