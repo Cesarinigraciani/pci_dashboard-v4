@@ -376,6 +376,13 @@ function cargarPlantas() {
 
     if (!obra) return;
 
+    // 👉 AGREGAR OPCIÓN "TODAS"
+    const optTodas = document.createElement("option");
+    optTodas.value = "TODAS";
+    optTodas.textContent = "TODAS";
+    select.appendChild(optTodas);
+
+    // 👉 LUEGO CARGAR LAS PLANTAS REALES
     obra.plantas.forEach(p => {
         const opt = document.createElement("option");
         opt.value = p.id;
@@ -385,7 +392,6 @@ function cargarPlantas() {
 
     cargarPlanos();
 }
-
 /* ============================================================
    CARGAR PLANOS
 ============================================================ */
