@@ -395,17 +395,32 @@ function cargarPlantas() {
 /* ============================================================
    CARGAR PLANOS
 ============================================================ */
+/* ============================================================
+   CARGAR PLANOS
+============================================================ */
 function cargarPlanos() {
     const obraId = document.getElementById("selectObra").value;
     const plantaId = document.getElementById("selectPlanta").value;
 
     const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
     const obra = obras.find(o => o.id === obraId);
-    const planta = obra?.plantas.find(p => p.id === plantaId);
 
     const select = document.getElementById("selectPlano");
     select.innerHTML = "";
 
+    if (!obra || !plantaId) return;
+
+    // 👉 SI LA PLANTA ES "TODAS", NO CARGA PLANOS REALES
+    if (plantaId === "TODAS") {
+        const opt = document.createElement("option");
+        opt.value = "NO_APLICA";
+        opt.textContent = "NO APLICA";
+        select.appendChild(opt);
+        return;
+    }
+
+    // 👉 PLANTA NORMAL
+    const planta = obra.plantas.find(p => p.id === plantaId);
     if (!planta || !planta.planos) return;
 
     planta.planos.forEach(pl => {
@@ -416,6 +431,10 @@ function cargarPlanos() {
     });
 }
 
+
+/* ============================================================
+   MODAL PLANO
+============================================================ */
 /* ============================================================
    MODAL PLANO
 ============================================================ */
@@ -423,6 +442,12 @@ function abrirModalPlano() {
     const obraId = document.getElementById("selectObra").value;
     const plantaId = document.getElementById("selectPlanta").value;
     const planoId = document.getElementById("selectPlano").value;
+
+    // 👉 SI ES UNA TAREA GLOBAL, NO ABRIR MODAL
+    if (plantaId === "TODAS" || planoId === "NO_APLICA") {
+        alert("Esta tarea no requiere seleccionar ubicación en plano.");
+        return;
+    }
 
     if (!obraId || !plantaId || !planoId) {
         alert("Debe seleccionar obra, planta y plano.");
@@ -450,6 +475,7 @@ function abrirModalPlano() {
     };
 }
 
+
 /* ============================================================
    CARGAR USUARIOS
 ============================================================ */
@@ -473,13 +499,16 @@ function cargarUsuariosAsignables() {
 /* ============================================================
    GUARDAR TAREA
 ============================================================ */
+/* ============================================================
+   GUARDAR TAREA
+============================================================ */
 function guardarTarea() {
     const titulo = document.getElementById("tituloTarea").value.trim();
     const descripcion = document.getElementById("descripcionTarea").value.trim();
     const fechaInicio = document.getElementById("fechaInicioTarea").value;
     const obraId = document.getElementById("selectObra").value;
-    const plantaId = document.getElementById("selectPlanta").value;
-    const planoId = document.getElementById("selectPlano").value;
+    let plantaId = document.getElementById("selectPlanta").value;
+    let planoId = document.getElementById("selectPlano").value;
     const asignadoA = document.getElementById("selectUsuarioAsignado").value;
     const estado = document.getElementById("estadoTarea").value;
     const prioridad = document.getElementById("prioridadTarea").value;
@@ -489,15 +518,28 @@ function guardarTarea() {
         return;
     }
 
-    if (!obraId || !plantaId || !planoId) {
-        alert("Debe seleccionar obra, planta y plano.");
+    // 👉 VALIDACIÓN CORREGIDA PARA PERMITIR "TODAS"
+    if (!obraId || !plantaId) {
+        alert("Debe seleccionar obra y planta.");
         return;
     }
 
-    if (posX === null || posY === null) {
-        alert("Debe seleccionar una ubicación en el plano.");
-        return;
-    }
+    // 👉 SI LA PLANTA ES "TODAS", NO EXIGIMOS PLANO NI COORDENADAS
+    if (plantaId === "TODAS") {
+        planoId = "NO_APLICA";
+        posX = null;
+        posY = null;
+    } else {
+        // Validación normal para plantas reales
+        if (!planoId) {
+            alert("Debe seleccionar un plano.");
+            return;
+        }
+
+        if (posX === null || posY === null) {
+            alert("Debe seleccionar una ubicación en el plano.");
+            return;
+        }
 
     /* CAPTURAR SUBTAREAS */
     const aplica = document.querySelectorAll(".aplica");
