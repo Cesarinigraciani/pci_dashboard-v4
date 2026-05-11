@@ -376,13 +376,13 @@ function cargarPlantas() {
 
     if (!obra) return;
 
-    // 👉 AGREGAR OPCIÓN "TODAS"
+    // 👉 OPCIÓN "TODAS"
     const optTodas = document.createElement("option");
     optTodas.value = "TODAS";
     optTodas.textContent = "TODAS";
     select.appendChild(optTodas);
 
-    // 👉 LUEGO CARGAR LAS PLANTAS REALES
+    // 👉 PLANTAS REALES
     obra.plantas.forEach(p => {
         const opt = document.createElement("option");
         opt.value = p.id;
@@ -392,9 +392,8 @@ function cargarPlantas() {
 
     cargarPlanos();
 }
-/* ============================================================
-   CARGAR PLANOS
-============================================================ */
+
+
 /* ============================================================
    CARGAR PLANOS
 ============================================================ */
@@ -410,7 +409,7 @@ function cargarPlanos() {
 
     if (!obra || !plantaId) return;
 
-    // 👉 SI LA PLANTA ES "TODAS", NO CARGA PLANOS REALES
+    // 👉 SI ES "TODAS", SOLO MOSTRAR NO_APLICA
     if (plantaId === "TODAS") {
         const opt = document.createElement("option");
         opt.value = "NO_APLICA";
@@ -435,15 +434,12 @@ function cargarPlanos() {
 /* ============================================================
    MODAL PLANO
 ============================================================ */
-/* ============================================================
-   MODAL PLANO
-============================================================ */
 function abrirModalPlano() {
     const obraId = document.getElementById("selectObra").value;
     const plantaId = document.getElementById("selectPlanta").value;
     const planoId = document.getElementById("selectPlano").value;
 
-    // 👉 SI ES UNA TAREA GLOBAL, NO ABRIR MODAL
+    // 👉 TAREA GLOBAL → NO ABRIR MODAL
     if (plantaId === "TODAS" || planoId === "NO_APLICA") {
         alert("Esta tarea no requiere seleccionar ubicación en plano.");
         return;
@@ -456,8 +452,13 @@ function abrirModalPlano() {
 
     const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
     const obra = obras.find(o => o.id === obraId);
-    const planta = obra.plantas.find(p => p.id === plantaId);
-    const plano = planta.planos.find(pl => pl.id === planoId);
+    const planta = obra?.plantas?.find(p => p.id === plantaId);
+    const plano = planta?.planos?.find(pl => pl.id === planoId);
+
+    if (!plano) {
+        alert("No se encontró el plano seleccionado.");
+        return;
+    }
 
     const modal = document.getElementById("modalPlano");
     const img = document.getElementById("imgPlanoSeleccion");
@@ -496,9 +497,7 @@ function cargarUsuariosAsignables() {
     if (actual) select.value = actual.id;
 }
 
-/* ============================================================
-   GUARDAR TAREA
-============================================================ */
+
 /* ============================================================
    GUARDAR TAREA
 ============================================================ */
@@ -518,19 +517,18 @@ function guardarTarea() {
         return;
     }
 
-    // 👉 VALIDACIÓN CORREGIDA PARA PERMITIR "TODAS"
     if (!obraId || !plantaId) {
         alert("Debe seleccionar obra y planta.");
         return;
     }
 
-    // 👉 SI LA PLANTA ES "TODAS", NO EXIGIMOS PLANO NI COORDENADAS
+    // 👉 CASO PLANTA = TODAS
     if (plantaId === "TODAS") {
         planoId = "NO_APLICA";
         posX = null;
         posY = null;
     } else {
-        // Validación normal para plantas reales
+        // 👉 PLANTA NORMAL
         if (!planoId) {
             alert("Debe seleccionar un plano.");
             return;
@@ -540,7 +538,7 @@ function guardarTarea() {
             alert("Debe seleccionar una ubicación en el plano.");
             return;
         }
- }
+    }
 
     /* CAPTURAR SUBTAREAS */
     const aplica = document.querySelectorAll(".aplica");
@@ -574,6 +572,7 @@ function guardarTarea() {
     alert("Tarea creada correctamente.");
     window.location.href = "dashboard.html";
 }
+
 
 /* ============================================================
    INICIALIZACIÓN
