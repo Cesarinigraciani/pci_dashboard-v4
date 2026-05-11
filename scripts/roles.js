@@ -7,16 +7,19 @@ window._roles = [
   {
     id: "Administrador",
     permisos: [
+      // Permisos de proyectos
       "crearProyecto",
       "borrarProyecto",
       "modificarProyecto",
       "verProyectos",
 
+      // Permisos de tareas
       "crearTareas",
       "verTareas",
       "asignarTareas",
       "completarTareas",
 
+      // Permisos del panel
       "informes",
       "usuarios",
       "proyectos"
@@ -138,5 +141,3 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-
-
