@@ -1,58 +1,15 @@
-const CACHE_NAME = "dashboard-cache-v7"; // sube versión
-const URLS_TO_CACHE = [
-  "./",
-  "./index.html",
-  "./dashboard_misterios.html",
-  "./dashboard_welcome.html",
-  "./dashboard_dinamico.html",
-  "./scripts/main_misterios.js",
-  "./scripts/main-v2.js",
-  "./styles/style-v2.css",
-  "./styles/styles-residencias-misterios.css",
-  "./assets/img/logo-empresa.png",
-  "./assets/img/icono_dashboard.png"
-];
+// Desactivar completamente la caché y forzar siempre la versión nueva
 
-
-// 📥 Instalación: cachea archivos básicos
 self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(URLS_TO_CACHE);
-    })
-  );
+  self.skipWaiting();
 });
 
-// ♻️ Activación: limpia cachés antiguas
 self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      )
-    )
-  );
+  event.waitUntil(clients.claim());
 });
 
-// 🌐 Fetch: intenta red primero, si falla usa caché
+// Todas las peticiones van directamente a la red
 self.addEventListener("fetch", event => {
-  if (!event.request.url.startsWith("http")) {
-    return; // ignora chrome-extension:// y otros esquemas
-  }
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, clone);
-        });
-        return response;
-      })
-      .catch(() => caches.match(event.request))
-  );
+  event.respondWith(fetch(event.request));
 });
 
