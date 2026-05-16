@@ -84,59 +84,6 @@
 
     .card-welcome { border-left-color: #1e90ff; }
     .card-misterios { border-left-color: #9b59b6; }
-  .boton-seccion {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  background: #0078d4;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  text-align: center;
-}
-
-.boton-seccion:hover {
-  background: #005fa3;
-}
-
-@media (prefers-color-scheme: dark) {
-  .boton-seccion {
-    background: #1e90ff;
-    color: #fff;
-  }
-}
-.boton-seccion {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  background: #ffffff !important;
-  color: #000000 !important;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  text-align: center;
-  font-weight: bold;
-}
-
-.boton-seccion:hover {
-  background: #f0f0f0 !important;
-}
-
-@media (prefers-color-scheme: dark) {
-  .boton-seccion {
-    background: #2b2b2b !important;
-    color: #ffffff !important;
-    border: 1px solid #444;
-  }
-}
-
-
-  
   </style>
 </head>
 
@@ -175,10 +122,16 @@
 
 <button class="btn-volver" onclick="window.location.href='index.html'">⬅️ Volver</button>
 
+<script src="scripts/usuarios.js"></script>
+<script src="scripts/obras.js"></script>
+
 <script>
+// ===============================
+// CARGAR LISTA DE OBRAS
+// ===============================
 document.addEventListener("DOMContentLoaded", () => {
   const contenedor = document.getElementById("listaObras");
-  const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
+  const obras = listarObras(); // SISTEMA OFICIAL
 
   if (obras.length === 0) {
     contenedor.innerHTML = `
@@ -212,30 +165,57 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+
+// ===============================
+// ABRIR OBRA (ACTUALIZA ultimoAcceso)
+// ===============================
 function abrirObra(id) {
-  // SIEMPRE ABRIR EN INDEX
-  window.location.href = "index.html?id=" + id;
+  const obra = getObraById(id);
+  if (!obra) return alert("Obra no encontrada.");
+
+  obra.ultimoAcceso = new Date().toISOString();
+  guardarObra(obra);
+
+  window.location.href = "index.html";
 }
 
+
+// ===============================
+// CONFIGURAR PLANTAS
+// ===============================
 function configurarPlantas(id) {
   window.location.href = "configurar_plantas.html?id=" + id;
 }
 
+
+// ===============================
+// EDITAR OBRA
+// ===============================
 function editarObra(id) {
   window.location.href = "modificar_obra.html?id=" + id;
 }
 
+
+// ===============================
+// ELIMINAR OBRA (BLINDADO)
+// ===============================
 function eliminarObra(id) {
   if (!confirm("¿Seguro que deseas eliminar esta obra?")) return;
 
-  let obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
-  obras = obras.filter(o => o.id !== id);
+  let obras = listarObras().filter(o => o.id !== id);
+  guardarObras(obras);
 
-  localStorage.setItem("obrasPCI", JSON.stringify(obras));
+  // Limpiar obras en usuarios
+  let usuarios = JSON.parse(localStorage.getItem("usuariosPCI")) || [];
+  usuarios.forEach(u => {
+    u.obras = (u.obras || []).filter(oid => oid !== id);
+  });
+  localStorage.setItem("usuariosPCI", JSON.stringify(usuarios));
 
   alert("Obra eliminada.");
   location.reload();
 }
+
 
 /* ============================================
    FUNCIONES PARA OBRAS FIJAS
@@ -256,3 +236,4 @@ function abrirMisterios() {
 
 </body>
 </html>
+
