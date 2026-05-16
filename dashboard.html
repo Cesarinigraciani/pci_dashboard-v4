@@ -22,6 +22,8 @@
 <script src="scripts/usuarios.js"></script>
 <script src="scripts/tareas.js"></script>
 <script src="scripts/obras.js"></script>
+<script src="scripts/permisos.js"></script>
+<script src="scripts/roles.js"></script>
 
 <script>
 // ===============================
@@ -55,10 +57,10 @@ document.addEventListener("DOMContentLoaded", () => {
 function cargarDashboard(usuario) {
     const panel = document.getElementById("panel-dashboard");
 
-    // Obras asignadas
-    const obras = (usuario.obrasAsignadas || [])
+    // Obras asignadas (CORREGIDO)
+    const obras = (usuario.obras || [])
         .map(id => getObraById(id))
-        .filter(o => o !== null && o !== undefined);
+        .filter(o => o);
 
     // Tareas asignadas
     const tareas = obtenerTareasDeUsuario(usuario.id);
@@ -70,8 +72,8 @@ function cargarDashboard(usuario) {
             <ul>
                 ${
                     obras.length > 0 
-                    ? obras.map(o => `<li><strong>${o.nombre}</strong> (${o.ciudad || "-"})</li>`).join("")
-                    : "<p>No tienes obras asignadas válidas.</p>"
+                    ? obras.map(o => `<li><strong>${o.nombre}</strong></li>`).join("")
+                    : ""
                 }
             </ul>
         </div>
@@ -86,10 +88,8 @@ function cargarDashboard(usuario) {
                         Estado: <span>${t.estado}</span><br>
                         Fecha inicio: ${t.fechaInicio}<br>
 
-                        <!-- FECHA FINAL -->
                         ${t.fechaFin ? `Fecha final: ${t.fechaFin}<br>` : ""}
 
-                        <!-- CUMPLIMIENTO DEL PLANNING -->
                         ${
                             t.resultado_plazo === "en_plazo"
                             ? `<span style="color:green;font-weight:bold;">🟢 En plazo</span><br>`
@@ -98,9 +98,8 @@ function cargarDashboard(usuario) {
                             : ""
                         }
 
-                        <!-- CAMBIO DE ESTADO -->
                         ${
-                            usuario.permisos.includes("completarTareas") 
+                            usuario.permisos.includes("completar_tareas") 
                             ? `
                                 <select onchange="cambiarEstadoDashboard('${t.id}', this.value)">
                                     <option value="pendiente" ${t.estado === "pendiente" ? "selected" : ""}>Pendiente</option>
@@ -123,7 +122,7 @@ function cargarDashboard(usuario) {
             </button>
 
             ${
-                usuario.permisos.includes("crearTareas") 
+                usuario.permisos.includes("crear_tarea") 
                 ? `
                     <button class="boton-seccion" onclick="window.location.href='crear_tarea.html'">
                         📝 Crear Tarea
@@ -133,7 +132,7 @@ function cargarDashboard(usuario) {
             }
 
             ${
-                usuario.permisos.includes("usuarios") 
+                usuario.permisos.includes("ver_usuarios") 
                 ? `
                     <button class="boton-seccion" onclick="cargarPanelUsuarios()">
                         👤 Panel de Usuarios
@@ -143,7 +142,7 @@ function cargarDashboard(usuario) {
             }
 
             ${
-                usuario.permisos.includes("crearObras") 
+                usuario.permisos.includes("crear_obra") 
                 ? `
                     <button class="boton-seccion" onclick="window.location.href='crear_obra.html'">
                         ➕ Crear Obra
@@ -164,8 +163,8 @@ function cargarDashboard(usuario) {
 //  CAMBIAR ESTADO DESDE DASHBOARD
 // ===============================
 function cambiarEstadoDashboard(id, nuevoEstado) {
-    cambiarEstadoTarea(id, nuevoEstado); // usa tareas.js
-    location.reload(); // refresca para mostrar fecha final y cumplimiento
+    cambiarEstadoTarea(id, nuevoEstado);
+    location.reload();
 }
 
 
@@ -180,9 +179,7 @@ function cargarPanelUsuarios() {
         .then(html => {
             panel.innerHTML = html;
 
-            cargarScript("scripts/usuarios.js");
-            cargarScript("scripts/roles.js");
-            cargarScript("scripts/permisos.js");
+            // YA NO cargamos scripts duplicados
             cargarScript("scripts/panelUsuarios.js");
         });
 }
@@ -206,3 +203,4 @@ function logout() {
 
 </body>
 </html>
+
