@@ -50,7 +50,7 @@
 
       <div class="form-group">
         <label>Encargado</label>
-        <input type="text" id="encargadoObra">
+        <select id="encargadoObra"></select>
       </div>
 
       <div class="form-group">
@@ -68,7 +68,8 @@
   </div>
 </div>
 
-
+<script src="scripts/usuarios.js"></script>
+<script src="scripts/obras.js"></script>
 
 <script>
 // ===============================
@@ -76,64 +77,92 @@
 // ===============================
 const params = new URLSearchParams(window.location.search);
 const obraID = params.get("id");
+let obraActual = null;
+
+
+// ===============================
+//  CARGAR ENCARGADOS
+// ===============================
+function cargarEncargados(encargadoActual) {
+  const select = document.getElementById("encargadoObra");
+  select.innerHTML = "";
+
+  const usuarios = JSON.parse(localStorage.getItem("usuariosPCI")) || [];
+  const encargados = usuarios.filter(u => u.rol === "Encargado de Obra");
+
+  encargados.forEach(u => {
+    const opt = document.createElement("option");
+    opt.value = u.id;
+    opt.textContent = u.nombre;
+    if (u.id === encargadoActual) opt.selected = true;
+    select.appendChild(opt);
+  });
+}
+
 
 // ===============================
 //  CARGAR DATOS DE LA OBRA
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
-  const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
-  const obra = obras.find(o => o.id === obraID);
+  obraActual = getObraById(obraID);
 
-  if (!obra) {
+  if (!obraActual) {
     alert("No se encontró la obra.");
     window.location.href = "lista_obras.html";
     return;
   }
 
-  document.getElementById("nombreObra").value = obra.nombre || "";
-  document.getElementById("nombreCorto").value = obra.nombreCorto || normalizar(obra.nombre);
-  document.getElementById("direccionObra").value = obra.direccion || "";
-  document.getElementById("ciudadObra").value = obra.ciudad || "";
-  document.getElementById("fechaInicio").value = obra.fechaInicio || "";
-  document.getElementById("encargadoObra").value = obra.encargado || "";
-  document.getElementById("horasObra").value = obra.horasEstimadas || 0;
+  document.getElementById("nombreObra").value = obraActual.nombre;
+  document.getElementById("nombreCorto").value = obraActual.nombreCorto;
+  document.getElementById("direccionObra").value = obraActual.direccion || "";
+  document.getElementById("ciudadObra").value = obraActual.ciudad || "";
+  document.getElementById("fechaInicio").value = obraActual.fechaInicio || "";
+  document.getElementById("horasObra").value = obraActual.horasEstimadas || 0;
+
+  cargarEncargados(obraActual.encargado);
 });
 
-// ===============================
-//  GUARDAR CAMBIOS
-// ===============================
 
+// ===============================
+//  GUARDAR CAMBIOS (BLINDADO)
+// ===============================
 function guardarCambios() {
-    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
 
-    // Obtener ID desde la URL
-    const params = new URLSearchParams(window.location.search);
-    const obraID = params.get("id");
+  const nombre = document.getElementById("nombreObra").value.trim();
+  const nombreCorto = document.getElementById("nombreCorto").value.trim().toLowerCase();
+  const direccion = document.getElementById("direccionObra").value.trim();
+  const ciudad = document.getElementById("ciudadObra").value.trim();
+  const fechaInicio = document.getElementById("fechaInicio").value;
+  const encargado = document.getElementById("encargadoObra").value;
+  const horas = Number(document.getElementById("horasObra").value);
 
-    // Buscar la obra
-    const obra = obras.find(o => o.id === obraID);
-    if (!obra) {
-        alert("No se encontró la obra.");
-        return;
-    }
+  if (!nombre) return alert("La obra debe tener un nombre.");
+  if (!nombreCorto) return alert("El nombre corto es obligatorio.");
+  if (!encargado) return alert("Debes seleccionar un encargado.");
 
-    // Actualizar datos
-    obra.nombre = document.getElementById("nombreObra").value;
-    obra.nombreCorto = document.getElementById("nombreCorto").value || normalizar(obra.nombre);
-    obra.direccion = document.getElementById("direccionObra").value;
-    obra.ciudad = document.getElementById("ciudadObra").value;
-    obra.fechaInicio = document.getElementById("fechaInicio").value;
-    obra.encargado = document.getElementById("encargadoObra").value;
-    obra.horas = document.getElementById("horasObra").value;
+  // Validar nombre corto duplicado
+  const obras = listarObras();
+  if (obras.some(o => o.nombreCorto === nombreCorto && o.id !== obraID)) {
+    alert("El nombre corto ya existe en otra obra.");
+    return;
+  }
 
-    // Guardar en localStorage
-    localStorage.setItem("obrasPCI", JSON.stringify(obras));
+  // Actualizar obra
+  obraActual.nombre = nombre;
+  obraActual.nombreCorto = nombreCorto;
+  obraActual.direccion = direccion;
+  obraActual.ciudad = ciudad;
+  obraActual.fechaInicio = fechaInicio;
+  obraActual.encargado = encargado;
+  obraActual.horasEstimadas = horas;
 
-    alert("Cambios guardados correctamente.");
-    window.location.href = "lista_obras.html";
+  guardarObra(obraActual);
+
+  alert("Cambios guardados correctamente.");
+  window.location.href = "lista_obras.html";
 }
 </script>
 
-
 </body>
 </html>
+
