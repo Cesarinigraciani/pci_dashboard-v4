@@ -3,70 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <title>Editar Tarea</title>
-<link rel="stylesheet" href="styles/style-v2.css">
+
+<!-- Estilo claro moderno -->
+<link rel="stylesheet" href="styles/style-v2.css?v=1002">
 
 <style>
+/* ============================
+   ESTILO CLARO MODERNO
+============================ */
+
 body {
-    background: #1b1b1b;
-    color: #e6e6e6;
-    font-family: Arial, sans-serif;
+    background: #f5f7fa;
+    font-family: "Segoe UI", sans-serif;
+    color: #333;
 }
 
 .form-card {
-    max-width: 700px;
+    max-width: 850px;
     margin: 40px auto;
-    padding: 20px;
-    background: #242424;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    padding: 25px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.10);
 }
 
 .form-card h2 {
     text-align: center;
-    margin-bottom: 20px;
-    color: #0A84FF;
+    margin-bottom: 25px;
+    font-size: 26px;
+    color: #0078d4;
 }
 
 label {
-    font-weight: bold;
-    margin-top: 10px;
+    font-weight: 600;
+    margin-top: 12px;
     display: block;
+    color: #333;
 }
 
 input, textarea, select {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     margin-top: 6px;
     border-radius: 8px;
-    border: 1px solid #555;
-    background: #1b1b1b;
-    color: #e6e6e6;
+    border: 1px solid #ccc;
+    background: #ffffff;
+    color: #333;
+    font-size: 15px;
 }
 
 button {
     width: 100%;
-    padding: 12px;
-    margin-top: 15px;
+    padding: 14px;
+    margin-top: 18px;
     border-radius: 8px;
     border: none;
     cursor: pointer;
     font-weight: bold;
+    font-size: 16px;
 }
 
-.btn-azul { background: #0A84FF; color: white; }
+.btn-azul { background: #0078d4; color: white; }
 .btn-verde { background: #28a745; color: white; }
-.btn-rojo { background: #ff3b30; color: white; }
+.btn-rojo { background: #d9534f; color: white; }
+
+.btn-azul:hover { background: #005fa3; }
+.btn-verde:hover { background: #1e7e34; }
+.btn-rojo:hover { background: #b52b27; }
 
 /* Modal plano */
 #modalPlano {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.65);
     display: none;
     justify-content: center;
     align-items: center;
 }
+
 #modalPlano img {
     max-width: 90%;
     max-height: 90%;
@@ -75,22 +90,27 @@ button {
     cursor: crosshair;
 }
 
-/* SUBTAREAS (modo oscuro profesional) */
+/* SUBTAREAS */
 .subtareas-container {
-    margin-top: 20px;
-    padding: 12px 15px;
-    background: #1f1f1f;
-    border-radius: 8px;
-    border: 1px solid #444;
+    margin-top: 25px;
+    padding: 15px;
+    background: #f1f3f5;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+}
+
+.subtareas-container h3 {
+    margin-top: 0;
+    color: #0078d4;
 }
 
 .subtarea-row {
     display: grid;
     grid-template-columns: 22px 22px auto;
     align-items: center;
-    gap: 6px;
-    padding: 4px 0;
-    border-bottom: 1px solid #333;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid #ddd;
 }
 
 .subtarea-row:last-child {
@@ -98,12 +118,12 @@ button {
 }
 
 .subtarea-row input[type="checkbox"] {
-    transform: scale(0.9);
+    transform: scale(1.1);
     cursor: pointer;
 }
 
 .subtarea-row label {
-    font-size: 14px;
+    font-size: 15px;
     cursor: pointer;
     margin: 0;
 }
@@ -157,7 +177,7 @@ button {
     <!-- SUBTAREAS -->
     <div class="subtareas-container">
         <h3>Subtareas</h3>
-        <p style="font-size:13px; opacity:0.8;">Editar subtareas aplicables y completadas.</p>
+        <p style="font-size:13px; opacity:0.7;">Editar subtareas aplicables y completadas.</p>
         <div id="listaSubtareas"></div>
     </div>
 
@@ -222,7 +242,7 @@ const subtareasGenerales = [
   { nombre: "Prueba de señal técnica" },
   { nombre: "Prueba de compuerta" }
 ];
-    
+
 let tareaId = new URLSearchParams(window.location.search).get("id");
 let tarea = null;
 let posX = null;
@@ -278,7 +298,6 @@ function cargarSubtareasEnEdicion() {
     const cont = document.getElementById("listaSubtareas");
     cont.innerHTML = "";
 
-    // Si subtareas viene como string → intentar parsear
     if (typeof tarea.subtareas === "string") {
         try {
             tarea.subtareas = JSON.parse(tarea.subtareas);
@@ -287,7 +306,6 @@ function cargarSubtareasEnEdicion() {
         }
     }
 
-    // Si subtareas no existe o está corrupto → generar nuevas
     if (!Array.isArray(tarea.subtareas)) {
         tarea.subtareas = subtareasGenerales.map(sub => ({
             nombre: sub.nombre,
@@ -296,7 +314,6 @@ function cargarSubtareasEnEdicion() {
         }));
     }
 
-    // Mostrar TODAS las subtareas, respetando lo guardado
     tarea.subtareas.forEach((sub, i) => {
         const row = document.createElement("div");
         row.className = "subtarea-row";
@@ -313,9 +330,8 @@ function cargarSubtareasEnEdicion() {
     activarLogicaCheckboxEdicion();
 }
 
-
 /* ============================================================
-   LÓGICA APLICA / COMPLETADO EN EDICIÓN
+   LÓGICA APLICA / COMPLETADO
 ============================================================ */
 function activarLogicaCheckboxEdicion() {
     const aplica = document.querySelectorAll(".aplica");
@@ -395,7 +411,6 @@ function guardarCambios() {
     t.posX = posX;
     t.posY = posY;
 
-    /* GUARDAR SUBTAREAS */
     if (t.subtareas) {
         const aplica = document.querySelectorAll(".aplica");
         const completado = document.querySelectorAll(".completado");
