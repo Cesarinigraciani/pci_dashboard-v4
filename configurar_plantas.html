@@ -3,123 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <title>Configurar Plantas</title>
-    <link rel="stylesheet" href="styles/styles-residencias-misterios.css">
+
+    <!-- Estilo claro moderno -->
+    <link rel="stylesheet" href="styles/style-v2.css">
+
+    <!-- SortableJS (drag & drop) -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-        .planta-box {
-            border: 1px solid #ccc;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            background: #f9f9f9;
+        /* ======== ESTILO CLARO MODERNO ======== */
+
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', sans-serif;
         }
-        .equipo-item {
-            margin-top: 8px;
-            padding: 8px;
-            background: #eef2f5;
+
+        .cabecera-proyecto {
+            text-align: center;
+            padding: 25px 0;
+            background: #ffffff;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 25px;
+        }
+
+        .cabecera-proyecto h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #333;
+        }
+
+        .tarjeta-planta {
+            max-width: 900px;
+            margin: auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .tarjeta-planta label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .tarjeta-planta input,
+        .tarjeta-planta select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            margin-bottom: 12px;
             border-radius: 6px;
+            border: 1px solid #ccc;
+            background: #fff;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .btn-azul {
+            background: #0078d4;
+            color: white;
+        }
+
+        .btn-verde {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-rojo {
+            background: #d9534f;
+            color: white;
+        }
+
+        .btn-azul:hover { background: #005fa3; }
+        .btn-verde:hover { background: #1e7e34; }
+        .btn-rojo:hover { background: #b52b27; }
+
+        /* ======== TARJETAS DE PLANTAS ======== */
+
+        #contenedorPlantas {
+            margin-top: 25px;
+        }
+
+        .planta-box {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .planta-box h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .equipos-lista .equipo-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: #f1f3f5;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
         }
+
         .equipo-nombre {
             font-weight: bold;
+            color: #333;
         }
+
         .equipo-cantidad {
-            width: 60px;
-            padding: 4px;
-            margin-left: 10px;
-        }
-        .btn {
-            padding: 8px 14px;
-            border: none;
+            width: 70px;
+            padding: 6px;
             border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
+            border: 1px solid #ccc;
+            text-align: center;
         }
-        .btn-azul { background: #0078d4; color: white; }
-        .btn-rojo { background: #d9534f; color: white; }
-        .btn-verde { background: #28a745; color: white; }
 
-        /* --- ESTILOS OSCUROS PREMIUM --- */
-        #contenedorPlantas .planta-box {
-            background: #242424 !important;
-            border-radius: 14px !important;
-            padding: 20px !important;
-            margin-bottom: 25px !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
-            border-left: 8px solid #0A84FF !important;
-        }
-        #contenedorPlantas .planta-box h3 {
-            color: #E5F1FF !important;
-            font-size: 22px !important;
-            margin-top: 0 !important;
-        }
-        #contenedorPlantas .planta-box label {
-            color: #dcdcdc !important;
-            font-weight: 600 !important;
-            margin-top: 12px !important;
-        }
-        #contenedorPlantas input,
-        #contenedorPlantas select {
-            width: 100% !important;
-            padding: 10px !important;
-            margin-top: 6px !important;
-            border-radius: 8px !important;
-            border: 1px solid #555 !important;
-            background: #1b1b1b !important;
-            color: #e6e6e6 !important;
-        }
-        #contenedorPlantas .equipos-lista {
-            margin-top: 18px !important;
-        }
-        #contenedorPlantas .equipo-item {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            background: #2d2d2d !important;
-            padding: 12px !important;
-            border-radius: 8px !important;
-            margin-bottom: 10px !important;
-            border: 1px solid #444 !important;
-        }
-        #contenedorPlantas .equipo-nombre {
-            color: #E5F1FF !important;
-            font-weight: bold !important;
-            flex: 1 !important;
-        }
-        #contenedorPlantas .equipo-cantidad {
-            width: 70px !important;
-            padding: 6px !important;
-            border-radius: 6px !important;
-            border: 1px solid #666 !important;
-            background: #1b1b1b !important;
-            color: #fff !important;
-            text-align: center !important;
-        }
-        #contenedorPlantas .btn {
-            padding: 12px 18px !important;
-            border-radius: 10px !important;
-            font-size: 16px !important;
-            margin-top: 12px !important;
-        }
-        #contenedorPlantas .btn-azul:hover { background: #0A84FF !important; }
-        #contenedorPlantas .btn-verde:hover { background: #2ecc71 !important; }
-        #contenedorPlantas .btn-rojo:hover { background: #b30000 !important; }
+        /* ======== PLANOS ======== */
 
-        /* --- PLANOS --- */
         .plano-item {
-            background: #1e1e1e;
+            background: #f1f3f5;
             padding: 12px;
-            border-radius: 10px;
+            border-radius: 8px;
             margin-top: 10px;
-            border: 1px solid #444;
-            color: #fff;
+            border: 1px solid #ccc;
         }
+
         .plano-item img {
             width: 100%;
             margin-top: 10px;
-            border-radius: 8px;
+            border-radius: 6px;
         }
     </style>
 </head>
@@ -151,12 +173,15 @@
     </button>
 
 </div>
+<script src="scripts/obras.js"></script>
+<script src="scripts/usuarios.js"></script>
 
 <script>
 /* ============================================================
    OBTENER ID DE LA OBRA DESDE LA URL
 ============================================================ */
 let obraID = new URLSearchParams(window.location.search).get("id");
+let obraActual = null;
 
 /* ============================================================
    DISCIPLINAS GLOBALES
@@ -178,21 +203,21 @@ function guardarDisciplinas() {
 }
 
 /* ============================================================
-   EQUIPOS (tu lista original)
+   LISTA DE EQUIPOS
 ============================================================ */
 const EQUIPOS = [
     "ZÓCALOS",
-    "DETECTORES ANALOGOS",
+    "DETECTORES ANALÓGICOS",
     "DETECTORES CONVENCIONALES",
     "DETECTORES CO",
     "PUKAY",
     "SIRAY+BSCL",
     "MSTAY 8",
-    "MSTAY ",
+    "MSTAY",
     "CENTRAL COFEM",
     "CENTRAL DETNOV 250",
     "CENTRAL CO2",
-    "BATERIAS",
+    "BATERÍAS",
     "EXTINTORES",
     "SOPORTES",
     "KAMAY",
@@ -201,26 +226,6 @@ const EQUIPOS = [
     "MDA1Y",
     "MDA2 YLT"
 ];
-
-/* ============================================================
-   CARGAR PLANTAS EXISTENTES
-============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
-    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
-    const obra = obras.find(o => o.id === obraID);
-
-    if (!obra) return;
-
-    window.obraActual = obra;
-
-    if (obra.plantas && obra.plantas.length > 0) {
-        cargarPlantasExistentes(obra.plantas);
-
-        document.getElementById("labelNumPlantas").style.display = "none";
-        document.getElementById("numPlantas").style.display = "none";
-        document.getElementById("btnGenerar").style.display = "none";
-    }
-});
 
 /* ============================================================
    NORMALIZAR TEXTO PARA IDs
@@ -232,6 +237,29 @@ function normalizar(str) {
         .replace(/[^a-z0-9]+/g, "_")
         .replace(/^_+|_+$/g, "");
 }
+
+/* ============================================================
+   CARGAR OBRA Y PLANTAS EXISTENTES
+============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+    obraActual = getObraById(obraID);
+
+    if (!obraActual) {
+        alert("No se encontró la obra.");
+        window.location.href = "lista_obras.html";
+        return;
+    }
+
+    if (obraActual.plantas && obraActual.plantas.length > 0) {
+        cargarPlantasExistentes(obraActual.plantas);
+
+        document.getElementById("labelNumPlantas").style.display = "none";
+        document.getElementById("numPlantas").style.display = "none";
+        document.getElementById("btnGenerar").style.display = "none";
+    }
+
+    activarDragDropPlantas();
+});
 
 /* ============================================================
    CARGAR PLANTAS YA GUARDADAS
@@ -251,14 +279,12 @@ function cargarPlantasExistentes(plantas) {
 function crearTarjetaPlanta(planta, index) {
     const div = document.createElement("div");
     div.className = "planta-box";
-
-    const idPlanta = planta.id || `${obraActual.nombreCorto}_${normalizar(planta.nombre)}`;
-    planta.id = idPlanta;
+    div.setAttribute("data-id", planta.id);
 
     div.innerHTML = `
-        <h3>${planta.nombre}</h3>
+        <h3>Planta</h3>
 
-        <label>Nombre personalizado</label>
+        <label>Nombre de la planta</label>
         <input type="text" class="nombre-planta" value="${planta.nombre}">
 
         <label>Equipo</label>
@@ -270,15 +296,14 @@ function crearTarjetaPlanta(planta, index) {
         <input type="number" class="equipo-cantidad-input" min="1" value="1">
 
         <button class="btn btn-verde" onclick="agregarEquipo(this)">Añadir equipo</button>
-        <button class="btn btn-rojo" onclick="this.parentElement.remove()">Eliminar planta</button>
 
         <div class="equipos-lista"></div>
 
         <hr>
 
-        <h3>Planos de esta planta</h3>
+        <h3>Planos</h3>
 
-        <button class="btn btn-azul" onclick="abrirSubidaPlano(this, '${idPlanta}')">➕ Añadir plano</button>
+        <button class="btn btn-azul" onclick="abrirSubidaPlano(this, '${planta.id}')">➕ Añadir plano</button>
 
         <div class="planos-lista"></div>
     `;
@@ -286,17 +311,10 @@ function crearTarjetaPlanta(planta, index) {
     /* Cargar equipos existentes */
     const listaEquipos = div.querySelector(".equipos-lista");
     planta.equipos.forEach(eq => {
-        const item = document.createElement("div");
-        item.className = "equipo-item";
-
-        item.innerHTML = `
-            <span class="equipo-nombre">${eq.nombre}</span>
-            <input type="number" class="equipo-cantidad" value="${eq.cantidad}" min="1">
-            <button class="btn btn-rojo" onclick="this.parentElement.remove()">X</button>
-        `;
-
-        listaEquipos.appendChild(item);
+        listaEquipos.appendChild(crearItemEquipo(eq.nombre, eq.cantidad));
     });
+
+    activarDragDropEquipos(listaEquipos);
 
     /* Cargar planos existentes */
     const listaPlanos = div.querySelector(".planos-lista");
@@ -308,6 +326,57 @@ function crearTarjetaPlanta(planta, index) {
 }
 
 /* ============================================================
+   CREAR ITEM DE EQUIPO
+============================================================ */
+function crearItemEquipo(nombre, cantidad) {
+    const item = document.createElement("div");
+    item.className = "equipo-item";
+
+    item.innerHTML = `
+        <span class="equipo-nombre">${nombre}</span>
+        <input type="number" class="equipo-cantidad" value="${cantidad}" min="1">
+        <button class="btn btn-rojo" onclick="this.parentElement.remove()">X</button>
+    `;
+
+    return item;
+}
+
+/* ============================================================
+   AÑADIR EQUIPO A UNA PLANTA
+============================================================ */
+function agregarEquipo(btn) {
+    const plantaDiv = btn.parentElement;
+    const equipo = plantaDiv.querySelector(".equipo-select").value;
+    const cantidad = parseInt(plantaDiv.querySelector(".equipo-cantidad-input").value);
+
+    const lista = plantaDiv.querySelector(".equipos-lista");
+    const item = crearItemEquipo(equipo, cantidad);
+
+    lista.appendChild(item);
+}
+
+/* ============================================================
+   DRAG & DROP DE PLANTAS
+============================================================ */
+function activarDragDropPlantas() {
+    new Sortable(document.getElementById("contenedorPlantas"), {
+        animation: 150,
+        handle: "h3",
+        ghostClass: "sortable-ghost"
+    });
+}
+
+/* ============================================================
+   DRAG & DROP DE EQUIPOS
+============================================================ */
+function activarDragDropEquipos(lista) {
+    new Sortable(lista, {
+        animation: 150,
+        ghostClass: "sortable-ghost"
+    });
+}
+
+/* ============================================================
    TARJETA DE PLANO
 ============================================================ */
 function crearTarjetaPlano(plano) {
@@ -315,14 +384,14 @@ function crearTarjetaPlano(plano) {
     div.className = "plano-item";
 
     div.setAttribute("data-id", plano.id);
-div.setAttribute("data-disciplina", plano.disciplina);
+    div.setAttribute("data-disciplina", plano.disciplina);
 
-div.innerHTML = `
-    <strong>${plano.disciplina}</strong><br>
-    ID: ${plano.id}
-    <img src="${plano.imagen}">
-    <button class="btn btn-rojo" onclick="this.parentElement.remove()">Eliminar plano</button>
-`;
+    div.innerHTML = `
+        <strong>${plano.disciplina}</strong><br>
+        ID: ${plano.id}
+        <img src="${plano.imagen}">
+        <button class="btn btn-rojo" onclick="this.parentElement.remove()">Eliminar plano</button>
+    `;
 
     return div;
 }
@@ -346,7 +415,7 @@ function abrirSubidaPlano(btn, idPlanta) {
 
         <label>Seleccionar plano existente</label>
         <select class="selector-plano">
-        <option value="">Seleccionar plano</option>
+            <option value="">Seleccionar plano</option>
         </select>
 
         <button class="btn btn-azul" onclick="guardarPlano(this, '${idPlanta}')">Guardar plano</button>
@@ -369,11 +438,14 @@ function agregarNuevaDisciplina(btn) {
 
     alert("Disciplina añadida globalmente.");
 
-    // Recargar selects
     document.querySelectorAll(".disciplina-select").forEach(sel => {
         sel.innerHTML = DISCIPLINAS.map(d => `<option value="${d}">${d}</option>`).join("");
     });
 }
+
+/* ============================================================
+   CARGAR PLANOS DESDE JSON
+============================================================ */
 async function cargarPlanosEnSelect() {
     const response = await fetch("data/planos.json");
     const data = await response.json();
@@ -381,7 +453,6 @@ async function cargarPlanosEnSelect() {
     const selects = document.querySelectorAll(".selector-plano");
 
     selects.forEach(sel => {
-        // Evitar duplicados si se abre varias veces
         if (sel.dataset.cargado === "true") return;
 
         data.planos.forEach(nombre => {
@@ -408,8 +479,7 @@ async function guardarPlano(btn, idPlanta) {
         return;
     }
 
-    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
-    const obra = obras.find(o => o.id === obraID);
+    const obra = obraActual;
     const planta = obra.plantas.find(p => p.id === idPlanta);
 
     if (!planta.planos) planta.planos = [];
@@ -424,11 +494,11 @@ async function guardarPlano(btn, idPlanta) {
     };
 
     planta.planos.push(nuevoPlano);
-    localStorage.setItem("obrasPCI", JSON.stringify(obras));
+    guardarObra(obra);
+
     alert("Plano guardado correctamente.");
     contenedor.replaceWith(crearTarjetaPlano(nuevoPlano));
 }
-
 
 /* ============================================================
    GENERAR PLANTAS NUEVAS
@@ -439,69 +509,33 @@ function generarPlantas() {
 
     const n = parseInt(document.getElementById("numPlantas").value);
 
-    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
-    const obra = obras.find(o => o.id === obraID);
-
-    obra.plantas = [];  // 🔥 Reiniciar plantas reales
+    obraActual.plantas = [];
 
     for (let i = 1; i <= n; i++) {
         const planta = {
-            id: `${obra.nombreCorto}_planta_${i}`,
+            id: `${obraActual.nombreCorto}_planta_${i}`,
             nombre: `Planta ${i}`,
             equipos: [],
-            planos: []   // 🔥 NECESARIO
+            planos: []
         };
 
-        obra.plantas.push(planta);  // 🔥 Guardar en la obra REAL
-
+        obraActual.plantas.push(planta);
         contenedor.appendChild(crearTarjetaPlanta(planta, i));
     }
 
-    localStorage.setItem("obrasPCI", JSON.stringify(obras)); // 🔥 Guardar cambios
-}
-
-
-/* ============================================================
-   AÑADIR EQUIPO A UNA PLANTA
-============================================================ */
-function agregarEquipo(btn) {
-    const plantaDiv = btn.parentElement;
-    const equipo = plantaDiv.querySelector(".equipo-select").value;
-    const cantidad = parseInt(plantaDiv.querySelector(".equipo-cantidad-input").value);
-
-    const lista = plantaDiv.querySelector(".equipos-lista");
-
-    const item = document.createElement("div");
-    item.className = "equipo-item";
-
-    item.innerHTML = `
-        <span class="equipo-nombre">${equipo}</span>
-        <input type="number" class="equipo-cantidad" value="${cantidad}" min="1">
-        <button class="btn btn-rojo" onclick="this.parentElement.remove()">X</button>
-    `;
-
-    lista.appendChild(item);
+    guardarObra(obraActual);
+    activarDragDropPlantas();
 }
 
 /* ============================================================
    GUARDAR PLANTAS EN LA OBRA
 ============================================================ */
 function guardarPlantas() {
-    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
-    const obra = obras.find(o => o.id === obraID);
-
-    if (!obra) {
-        alert("No se encontró la obra.");
-        return;
-    }
-
     const plantasFinales = [];
 
     document.querySelectorAll(".planta-box").forEach(plantaDiv => {
-        const nombre = plantaDiv.querySelector(".nombre-planta").value.trim()
-            || plantaDiv.querySelector("h3").textContent;
-
-        const idPlanta = `${obra.nombreCorto}_${normalizar(nombre)}`;
+        const nombre = plantaDiv.querySelector(".nombre-planta").value.trim();
+        const idPlanta = `${obraActual.nombreCorto}_${normalizar(nombre)}`;
 
         const equipos = [...plantaDiv.querySelectorAll(".equipo-item")].map(e => ({
             nombre: e.querySelector(".equipo-nombre").textContent.trim(),
@@ -514,21 +548,19 @@ function guardarPlantas() {
             if (!img) return null;
 
             return {
-               id: p.getAttribute("data-id"),
-            disciplina: p.getAttribute("data-disciplina"),
-            imagen: img.src
-
+                id: p.getAttribute("data-id"),
+                disciplina: p.getAttribute("data-disciplina"),
+                imagen: img.src
             };
         }).filter(Boolean);
 
         plantasFinales.push({ id: idPlanta, nombre, equipos, planos });
     });
 
-    obra.plantas = plantasFinales;
+    obraActual.plantas = plantasFinales;
+    guardarObra(obraActual);
 
-    localStorage.setItem("obrasPCI", JSON.stringify(obras));
-
-    alert("Plantas y planos guardados correctamente.");
+    alert("Plantas guardadas correctamente.");
 }
 
 /* ============================================================
@@ -539,78 +571,6 @@ function guardarYVolver() {
     window.location.href = "lista_obras.html";
 }
 </script>
-
-<!-- ESTILOS ESPECÍFICOS -->
-<style>
-#contenedorPlantas .planta-box {
-    background: #242424 !important;
-    border-radius: 14px !important;
-    padding: 20px !important;
-    margin-bottom: 25px !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
-    border-left: 8px solid #0A84FF !important;
-}
-#contenedorPlantas .planta-box h3 {
-    color: #E5F1FF !important;
-    font-size: 22px !important;
-    margin-top: 0 !important;
-}
-#contenedorPlantas .planta-box label {
-    color: #dcdcdc !important;
-    font-weight: 600 !important;
-    margin-top: 12px !important;
-}
-#contenedorPlantas input,
-#contenedorPlantas select {
-    width: 100% !important;
-    padding: 10px !important;
-    margin-top: 6px !important;
-    border-radius: 8px !important;
-    border: 1px solid #555 !important;
-    background: #1b1b1b !important;
-    color: #e6e6e6 !important;
-}
-#contenedorPlantas .equipos-lista {
-    margin-top: 18px !important;
-}
-#contenedorPlantas .equipo-item {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    background: #2d2d2d !important;
-    padding: 12px !important;
-    border-radius: 8px !important;
-    margin-bottom: 10px !important;
-    border: 1px solid #444 !important;
-}
-#contenedorPlantas .equipo-nombre {
-    color: #E5F1FF !important;
-    font-weight: bold !important;
-    flex: 1 !important;
-}
-#contenedorPlantas .equipo-cantidad {
-    width: 70px !important;
-    padding: 6px !important;
-    border-radius: 6px !important;
-    border: 1px solid #666 !important;
-    background: #1b1b1b !important;
-    color: #fff !important;
-    text-align: center !important;
-}
-#contenedorPlantas .btn {
-    padding: 12px 18px !important;
-    border-radius: 10px !important;
-    font-size: 16px !important;
-    margin-top: 12px !important;
-}
-#contenedorPlantas .btn-azul { background: #0A3D62 !important; color: white !important; }
-#contenedorPlantas .btn-verde { background: #28a745 !important; color: white !important; }
-#contenedorPlantas .btn-rojo { background: #8e0000 !important; color: white !important; }
-#contenedorPlantas .btn-azul:hover { background: #0A84FF !important; }
-#contenedorPlantas .btn-verde:hover { background: #2ecc71 !important; }
-#contenedorPlantas .btn-rojo:hover { background: #b30000 !important; }
-</style>
-
 </body>
-
 </html>
+
