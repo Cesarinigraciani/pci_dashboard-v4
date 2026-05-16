@@ -12,8 +12,8 @@
       "verProyectos",
       "crearTareas"
     ],
-    "obrasAsignadas": []
+    "obras": [],
+    "activo": true,
+    "telefono": ""
   }
 ]
-
-
