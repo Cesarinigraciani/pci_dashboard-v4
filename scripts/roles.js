@@ -7,84 +7,105 @@ window._roles = [
   {
     id: "Administrador",
     permisos: [
-      // Permisos de proyectos
-      "crearProyecto",
-      "borrarProyecto",
-      "modificarProyecto",
-      "verProyectos",
+      // Gestión de obras
+      "crear_obra",
+      "editar_obra",
+      "borrar_obra",
+      "ver_obras",
 
-      // Permisos de tareas
-      "crearTareas",
-      "verTareas",
-      "asignarTareas",
-      "completarTareas",
+      // Gestión de usuarios
+      "crear_usuario",
+      "editar_usuario",
+      "borrar_usuario",
+      "ver_usuarios",
 
-      // Permisos del panel
-      "informes",
-      "usuarios",
-      "proyectos"
+      // Gestión de tareas
+      "crear_tarea",
+      "editar_tarea",
+      "borrar_tarea",
+      "ver_tareas",
+      "asignar_tareas",
+      "completar_tareas",
+
+      // Paneles y módulos
+      "ver_dashboard",
+      "ver_planning",
+      "ver_kpi",
+      "ver_recursos",
+      "ver_panel_admin"
     ]
   },
+
   {
     id: "Supervisor",
     permisos: [
-      "verProyectos",
-      "crearTareas",
-      "verTareas",
-      "asignarTareas",
-      "completarTareas",
-      "informes"
+      "ver_obras",
+      "crear_tarea",
+      "editar_tarea",
+      "ver_tareas",
+      "asignar_tareas",
+      "completar_tareas",
+      "ver_dashboard",
+      "ver_planning",
+      "ver_kpi"
     ]
   },
+
   {
     id: "Tecnico",
     permisos: [
-      "verProyectos",
-      "verTareas",
-      "completarTareas"
+      "ver_obras",
+      "ver_tareas",
+      "completar_tareas"
     ]
   },
+
   {
     id: "Ingeniero Técnico",
     permisos: [
-      "verProyectos",
-      "crearTareas",
-      "verTareas",
-      "asignarTareas",
-      "completarTareas",
-      "informes"
+      "ver_obras",
+      "crear_tarea",
+      "editar_tarea",
+      "ver_tareas",
+      "asignar_tareas",
+      "completar_tareas",
+      "ver_dashboard",
+      "ver_planning"
     ]
   },
+
   {
     id: "Encargado de Obra",
     permisos: [
-      "verProyectos",
-      "verTareas",
-      "completarTareas"
+      "ver_obras",
+      "ver_tareas",
+      "completar_tareas"
     ]
   },
+
   {
     id: "Oficial de Primera",
     permisos: [
-      "verProyectos",
-      "verTareas",
-      "completarTareas"
+      "ver_obras",
+      "ver_tareas",
+      "completar_tareas"
     ]
   },
+
   {
     id: "Oficial de Segunda",
     permisos: [
-      "verProyectos",
-      "verTareas",
-      "completarTareas"
+      "ver_obras",
+      "ver_tareas",
+      "completar_tareas"
     ]
   },
+
   {
     id: "Sub-contrata",
     permisos: [
-      "verProyectos",
-      "verTareas",
-      "completarTareas"
+      "ver_obras",
+      "ver_tareas"
     ]
   }
 ];
@@ -141,3 +162,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
