@@ -11,14 +11,15 @@ function cargarTareas() {
     const data = localStorage.getItem("tareasPCI");
     tareasData = data ? JSON.parse(data) : [];
 
-    // Compatibilidad con tareas antiguas (fechaFinal → fechaFin)
+    // Compatibilidad con tareas antiguas
     tareasData.forEach(t => {
-        if (t.fechaFinal && !t.fechaFin) {
-            t.fechaFin = t.fechaFinal;
-        }
+        if (t.fechaFinal && !t.fechaFin) t.fechaFin = t.fechaFinal;
+        if (!t.subtareas) t.subtareas = [];
+        if (!t.resultado_plazo) t.resultado_plazo = null;
+        if (!t.posX) t.posX = 0;
+        if (!t.posY) t.posY = 0;
     });
 
-    guardarTareas();
     return tareasData;
 }
 
@@ -40,8 +41,8 @@ function crearTarea(datos) {
         obraId: datos.obraId,
         plantaId: datos.plantaId || null,
         planoId: datos.planoId || null,
-        posX: datos.posX || 0,
-        posY: datos.posY || 0,
+        posX: datos.posX ?? 0,
+        posY: datos.posY ?? 0,
         asignadoA: datos.asignadoA,
         creadoPor: datos.creadoPor,
         estado: datos.estado || "pendiente",
@@ -50,8 +51,6 @@ function crearTarea(datos) {
         resultado_plazo: null,
         id_planning: datos.id_planning || null,
         fechaCreacion: new Date().toISOString(),
-
-        // 🔥 AÑADIR ESTO 🔥
         subtareas: datos.subtareas || []
     };
 
@@ -59,7 +58,6 @@ function crearTarea(datos) {
     guardarTareas();
     return nuevaTarea;
 }
-
 
 // ===============================
 //  EDITAR TAREA
@@ -75,11 +73,16 @@ function editarTarea(id, datos) {
     tarea.estado = datos.estado ?? tarea.estado;
     tarea.fechaInicio = datos.fechaInicio ?? tarea.fechaInicio;
 
+    // 🔥 ACTUALIZAR SUBTAREAS
+    if (datos.subtareas) {
+        tarea.subtareas = datos.subtareas;
+    }
+
     if (datos.id_planning !== undefined) {
         tarea.id_planning = datos.id_planning;
     }
 
-    // Si se marca como completada → poner fecha final
+    // Si se marca como completada
     if (datos.estado === "completada") {
         tarea.fechaFin = new Date().toISOString().split("T")[0];
         tarea.resultado_plazo = calcularCumplimientoPlanning(tarea);
@@ -87,7 +90,6 @@ function editarTarea(id, datos) {
 
     guardarTareas();
 }
-
 
 // ===============================
 //  ELIMINAR TAREA
@@ -106,16 +108,17 @@ function cambiarEstadoTarea(id, nuevoEstado) {
 
     tarea.estado = nuevoEstado;
 
-   if (nuevoEstado === "completada") {
-    tarea.fechaFin = new Date().toISOString().split("T")[0];
-    tarea.resultado_plazo = calcularCumplimientoPlanning(tarea);
-} else {
-    tarea.fechaFin = null;
-    tarea.resultado_plazo = null;
-}
+    if (nuevoEstado === "completada") {
+        tarea.fechaFin = new Date().toISOString().split("T")[0];
+        tarea.resultado_plazo = calcularCumplimientoPlanning(tarea);
+    } else {
+        tarea.fechaFin = null;
+        tarea.resultado_plazo = null;
+    }
 
     guardarTareas();
 }
+
 // ===============================
 //  CALCULAR CUMPLIMIENTO DEL PLANNING
 // ===============================
@@ -147,10 +150,18 @@ function obtenerTareasPorObra(obraId) {
 }
 
 // ===============================
+//  OBTENER TAREA POR ID
+// ===============================
+function getTareaById(id) {
+    return tareasData.find(t => t.id === id) || null;
+}
+
+// ===============================
 //  INICIALIZACIÓN
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
     cargarTareas();
 });
+
 
 
