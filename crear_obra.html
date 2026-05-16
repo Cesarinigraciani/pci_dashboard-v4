@@ -90,30 +90,36 @@
 
 <script>
 // ===============================
-// CARGAR USUARIOS COMO ENCARGADOS
+// CARGAR ENCARGADOS
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
   const select = document.getElementById("encargadoObra");
   select.innerHTML = "";
 
-  // Cargar usuarios desde localStorage
   const usuarios = JSON.parse(localStorage.getItem("usuariosPCI")) || [];
 
-  // Filtrar solo encargados
-  usuarios
-    .filter(u => u.rol === "Encargado de Obra")
-    .forEach(u => {
-      const opt = document.createElement("option");
-      opt.value = u.id;
-      opt.textContent = u.nombre;
-      select.appendChild(opt);
-    });
+  const encargados = usuarios.filter(u => u.rol === "Encargado de Obra");
+
+  if (encargados.length === 0) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "⚠️ No hay encargados disponibles";
+    select.appendChild(opt);
+    return;
+  }
+
+  encargados.forEach(u => {
+    const opt = document.createElement("option");
+    opt.value = u.id;
+    opt.textContent = u.nombre;
+    select.appendChild(opt);
+  });
 });
 </script>
 
 <script>
 // ===============================
-// GUARDAR OBRA
+// GUARDAR OBRA (VERSIÓN BLINDADA)
 // ===============================
 function guardarObra() {
   const nombre = document.getElementById("nombreObra").value.trim();
@@ -124,13 +130,14 @@ function guardarObra() {
   const encargado = document.getElementById("encargadoObra").value;
   const horas = document.getElementById("horasObra").value.trim();
 
-  if (!nombre) {
-    alert("La obra debe tener un nombre.");
-    return;
-  }
+  if (!nombre) return alert("La obra debe tener un nombre.");
+  if (!nombreCorto) return alert("Debes introducir un nombre corto.");
+  if (!encargado) return alert("Debes seleccionar un encargado.");
 
-  if (!nombreCorto) {
-    alert("Debes introducir un nombre corto para la obra.");
+  // Validar nombre corto duplicado
+  const obras = listarObras();
+  if (obras.some(o => o.nombreCorto === nombreCorto)) {
+    alert("El nombre corto ya existe. Debe ser único.");
     return;
   }
 
@@ -144,18 +151,17 @@ function guardarObra() {
     encargado,
     horasEstimadas: horas ? Number(horas) : 0,
     plantas: [],
-    fechaCreacion: new Date().toISOString()
+    equipos: [],
+    fechaCreacion: new Date().toISOString(),
+    ultimoAcceso: null
   };
 
-  // 🔥 CORRECCIÓN: guardar en obrasPCI
-  let obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
-  obras.push(nuevaObra);
-  localStorage.setItem("obrasPCI", JSON.stringify(obras));
+  // Guardar usando el sistema oficial
+  guardarProyectoPCI(nuevaObra);
 
   alert("Obra creada correctamente.");
   window.location.href = "configurar_plantas.html?id=" + nuevaObra.id;
 }
-
 </script>
 
 </body>
