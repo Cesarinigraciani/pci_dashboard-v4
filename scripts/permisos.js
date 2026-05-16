@@ -1,24 +1,35 @@
 // permisos.js
 // ---------------------------------------------------------
-// Gestión de permisos del sistema
+// Lista oficial de permisos del sistema (ALINEADO CON roles.js)
 // ---------------------------------------------------------
 
-// Lista oficial de permisos del sistema
 window._permisos = [
-  { id: "crearProyecto", nombre: "Crear proyectos" },
-  { id: "borrarProyecto", nombre: "Borrar proyectos" },
-  { id: "modificarProyecto", nombre: "Modificar proyectos" },
-  { id: "verProyectos", nombre: "Ver proyectos" },
+  // Gestión de obras
+  { id: "crear_obra", nombre: "Crear obra" },
+  { id: "editar_obra", nombre: "Editar obra" },
+  { id: "borrar_obra", nombre: "Borrar obra" },
+  { id: "ver_obras", nombre: "Ver obras" },
 
-  { id: "crearTareas", nombre: "Crear tareas" },
-  { id: "verTareas", nombre: "Ver tareas" },
-  { id: "asignarTareas", nombre: "Asignar tareas" },
-  { id: "completarTareas", nombre: "Completar tareas" },
+  // Gestión de usuarios
+  { id: "crear_usuario", nombre: "Crear usuario" },
+  { id: "editar_usuario", nombre: "Editar usuario" },
+  { id: "borrar_usuario", nombre: "Borrar usuario" },
+  { id: "ver_usuarios", nombre: "Ver usuarios" },
 
-  { id: "informes", nombre: "Ver informes" },
+  // Gestión de tareas
+  { id: "crear_tarea", nombre: "Crear tarea" },
+  { id: "editar_tarea", nombre: "Editar tarea" },
+  { id: "borrar_tarea", nombre: "Borrar tarea" },
+  { id: "ver_tareas", nombre: "Ver tareas" },
+  { id: "asignar_tareas", nombre: "Asignar tareas" },
+  { id: "completar_tareas", nombre: "Completar tareas" },
 
-  { id: "usuarios", nombre: "Administrar usuarios" },
-  { id: "proyectos", nombre: "Administrar obras" }
+  // Paneles y módulos
+  { id: "ver_dashboard", nombre: "Dashboard" },
+  { id: "ver_planning", nombre: "Planning" },
+  { id: "ver_kpi", nombre: "Indicadores KPI" },
+  { id: "ver_recursos", nombre: "Recursos" },
+  { id: "ver_panel_admin", nombre: "Panel de administración" }
 ];
 
 // ---------------------------------------------------------
@@ -63,15 +74,18 @@ function obtenerPermisosSeleccionados(contenedorId) {
 function aplicarPermisosAlDashboard(usuario) {
   if (!usuario || !usuario.permisos) return;
 
-  // Mapa entre permisos y botones reales del index
   const mapa = {
-    crearTareas: "btnCrearTarea",
-    verTareas: "btnAsignacionTareas",
-    asignarTareas: "btnAsignacionTareas",
-    completarTareas: "btnCompletarTareas",
-    informes: "btnInformesTareas",
-    usuarios: "btnPanelUsuarios",
-    proyectos: "btnPanelObras"
+    crear_tarea: "btnCrearTarea",
+    ver_tareas: "btnVerTareas",
+    asignar_tareas: "btnAsignarTareas",
+    completar_tareas: "btnCompletarTareas",
+    ver_usuarios: "btnPanelUsuarios",
+    ver_obras: "btnPanelObras",
+    ver_dashboard: "btnDashboard",
+    ver_planning: "btnPlanning",
+    ver_kpi: "btnKPI",
+    ver_recursos: "btnRecursos",
+    ver_panel_admin: "btnPanelAdmin"
   };
 
   Object.entries(mapa).forEach(([permiso, botonId]) => {
