@@ -10,7 +10,7 @@ let usuarioActual = null;
 
 
 // ===============================
-//  CARGAR USUARIOS
+//  CARGAR USUSARIOS
 // ===============================
 
 async function cargarUsuarios() {
@@ -23,8 +23,7 @@ async function cargarUsuarios() {
         }
 
         // Si no existe en localStorage, cargar desde usuarios.json
-       const res = await fetch("data/usuarios.json");
-
+        const res = await fetch("data/usuarios.json");
         usuariosData = await res.json();
 
         guardarUsuarios();
@@ -72,13 +71,11 @@ function setUsuarioActual(idUsuario) {
     // Asignar obras al administrador
     asignarTodasLasObrasAlAdministrador();
 
-    // 🔥 Recargar usuarioActual con las obras ya asignadas
+    // Recargar usuarioActual con las obras ya asignadas
     usuarioActual = obtenerUsuarioPorId(idUsuario);
     localStorage.setItem("usuarioActual", usuarioActual.id);
-
-    // Ir al panel principal
-    window.location.href = "index.html";
 }
+
 
 // ===============================
 //  OBTENER USUARIO ACTUAL
@@ -91,6 +88,7 @@ function getUsuarioActual() {
     return obtenerUsuarioPorId(id);
 }
 
+
 // ===============================
 //  PERMISOS
 // ===============================
@@ -101,6 +99,7 @@ function usuarioTienePermiso(permiso) {
 
     return user.permisos.includes(permiso);
 }
+
 
 // ===============================
 //  CREAR USUARIO
@@ -113,9 +112,10 @@ function crearUsuario(datos) {
         email: datos.email,
         telefono: datos.telefono,
         rol: datos.rol,
-        permisos: datos.permisos,          // ARRAY
-        obrasAsignadas: datos.obras,       // ARRAY
-        password: datos.password
+        permisos: datos.permisos,
+        obras: datos.obras || [],     // CORREGIDO
+        password: datos.password,
+        activo: true
     };
 
     usuariosData.push(nuevoUsuario);
@@ -137,7 +137,7 @@ function editarUsuario(id, datos) {
     usuario.telefono = datos.telefono;
     usuario.rol = datos.rol;
     usuario.permisos = datos.permisos;
-    usuario.obrasAsignadas = datos.obras;
+    usuario.obras = datos.obras || [];   // CORREGIDO
     usuario.password = datos.password;
 
     guardarUsuarios();
@@ -171,33 +171,31 @@ document.addEventListener("DOMContentLoaded", async () => {
             telefono: "",
             rol: "Administrador",
             permisos: window._roles.find(r => r.id === "Administrador").permisos,
-            obrasAsignadas: [],
-            password: "admin"
+            obras: [],               // CORREGIDO
+            password: "admin",
+            activo: true
         };
 
         usuariosData.push(admin);
         guardarUsuarios();
     }
 
-    // Si no hay usuario logueado, usar el primero
-    // NO forzar login automático en el index
-// Solo establecer usuarioActual si YA existe
-if (window.location.pathname.includes("index.html")) {
-    if (!localStorage.getItem("usuarioActual")) {
-        setUsuarioActual(usuariosData[0].id);
-    }
-}
-
-
+    // NO forzar login automático
     usuarioActual = getUsuarioActual();
     console.log("Usuario actual:", usuarioActual?.nombre);
 });
+
+
+// ===============================
+//  ASIGNAR OBRAS AL ADMIN
+// ===============================
+
 function asignarTodasLasObrasAlAdministrador() {
     const admin = usuariosData.find(u => u.rol === "Administrador");
     if (!admin) return;
 
-    const obras = JSON.parse(localStorage.getItem("proyectosPCI")) || [];
-    admin.obrasAsignadas = obras.map(o => o.id);
+    const obras = JSON.parse(localStorage.getItem("obrasPCI")) || []; // CORREGIDO
+    admin.obras = obras.map(o => o.id);
 
-    localStorage.setItem("usuariosPCI", JSON.stringify(usuariosData));
+    guardarUsuarios();
 }
