@@ -124,10 +124,8 @@
   v5.0.0 — César Augusto
 </p>
 
-
   </div>
 </header>
-
 
 <!-- Mensaje de bienvenida dinámico -->
 <h2 id="mensajeBienvenida" style="text-align:center; margin-top:10px; color:white;"></h2>
@@ -157,24 +155,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 // }
 
 // Obra asignada (solo aplica a usuarios normales)
-const obraIdAsignada = usuario?.obrasAsignadas?.[0];
-const obraAsignada = obraIdAsignada ? getObraById(obraIdAsignada) : null;
+async function iniciarPanel() {
+    const usuario = window.usuarioActivo;
 
-// Mensaje de bienvenida dinámico
-let mensaje = `Bienvenido, ${usuario.nombre}`;
-
-if (usuario.rol !== "admin") {
-    if (obraAsignada) {
-        mensaje += ` — Obra asignada: ${obraAsignada.nombre}`;
-    } else {
-        mensaje += ` — No tienes obra asignada`;
+    if (!usuario) {
+        console.warn("Usuario no cargado aún");
+        return;
     }
-}
 
-document.getElementById("mensajeBienvenida").textContent = mensaje;
+    const panel = document.getElementById("panel-principal");
 
+    let mensaje = `Bienvenido, ${usuario?.nombre || "Usuario"}`;
+    const obraAsignadaId = usuario.obras?.[0] || null;
+    const obraAsignada = obraAsignadaId ? await getObraById(obraAsignadaId) : null;
 
-  const panel = document.getElementById("panel-principal");
+    if (usuario.rol !== "Administrador") {
+      mensaje += obraAsignada
+        ? ` — Obra asignada: ${obraAsignada.nombre}`
+        : ` — No tienes obra asignada`;
+    }
+
+    document.getElementById("mensajeBienvenida").textContent = mensaje;
 
   const obras = JSON.parse(localStorage.getItem("obrasPCI")) || [];
   const obraID = new URLSearchParams(window.location.search).get("id");
